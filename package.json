@@ -1,0 +1,23 @@
+{
+  "name": "edgecheck-backend",
+  "version": "1.0.0",
+  "description": "EdgeCheck backend with daily game reset",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:45751/git/jaystay-bot/edgecheck-backend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "node-cron": "^4.2.1",
+    "uuid": "^13.0.0"
+  }
+}
