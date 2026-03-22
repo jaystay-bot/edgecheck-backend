@@ -3,7 +3,53 @@ import { NextResponse } from "next/server";
 // Standard Node.js serverless runtime (not edge) — 60s max on Vercel
 export const maxDuration = 60;
 
+// --- Rate limiting: 20 requests per 10 minutes per IP ---
+const rateMap = new Map();
+const RATE_LIMIT = 20;
+const RATE_WINDOW = 10 * 60 * 1000; // 10 minutes
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const entry = rateMap.get(ip);
+
+  if (!entry || now - entry.windowStart > RATE_WINDOW) {
+    rateMap.set(ip, { windowStart: now, count: 1 });
+    return null;
+  }
+
+  entry.count++;
+  if (entry.count > RATE_LIMIT) {
+    const minutesLeft = Math.ceil(
+      (entry.windowStart + RATE_WINDOW - now) / 60000
+    );
+    return minutesLeft;
+  }
+
+  return null;
+}
+
+// Clean up stale entries every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of rateMap) {
+    if (now - entry.windowStart > RATE_WINDOW) rateMap.delete(ip);
+  }
+}, RATE_WINDOW);
+
 export async function POST(request) {
+  // Rate limit check
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    request.headers.get("x-real-ip") ??
+    "unknown";
+  const minutesLeft = checkRateLimit(ip);
+  if (minutesLeft !== null) {
+    return NextResponse.json(
+      { error: `Rate limit exceeded. Try again in ${minutesLeft} minutes.` },
+      { status: 429 }
+    );
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
