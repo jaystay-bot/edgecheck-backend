@@ -1,6 +1,6 @@
 import "./globals.css";
 
-const WHOP_URL = "https://whop.com/edgecheck";
+const WHOP_URL = "https://whop.com/edgecheck?a=jonathanstaley";
 
 export default function LandingPage() {
   return (
