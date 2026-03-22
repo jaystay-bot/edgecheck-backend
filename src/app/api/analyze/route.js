@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
+// Standard Node.js serverless runtime (not edge) — 60s max on Vercel
+export const maxDuration = 60;
 
 export async function POST(request) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -28,6 +29,9 @@ export async function POST(request) {
 
   const prompt = buildPrompt(game, betType, betValue);
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 9000);
+
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -41,7 +45,10 @@ export async function POST(request) {
         max_tokens: 1024,
         messages: [{ role: "user", content: prompt }],
       }),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeout);
 
     if (!res.ok) {
       const errBody = await res.text();
@@ -62,7 +69,16 @@ export async function POST(request) {
 
     return NextResponse.json({ analysis, raw: analysisText });
   } catch (err) {
-    console.error("Claude API error:", err.message);
+    clearTimeout(timeout);
+    console.error("Claude API error:", err.name, err.message);
+
+    if (err.name === "AbortError") {
+      return NextResponse.json(
+        { error: "Analysis timed out — please try again" },
+        { status: 504 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to generate analysis", detail: err.message },
       { status: 502 }

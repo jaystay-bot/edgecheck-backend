@@ -13,13 +13,39 @@ const SPORTS = [
   { key: "mls", label: "MLS", espn: "soccer/usa.1" },
 ];
 
-const BET_TYPES = [
-  "Spread",
-  "Moneyline (Home)",
-  "Moneyline (Away)",
-  "Over",
-  "Under",
-];
+function getBetOptions(game) {
+  const opts = [];
+  const home = game.homeTeam?.abbreviation ?? "HOME";
+  const away = game.awayTeam?.abbreviation ?? "AWAY";
+  const odds = game.odds;
+
+  if (odds?.spread?.home != null) {
+    const hs = odds.spread.home > 0 ? `+${odds.spread.home}` : `${odds.spread.home}`;
+    const as = odds.spread.away != null
+      ? (odds.spread.away > 0 ? `+${odds.spread.away}` : `${odds.spread.away}`)
+      : (odds.spread.home > 0 ? `-${odds.spread.home}` : `+${Math.abs(odds.spread.home)}`);
+    opts.push({ value: `spread_home`, label: `${home} Spread ${hs}` });
+    opts.push({ value: `spread_away`, label: `${away} Spread ${as}` });
+  }
+
+  if (odds?.moneyline?.home != null && odds?.moneyline?.away != null) {
+    const hml = odds.moneyline.home > 0 ? `+${odds.moneyline.home}` : `${odds.moneyline.home}`;
+    const aml = odds.moneyline.away > 0 ? `+${odds.moneyline.away}` : `${odds.moneyline.away}`;
+    opts.push({ value: `ml_home`, label: `${home} ML ${hml}` });
+    opts.push({ value: `ml_away`, label: `${away} ML ${aml}` });
+  }
+
+  if (odds?.overUnder != null) {
+    opts.push({ value: `over`, label: `Over ${odds.overUnder}` });
+    opts.push({ value: `under`, label: `Under ${odds.overUnder}` });
+  }
+
+  if (opts.length === 0) {
+    opts.push({ value: "spread_home", label: "Spread" });
+  }
+
+  return opts;
+}
 
 function formatDateParam(date) {
   const y = date.getFullYear();
@@ -152,17 +178,11 @@ export default function Home() {
   }, [fetchGames]);
 
   const analyzeBet = async (game) => {
-    const betType = selectedBets[game.id] || "Spread";
-    let betValue = "";
-    if (betType === "Spread" && game.odds?.spread) {
-      betValue = `Home ${game.odds.spread.home}`;
-    } else if (betType === "Over" || betType === "Under") {
-      betValue = `${game.odds?.overUnder ?? "N/A"}`;
-    } else if (betType === "Moneyline (Home)") {
-      betValue = `${game.odds?.moneyline?.home ?? "N/A"}`;
-    } else if (betType === "Moneyline (Away)") {
-      betValue = `${game.odds?.moneyline?.away ?? "N/A"}`;
-    }
+    const options = getBetOptions(game);
+    const selected = selectedBets[game.id] || options[0]?.value || "spread_home";
+    const selectedOption = options.find((o) => o.value === selected);
+    const betType = selectedOption?.label ?? "Spread";
+    let betValue = selectedOption?.label ?? "";
 
     setAnalyzing(game.id);
     try {
@@ -485,26 +505,23 @@ export default function Home() {
                   <div style={{ color: "var(--text-dim)", fontSize: 10 }}>SPREAD</div>
                   <div style={{ fontWeight: 600 }}>
                     {game.odds.spread?.home != null
-                      ? (game.odds.spread.home > 0 ? "+" : "") + game.odds.spread.home
+                      ? (() => {
+                          const hs = game.odds.spread.home > 0 ? `+${game.odds.spread.home}` : `${game.odds.spread.home}`;
+                          const awaySpread = game.odds.spread.away ?? -game.odds.spread.home;
+                          const as = awaySpread > 0 ? `+${awaySpread}` : `${awaySpread}`;
+                          return `${game.homeTeam.abbreviation} ${hs} / ${game.awayTeam.abbreviation} ${as}`;
+                        })()
                       : "N/A"}
                   </div>
                 </div>
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ color: "var(--text-dim)", fontSize: 10 }}>ML HOME</div>
-                  <div style={{ fontWeight: 600 }}>
-                    {game.odds.moneyline?.home != null
-                      ? (game.odds.moneyline.home > 0 ? "+" : "") + game.odds.moneyline.home
-                      : "N/A"}
+                {game.odds.moneyline?.home != null && game.odds.moneyline?.away != null && (
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ color: "var(--text-dim)", fontSize: 10 }}>MONEYLINE</div>
+                    <div style={{ fontWeight: 600 }}>
+                      {game.homeTeam.abbreviation} {game.odds.moneyline.home > 0 ? "+" : ""}{game.odds.moneyline.home} / {game.awayTeam.abbreviation} {game.odds.moneyline.away > 0 ? "+" : ""}{game.odds.moneyline.away}
+                    </div>
                   </div>
-                </div>
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ color: "var(--text-dim)", fontSize: 10 }}>ML AWAY</div>
-                  <div style={{ fontWeight: 600 }}>
-                    {game.odds.moneyline?.away != null
-                      ? (game.odds.moneyline.away > 0 ? "+" : "") + game.odds.moneyline.away
-                      : "N/A"}
-                  </div>
-                </div>
+                )}
                 <div style={{ textAlign: "center" }}>
                   <div style={{ color: "var(--text-dim)", fontSize: 10 }}>O/U</div>
                   <div style={{ fontWeight: 600 }}>{game.odds.overUnder ?? "N/A"}</div>
@@ -532,7 +549,7 @@ export default function Home() {
             {/* Bet Type Selector + Analyze Button */}
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <select
-                value={selectedBets[game.id] || "Spread"}
+                value={selectedBets[game.id] || getBetOptions(game)[0]?.value || "spread_home"}
                 onChange={(e) =>
                   setSelectedBets((prev) => ({ ...prev, [game.id]: e.target.value }))
                 }
@@ -546,9 +563,9 @@ export default function Home() {
                   fontSize: 13,
                 }}
               >
-                {BET_TYPES.map((bt) => (
-                  <option key={bt} value={bt}>
-                    {bt}
+                {getBetOptions(game).map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
                   </option>
                 ))}
               </select>
