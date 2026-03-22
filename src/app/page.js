@@ -1,7 +1,6 @@
 import "./globals.css";
 
-const WHOP_OAUTH_URL =
-  "https://whop.com/oauth?client_id=y29DvHwAq_g71Sg-MRrX-1cLU2LgI7Du0onH-Xt-1QQ&redirect_uri=https://edgecheck.app/auth/callback&response_type=code";
+const WHOP_URL = "https://whop.com/edgecheck";
 
 export default function LandingPage() {
   return (
@@ -43,7 +42,7 @@ export default function LandingPage() {
         </p>
 
         <a
-          href={WHOP_OAUTH_URL}
+          href={WHOP_URL}
           style={{
             display: "inline-block",
             padding: "14px 40px",
