@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function POST(request) {
+  console.log("ENV CHECK:", { hasApiKey: !!process.env.WHOP_API_KEY, hasProductId: !!process.env.WHOP_PRODUCT_ID });
+
   let body;
   try {
     body = await request.json();
@@ -19,8 +21,9 @@ export async function POST(request) {
   const productId = process.env.WHOP_PRODUCT_ID;
 
   if (!apiKey || !productId) {
-    console.error("[EdgeCheck] WHOP_API_KEY or WHOP_PRODUCT_ID not set");
-    return NextResponse.json({ success: false, error: "Server configuration error" }, { status: 500 });
+    const missing = [!apiKey && "WHOP_API_KEY", !productId && "WHOP_PRODUCT_ID"].filter(Boolean).join(", ");
+    console.error("[EdgeCheck] Missing env vars:", missing);
+    return NextResponse.json({ success: false, error: `Missing env: ${missing}` }, { status: 500 });
   }
 
   try {
