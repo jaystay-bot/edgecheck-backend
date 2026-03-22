@@ -33,7 +33,7 @@ export async function GET(request) {
   }
 
   try {
-    const url = `https://api.the-odds-api.com/v4/sports/${oddsSport}/odds/?apiKey=${apiKey}&regions=us&markets=h2h&oddsFormat=american`;
+    const url = `https://api.the-odds-api.com/v4/sports/${oddsSport}/odds/?apiKey=${apiKey}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
 
     if (!res.ok) {
@@ -47,20 +47,42 @@ export async function GET(request) {
 
     const data = await res.json();
 
-    // Simplify: extract moneyline odds per game, keyed by normalized team names
     const games = data.map((event) => {
       const bookmaker = event.bookmakers?.[0];
+
+      // Moneyline (h2h)
       const h2h = bookmaker?.markets?.find((m) => m.key === "h2h");
-      const homeOutcome = h2h?.outcomes?.find((o) => o.name === event.home_team);
-      const awayOutcome = h2h?.outcomes?.find((o) => o.name === event.away_team);
+      const homeML = h2h?.outcomes?.find((o) => o.name === event.home_team);
+      const awayML = h2h?.outcomes?.find((o) => o.name === event.away_team);
+
+      // Spread (spreads / run line for MLB)
+      const spreads = bookmaker?.markets?.find((m) => m.key === "spreads");
+      const homeSpread = spreads?.outcomes?.find((o) => o.name === event.home_team);
+      const awaySpread = spreads?.outcomes?.find((o) => o.name === event.away_team);
+
+      // Totals (over/under)
+      const totals = bookmaker?.markets?.find((m) => m.key === "totals");
+      const over = totals?.outcomes?.find((o) => o.name === "Over");
+      const under = totals?.outcomes?.find((o) => o.name === "Under");
 
       return {
         homeTeam: event.home_team,
         awayTeam: event.away_team,
         commenceTime: event.commence_time,
         moneyline: {
-          home: homeOutcome?.price ?? null,
-          away: awayOutcome?.price ?? null,
+          home: homeML?.price ?? null,
+          away: awayML?.price ?? null,
+        },
+        spread: {
+          home: homeSpread?.point ?? null,
+          away: awaySpread?.point ?? null,
+          homeOdds: homeSpread?.price ?? null,
+          awayOdds: awaySpread?.price ?? null,
+        },
+        total: {
+          overUnder: over?.point ?? under?.point ?? null,
+          overOdds: over?.price ?? null,
+          underOdds: under?.price ?? null,
         },
         bookmaker: bookmaker?.title ?? null,
       };

@@ -146,7 +146,7 @@ async function fetchOddsAPI(sportKey) {
   }
 }
 
-function mergeMoneylineOdds(games, oddsGames) {
+function mergeOddsData(games, oddsGames) {
   if (!oddsGames.length) return games;
 
   return games.map((game) => {
@@ -163,24 +163,39 @@ function mergeMoneylineOdds(games, oddsGames) {
 
     // Determine if teams are flipped
     const flipped = teamsMatch(game.homeTeam.name, match.awayTeam);
-    const homeML = flipped ? match.moneyline.away : match.moneyline.home;
-    const awayML = flipped ? match.moneyline.home : match.moneyline.away;
 
-    // Only fill in moneyline if we don't already have it from ESPN
-    const currentML = game.odds?.moneyline;
-    if (currentML?.home != null && currentML?.away != null) return game;
+    const existing = game.odds ?? {};
+    const merged = { ...existing };
 
-    return {
-      ...game,
-      odds: {
-        ...(game.odds ?? {}),
-        moneyline: {
-          home: homeML,
-          away: awayML,
-        },
-        mlProvider: match.bookmaker,
-      },
-    };
+    // Merge moneyline
+    if (existing.moneyline?.home == null || existing.moneyline?.away == null) {
+      const homeML = flipped ? match.moneyline.away : match.moneyline.home;
+      const awayML = flipped ? match.moneyline.home : match.moneyline.away;
+      if (homeML != null && awayML != null) {
+        merged.moneyline = { home: homeML, away: awayML };
+        merged.mlProvider = match.bookmaker;
+      }
+    }
+
+    // Merge spread
+    if (existing.spread?.home == null) {
+      const homeSpread = flipped ? match.spread.away : match.spread.home;
+      const awaySpread = flipped ? match.spread.home : match.spread.away;
+      const homeOdds = flipped ? match.spread.awayOdds : match.spread.homeOdds;
+      const awayOdds = flipped ? match.spread.homeOdds : match.spread.awayOdds;
+      if (homeSpread != null) {
+        merged.spread = { home: homeSpread, away: awaySpread, homeOdds, awayOdds };
+      }
+    }
+
+    // Merge totals
+    if (existing.overUnder == null && match.total.overUnder != null) {
+      merged.overUnder = match.total.overUnder;
+      merged.overOdds = match.total.overOdds;
+      merged.underOdds = match.total.underOdds;
+    }
+
+    return { ...game, odds: merged };
   });
 }
 
@@ -237,7 +252,7 @@ export default function Home() {
         fetchESPNGames(sportConfig),
         fetchOddsAPI(sportConfig.key),
       ]);
-      const merged = mergeMoneylineOdds(result.games, oddsGames);
+      const merged = mergeOddsData(result.games, oddsGames);
       setGames(merged);
       setLeagueInfo(result.league);
     } catch (err) {
