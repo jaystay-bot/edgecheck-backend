@@ -4,13 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 import "./globals.css";
 
 const SPORTS = [
-  { key: "nba", label: "NBA" },
-  { key: "nfl", label: "NFL" },
-  { key: "mlb", label: "MLB" },
-  { key: "nhl", label: "NHL" },
-  { key: "ncaaf", label: "NCAAF" },
-  { key: "ncaab", label: "NCAAB" },
-  { key: "mls", label: "MLS" },
+  { key: "nba", label: "NBA", espn: "basketball/nba" },
+  { key: "nfl", label: "NFL", espn: "football/nfl" },
+  { key: "mlb", label: "MLB", espn: "baseball/mlb" },
+  { key: "nhl", label: "NHL", espn: "hockey/nhl" },
+  { key: "ncaaf", label: "NCAAF", espn: "football/college-football" },
+  { key: "ncaab", label: "NCAAB", espn: "basketball/mens-college-basketball" },
+  { key: "mls", label: "MLS", espn: "soccer/usa.1" },
 ];
 
 const BET_TYPES = [
@@ -21,30 +21,131 @@ const BET_TYPES = [
   "Under",
 ];
 
+function formatDateParam(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}${m}${d}`;
+}
+
+function parseOdds(competition) {
+  const odds = competition.odds?.[0];
+  if (!odds) return null;
+  return {
+    spread: {
+      home: odds.homeTeamOdds?.spread ?? odds.spread ?? null,
+      away: odds.awayTeamOdds?.spread ?? (odds.spread ? -odds.spread : null),
+      homeOdds: odds.homeTeamOdds?.spreadOdds ?? null,
+      awayOdds: odds.awayTeamOdds?.spreadOdds ?? null,
+    },
+    moneyline: {
+      home: odds.homeTeamOdds?.moneyLine ?? null,
+      away: odds.awayTeamOdds?.moneyLine ?? null,
+    },
+    overUnder: odds.overUnder ?? null,
+    overOdds: odds.overOdds ?? null,
+    underOdds: odds.underOdds ?? null,
+    provider: odds.provider?.name ?? "ESPN",
+  };
+}
+
+function parseGame(event, sportKey) {
+  const competition = event.competitions?.[0];
+  if (!competition) return null;
+  const homeTeamData = competition.competitors?.find((c) => c.homeAway === "home");
+  const awayTeamData = competition.competitors?.find((c) => c.homeAway === "away");
+  if (!homeTeamData || !awayTeamData) return null;
+  const homeTeam = homeTeamData.team;
+  const awayTeam = awayTeamData.team;
+  return {
+    id: event.id,
+    sport: sportKey,
+    status: event.status?.type?.description ?? "Scheduled",
+    statusDetail: event.status?.type?.detail ?? "",
+    shortDetail: event.status?.type?.shortDetail ?? "",
+    state: event.status?.type?.state ?? "pre",
+    startTime: event.date,
+    venue: competition.venue?.fullName ?? "",
+    broadcast: competition.broadcasts?.[0]?.names?.[0] ?? "",
+    homeTeam: {
+      id: homeTeam.id,
+      name: homeTeam.displayName ?? homeTeam.name,
+      abbreviation: homeTeam.abbreviation,
+      logo: homeTeam.logo,
+      score: homeTeamData.score ?? "0",
+      record: homeTeamData.records?.[0]?.summary ?? "",
+    },
+    awayTeam: {
+      id: awayTeam.id,
+      name: awayTeam.displayName ?? awayTeam.name,
+      abbreviation: awayTeam.abbreviation,
+      logo: awayTeam.logo,
+      score: awayTeamData.score ?? "0",
+      record: awayTeamData.records?.[0]?.summary ?? "",
+    },
+    odds: parseOdds(competition),
+  };
+}
+
+async function fetchESPNGames(sportConfig) {
+  const today = formatDateParam(new Date());
+  const baseUrl = "https://site.api.espn.com/apis/site/v2/sports";
+
+  // Try with today's date first, then without date param (gets current/nearest games)
+  const urls = [
+    `${baseUrl}/${sportConfig.espn}/scoreboard?dates=${today}`,
+    `${baseUrl}/${sportConfig.espn}/scoreboard`,
+  ];
+
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const events = data.events ?? [];
+      if (events.length > 0) {
+        return {
+          games: events.map((e) => parseGame(e, sportConfig.key)).filter(Boolean),
+          date: today,
+          league: data.leagues?.[0]?.name ?? sportConfig.label,
+        };
+      }
+    } catch (err) {
+      console.warn(`ESPN fetch failed for ${url}:`, err.message);
+    }
+  }
+
+  // All attempts returned 0 games — not an error, just no games today
+  return { games: [], date: today, league: sportConfig.label };
+}
+
 export default function Home() {
   const [sport, setSport] = useState("nba");
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [leagueInfo, setLeagueInfo] = useState("");
   const [analyzing, setAnalyzing] = useState(null);
   const [analyses, setAnalyses] = useState({});
   const [selectedBets, setSelectedBets] = useState({});
+
+  const sportConfig = SPORTS.find((s) => s.key === sport);
 
   const fetchGames = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/games?sport=${sport}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to fetch games");
-      setGames(data.games ?? []);
+      const result = await fetchESPNGames(sportConfig);
+      setGames(result.games);
+      setLeagueInfo(result.league);
     } catch (err) {
+      console.error("Failed to load games:", err);
       setError(err.message);
       setGames([]);
     } finally {
       setLoading(false);
     }
-  }, [sport]);
+  }, [sportConfig]);
 
   useEffect(() => {
     fetchGames();
@@ -134,10 +235,8 @@ export default function Home() {
               padding: "8px 16px",
               borderRadius: 8,
               border: "1px solid",
-              borderColor:
-                sport === s.key ? "var(--accent)" : "var(--border)",
-              background:
-                sport === s.key ? "var(--accent)" : "var(--surface)",
+              borderColor: sport === s.key ? "var(--accent)" : "var(--border)",
+              background: sport === s.key ? "var(--accent)" : "var(--surface)",
               color: sport === s.key ? "#fff" : "var(--text-dim)",
               cursor: "pointer",
               fontWeight: 600,
@@ -153,13 +252,7 @@ export default function Home() {
 
       {/* Loading */}
       {loading && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: 60,
-            color: "var(--text-dim)",
-          }}
-        >
+        <div style={{ textAlign: "center", padding: 60, color: "var(--text-dim)" }}>
           <div
             style={{
               width: 32,
@@ -171,13 +264,13 @@ export default function Home() {
               margin: "0 auto 12px",
             }}
           />
-          Loading games...
+          Loading {sportConfig?.label} games from ESPN...
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       )}
 
       {/* Error */}
-      {error && (
+      {error && !loading && (
         <div
           style={{
             background: "rgba(239,68,68,0.1)",
@@ -188,7 +281,7 @@ export default function Home() {
             color: "var(--red)",
           }}
         >
-          {error}
+          Failed to load games: {error}
           <br />
           <button
             onClick={fetchGames}
@@ -219,13 +312,41 @@ export default function Home() {
             border: "1px solid var(--border)",
           }}
         >
+          <p style={{ fontSize: 40, marginBottom: 12 }}>&#127944;</p>
           <p style={{ fontSize: 18, marginBottom: 8 }}>
-            No games scheduled today for{" "}
-            {SPORTS.find((s) => s.key === sport)?.label}
+            No {sportConfig?.label} games scheduled today
           </p>
-          <p style={{ fontSize: 13 }}>
-            Check back later or try a different sport.
+          <p style={{ fontSize: 13, marginBottom: 16 }}>
+            This league may be in the off-season, or there are no games on today&apos;s schedule.
           </p>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+            {SPORTS.filter((s) => s.key !== sport).map((s) => (
+              <button
+                key={s.key}
+                onClick={() => setSport(s.key)}
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: 6,
+                  border: "1px solid var(--border)",
+                  background: "var(--surface2)",
+                  color: "var(--text-dim)",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+              >
+                Try {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Games Count */}
+      {!loading && games.length > 0 && (
+        <div style={{ marginBottom: 12, fontSize: 13, color: "var(--text-dim)" }}>
+          {games.length} game{games.length !== 1 ? "s" : ""} today
+          {leagueInfo ? ` — ${leagueInfo}` : ""}
         </div>
       )}
 
@@ -253,9 +374,14 @@ export default function Home() {
                 color: "var(--text-dim)",
               }}
             >
-              <span>
+              <span
+                style={{
+                  color: game.state === "in" ? "var(--red)" : "var(--text-dim)",
+                  fontWeight: game.state === "in" ? 700 : 400,
+                }}
+              >
                 {game.state === "in"
-                  ? "🔴 LIVE"
+                  ? `LIVE - ${game.shortDetail || game.statusDetail}`
                   : game.state === "post"
                     ? "Final"
                     : formatTime(game.startTime)}
@@ -280,6 +406,7 @@ export default function Home() {
                       src={game.awayTeam.logo}
                       alt=""
                       style={{ width: 36, height: 36 }}
+                      onError={(e) => { e.target.style.display = "none"; }}
                     />
                   )}
                   <div>
@@ -303,9 +430,7 @@ export default function Home() {
                 }}
               >
                 {game.state === "pre" ? (
-                  <span style={{ fontSize: 14, color: "var(--text-dim)" }}>
-                    VS
-                  </span>
+                  <span style={{ fontSize: 14, color: "var(--text-dim)" }}>VS</span>
                 ) : (
                   <span>
                     {game.awayTeam.score} - {game.homeTeam.score}
@@ -336,6 +461,7 @@ export default function Home() {
                       src={game.homeTeam.logo}
                       alt=""
                       style={{ width: 36, height: 36 }}
+                      onError={(e) => { e.target.style.display = "none"; }}
                     />
                   )}
                 </div>
@@ -356,46 +482,50 @@ export default function Home() {
                 }}
               >
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ color: "var(--text-dim)", fontSize: 10 }}>
-                    SPREAD
-                  </div>
+                  <div style={{ color: "var(--text-dim)", fontSize: 10 }}>SPREAD</div>
                   <div style={{ fontWeight: 600 }}>
                     {game.odds.spread?.home != null
-                      ? (game.odds.spread.home > 0 ? "+" : "") +
-                        game.odds.spread.home
+                      ? (game.odds.spread.home > 0 ? "+" : "") + game.odds.spread.home
                       : "N/A"}
                   </div>
                 </div>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ color: "var(--text-dim)", fontSize: 10 }}>
-                    ML HOME
-                  </div>
+                  <div style={{ color: "var(--text-dim)", fontSize: 10 }}>ML HOME</div>
                   <div style={{ fontWeight: 600 }}>
                     {game.odds.moneyline?.home != null
-                      ? (game.odds.moneyline.home > 0 ? "+" : "") +
-                        game.odds.moneyline.home
+                      ? (game.odds.moneyline.home > 0 ? "+" : "") + game.odds.moneyline.home
                       : "N/A"}
                   </div>
                 </div>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ color: "var(--text-dim)", fontSize: 10 }}>
-                    ML AWAY
-                  </div>
+                  <div style={{ color: "var(--text-dim)", fontSize: 10 }}>ML AWAY</div>
                   <div style={{ fontWeight: 600 }}>
                     {game.odds.moneyline?.away != null
-                      ? (game.odds.moneyline.away > 0 ? "+" : "") +
-                        game.odds.moneyline.away
+                      ? (game.odds.moneyline.away > 0 ? "+" : "") + game.odds.moneyline.away
                       : "N/A"}
                   </div>
                 </div>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ color: "var(--text-dim)", fontSize: 10 }}>
-                    O/U
-                  </div>
-                  <div style={{ fontWeight: 600 }}>
-                    {game.odds.overUnder ?? "N/A"}
-                  </div>
+                  <div style={{ color: "var(--text-dim)", fontSize: 10 }}>O/U</div>
+                  <div style={{ fontWeight: 600 }}>{game.odds.overUnder ?? "N/A"}</div>
                 </div>
+              </div>
+            )}
+
+            {/* No Odds Notice */}
+            {!game.odds && game.state === "pre" && (
+              <div
+                style={{
+                  background: "var(--surface2)",
+                  borderRadius: 8,
+                  padding: "8px 12px",
+                  marginBottom: 12,
+                  fontSize: 12,
+                  color: "var(--text-dim)",
+                  textAlign: "center",
+                }}
+              >
+                Odds not yet available for this game
               </div>
             )}
 
@@ -404,10 +534,7 @@ export default function Home() {
               <select
                 value={selectedBets[game.id] || "Spread"}
                 onChange={(e) =>
-                  setSelectedBets((prev) => ({
-                    ...prev,
-                    [game.id]: e.target.value,
-                  }))
+                  setSelectedBets((prev) => ({ ...prev, [game.id]: e.target.value }))
                 }
                 style={{
                   flex: 1,
@@ -430,15 +557,11 @@ export default function Home() {
                 disabled={analyzing === game.id}
                 style={{
                   padding: "8px 20px",
-                  background:
-                    analyzing === game.id
-                      ? "var(--border)"
-                      : "var(--accent)",
+                  background: analyzing === game.id ? "var(--border)" : "var(--accent)",
                   color: "#fff",
                   border: "none",
                   borderRadius: 8,
-                  cursor:
-                    analyzing === game.id ? "not-allowed" : "pointer",
+                  cursor: analyzing === game.id ? "not-allowed" : "pointer",
                   fontWeight: 600,
                   fontSize: 13,
                   whiteSpace: "nowrap",
@@ -474,38 +597,26 @@ export default function Home() {
                       }}
                     >
                       <div>
-                        <div
-                          style={{ fontSize: 11, color: "var(--text-dim)" }}
-                        >
-                          EDGE RATING
-                        </div>
+                        <div style={{ fontSize: 11, color: "var(--text-dim)" }}>EDGE RATING</div>
                         <div style={{ fontSize: 24, fontWeight: 700 }}>
                           {analyses[game.id].edgeRating ?? "?"}/10
                         </div>
                       </div>
                       <div style={{ textAlign: "center" }}>
-                        <div
-                          style={{ fontSize: 11, color: "var(--text-dim)" }}
-                        >
-                          CONFIDENCE
-                        </div>
+                        <div style={{ fontSize: 11, color: "var(--text-dim)" }}>CONFIDENCE</div>
                         <div style={{ fontSize: 16, fontWeight: 600 }}>
                           {analyses[game.id].confidence ?? "N/A"}
                         </div>
                       </div>
                       <div style={{ textAlign: "right" }}>
-                        <div
-                          style={{ fontSize: 11, color: "var(--text-dim)" }}
-                        >
+                        <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
                           RECOMMENDATION
                         </div>
                         <div
                           style={{
                             fontSize: 16,
                             fontWeight: 700,
-                            color: getRecColor(
-                              analyses[game.id].recommendation
-                            ),
+                            color: getRecColor(analyses[game.id].recommendation),
                           }}
                         >
                           {analyses[game.id].recommendation ?? "N/A"}

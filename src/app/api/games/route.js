@@ -1,20 +1,16 @@
 import { NextResponse } from "next/server";
 
+// Server-side fallback proxy for ESPN API
+// Primary fetching happens client-side (browser) to avoid datacenter IP blocks
+// This route exists as a CORS fallback if direct browser fetch fails
+
 const SPORT_CONFIG = {
   nfl: { sport: "football", league: "nfl", name: "NFL" },
   nba: { sport: "basketball", league: "nba", name: "NBA" },
   mlb: { sport: "baseball", league: "mlb", name: "MLB" },
   nhl: { sport: "hockey", league: "nhl", name: "NHL" },
-  ncaaf: {
-    sport: "football",
-    league: "college-football",
-    name: "NCAAF",
-  },
-  ncaab: {
-    sport: "basketball",
-    league: "mens-college-basketball",
-    name: "NCAAB",
-  },
+  ncaaf: { sport: "football", league: "college-football", name: "NCAAF" },
+  ncaab: { sport: "basketball", league: "mens-college-basketball", name: "NCAAB" },
   mls: { sport: "soccer", league: "usa.1", name: "MLS" },
 };
 
@@ -25,74 +21,11 @@ function formatDate(date) {
   return `${y}${m}${d}`;
 }
 
-function parseOdds(competition) {
-  const odds = competition.odds?.[0];
-  if (!odds) return null;
-
-  return {
-    spread: {
-      home: odds.homeTeamOdds?.spread ?? odds.spread ?? null,
-      away: odds.awayTeamOdds?.spread ?? (odds.spread ? -odds.spread : null),
-      homeOdds: odds.homeTeamOdds?.spreadOdds ?? null,
-      awayOdds: odds.awayTeamOdds?.spreadOdds ?? null,
-    },
-    moneyline: {
-      home: odds.homeTeamOdds?.moneyLine ?? null,
-      away: odds.awayTeamOdds?.moneyLine ?? null,
-    },
-    overUnder: odds.overUnder ?? null,
-    overOdds: odds.overOdds ?? null,
-    underOdds: odds.underOdds ?? null,
-    provider: odds.provider?.name ?? "ESPN",
-  };
-}
-
-function parseGame(event, sportKey) {
-  const competition = event.competitions?.[0];
-  if (!competition) return null;
-
-  const homeTeamData = competition.competitors?.find((c) => c.homeAway === "home");
-  const awayTeamData = competition.competitors?.find((c) => c.homeAway === "away");
-
-  if (!homeTeamData || !awayTeamData) return null;
-
-  const homeTeam = homeTeamData.team;
-  const awayTeam = awayTeamData.team;
-
-  return {
-    id: event.id,
-    sport: sportKey,
-    status: event.status?.type?.description ?? "Scheduled",
-    statusDetail: event.status?.type?.detail ?? "",
-    shortDetail: event.status?.type?.shortDetail ?? "",
-    state: event.status?.type?.state ?? "pre",
-    startTime: event.date,
-    venue: competition.venue?.fullName ?? "",
-    broadcast: competition.broadcasts?.[0]?.names?.[0] ?? "",
-    homeTeam: {
-      id: homeTeam.id,
-      name: homeTeam.displayName ?? homeTeam.name,
-      abbreviation: homeTeam.abbreviation,
-      logo: homeTeam.logo,
-      score: homeTeamData.score ?? "0",
-      record: homeTeamData.records?.[0]?.summary ?? "",
-    },
-    awayTeam: {
-      id: awayTeam.id,
-      name: awayTeam.displayName ?? awayTeam.name,
-      abbreviation: awayTeam.abbreviation,
-      logo: awayTeam.logo,
-      score: awayTeamData.score ?? "0",
-      record: awayTeamData.records?.[0]?.summary ?? "",
-    },
-    odds: parseOdds(competition),
-  };
-}
+export const dynamic = "force-dynamic";
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const sportKey = (searchParams.get("sport") ?? "nba").toLowerCase();
-  const dateParam = searchParams.get("date");
 
   const config = SPORT_CONFIG[sportKey];
   if (!config) {
@@ -102,35 +35,49 @@ export async function GET(request) {
     );
   }
 
-  const today = dateParam ?? formatDate(new Date());
-  const url = `https://site.api.espn.com/apis/site/v2/sports/${config.sport}/${config.league}/scoreboard?dates=${today}`;
+  const today = formatDate(new Date());
+  const urls = [
+    `https://site.api.espn.com/apis/site/v2/sports/${config.sport}/${config.league}/scoreboard?dates=${today}`,
+    `https://site.api.espn.com/apis/site/v2/sports/${config.sport}/${config.league}/scoreboard`,
+  ];
 
-  try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": "EdgeCheck/1.0" },
-      next: { revalidate: 60 },
-    });
+  for (const url of urls) {
+    try {
+      console.log(`[EdgeCheck] Fetching: ${url}`);
+      const res = await fetch(url, {
+        headers: {
+          "Accept": "application/json",
+        },
+        signal: AbortSignal.timeout(8000),
+      });
 
-    if (!res.ok) {
-      throw new Error(`ESPN API returned ${res.status}`);
+      if (!res.ok) {
+        console.warn(`[EdgeCheck] ESPN returned ${res.status} for ${url}`);
+        continue;
+      }
+
+      const data = await res.json();
+      console.log(`[EdgeCheck] Got ${data.events?.length ?? 0} events from ${url}`);
+
+      // Pass through the raw ESPN response so client can parse it
+      return NextResponse.json(data, {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+        },
+      });
+    } catch (err) {
+      console.error(`[EdgeCheck] Fetch error for ${url}:`, err.message);
     }
-
-    const data = await res.json();
-    const events = data.events ?? [];
-    const games = events.map((e) => parseGame(e, sportKey)).filter(Boolean);
-
-    return NextResponse.json({
-      sport: sportKey,
-      sportName: config.name,
-      date: today,
-      count: games.length,
-      games,
-    });
-  } catch (err) {
-    console.error("ESPN API error:", err.message);
-    return NextResponse.json(
-      { error: "Failed to fetch games from ESPN", detail: err.message },
-      { status: 502 }
-    );
   }
+
+  // All ESPN fetches failed — return empty but valid response
+  console.error(`[EdgeCheck] All ESPN endpoints failed for ${sportKey}`);
+  return NextResponse.json(
+    { events: [], leagues: [{ name: config.name }] },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=30",
+      },
+    }
+  );
 }
