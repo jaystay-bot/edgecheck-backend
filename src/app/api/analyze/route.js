@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
+// Allow up to 60s for the Anthropic API call on Vercel serverless
+export const maxDuration = 60;
+
 export async function POST(request) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -28,7 +31,12 @@ export async function POST(request) {
   const prompt = buildPrompt(game, betType, betValue);
 
   try {
-    const client = new Anthropic({ apiKey });
+    const client = new Anthropic({
+      apiKey,
+      baseURL: "https://api.anthropic.com",
+      timeout: 55_000,
+      maxRetries: 2,
+    });
     const message = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 1024,
@@ -45,9 +53,16 @@ export async function POST(request) {
     return NextResponse.json({ analysis, raw: analysisText });
   } catch (err) {
     console.error("Claude API error:", err.message);
+    const isTimeout =
+      err.message?.includes("timeout") || err.message?.includes("ETIMEDOUT");
     return NextResponse.json(
-      { error: "Failed to generate analysis", detail: err.message },
-      { status: 502 }
+      {
+        error: isTimeout
+          ? "Analysis timed out — please try again"
+          : "Failed to generate analysis",
+        detail: err.message,
+      },
+      { status: isTimeout ? 504 : 502 }
     );
   }
 }
