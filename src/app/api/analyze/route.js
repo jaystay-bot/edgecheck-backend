@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 
-// Allow up to 60s for the Anthropic API call on Vercel serverless
-export const maxDuration = 60;
+export const runtime = "edge";
 
 export async function POST(request) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -31,21 +29,33 @@ export async function POST(request) {
   const prompt = buildPrompt(game, betType, betValue);
 
   try {
-    const client = new Anthropic({
-      apiKey,
-      baseURL: "https://api.anthropic.com",
-      timeout: 55_000,
-      maxRetries: 2,
-    });
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1024,
-      messages: [{ role: "user", content: prompt }],
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1024,
+        messages: [{ role: "user", content: prompt }],
+      }),
     });
 
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error("Anthropic API error:", res.status, errBody);
+      return NextResponse.json(
+        { error: "Failed to generate analysis", detail: errBody },
+        { status: 502 }
+      );
+    }
+
+    const data = await res.json();
     const analysisText =
-      message.content?.[0]?.type === "text"
-        ? message.content[0].text
+      data.content?.[0]?.type === "text"
+        ? data.content[0].text
         : "Unable to generate analysis.";
 
     const analysis = parseAnalysis(analysisText);
@@ -53,16 +63,9 @@ export async function POST(request) {
     return NextResponse.json({ analysis, raw: analysisText });
   } catch (err) {
     console.error("Claude API error:", err.message);
-    const isTimeout =
-      err.message?.includes("timeout") || err.message?.includes("ETIMEDOUT");
     return NextResponse.json(
-      {
-        error: isTimeout
-          ? "Analysis timed out — please try again"
-          : "Failed to generate analysis",
-        detail: err.message,
-      },
-      { status: isTimeout ? 504 : 502 }
+      { error: "Failed to generate analysis", detail: err.message },
+      { status: 502 }
     );
   }
 }
