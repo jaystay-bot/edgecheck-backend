@@ -27,7 +27,7 @@ export default function LandingPage() {
             lineHeight: 1.5,
           }}
         >
-          AI-Powered Sports Betting Edge Analyzer
+          Know What You&apos;re Betting
         </p>
         <p
           style={{
@@ -37,8 +37,18 @@ export default function LandingPage() {
             lineHeight: 1.6,
           }}
         >
-          Real-time odds from multiple sportsbooks. Instant AI analysis on every
-          bet. Find your edge before the line moves.
+          Check any bet in seconds. See the risk, the strength, and whether
+          it&apos;s worth playing — or worth skipping.
+        </p>
+        <p
+          style={{
+            fontSize: 13,
+            color: "var(--text-dim)",
+            marginBottom: 32,
+            fontStyle: "italic",
+          }}
+        >
+          Most bets aren&apos;t good bets. This helps you avoid them.
         </p>
 
         <a
@@ -55,7 +65,7 @@ export default function LandingPage() {
             transition: "background 0.15s",
           }}
         >
-          Get Access
+          Check a Bet
         </a>
 
         <div
@@ -68,9 +78,9 @@ export default function LandingPage() {
           }}
         >
           {[
-            { label: "Live Odds", desc: "NFL, NBA, MLB, NHL & more" },
-            { label: "AI Analysis", desc: "Instant edge detection" },
-            { label: "Multi-Book", desc: "Compare across sportsbooks" },
+            { label: "Live Odds", desc: "Always see the current number before you bet" },
+            { label: "Bet Breakdown", desc: "Edge rating, confidence, and risk in seconds" },
+            { label: "Clear Decision", desc: "Know what's worth playing — and what to avoid" },
           ].map((item) => (
             <div key={item.label} style={{ minWidth: 120 }}>
               <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
