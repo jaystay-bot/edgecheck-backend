@@ -30,9 +30,8 @@ export async function POST(request) {
     // Look up memberships for this email
     const url = new URL("https://api.whop.com/api/v2/memberships");
     url.searchParams.set("product_id", productId);
-    url.searchParams.set("status", "active");
     url.searchParams.set("email", email);
-    url.searchParams.set("per", "5");
+    url.searchParams.set("per", "50");
 
     console.log("[EdgeCheck] Checking membership for:", email);
     console.log("[EdgeCheck] API URL:", url.toString());
@@ -53,11 +52,14 @@ export async function POST(request) {
     }
 
     const data = await res.json();
+    console.log("[EdgeCheck] Raw Whop API response:", JSON.stringify(data));
+
     const memberships = data.data ?? data;
 
     console.log("[EdgeCheck] Memberships found:", Array.isArray(memberships) ? memberships.length : 0);
 
-    const hasActive = Array.isArray(memberships) && memberships.length > 0;
+    const validStatuses = ["active", "trialing", "completed"];
+    const hasActive = Array.isArray(memberships) && memberships.some(m => validStatuses.includes(m.status));
 
     if (!hasActive) {
       return NextResponse.json({ success: false, error: "No active membership found for this email" });
