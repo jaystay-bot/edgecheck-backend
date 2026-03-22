@@ -33,7 +33,7 @@ export async function GET(request) {
   }
 
   try {
-    const url = `https://api.the-odds-api.com/v4/sports/${oddsSport}/odds/?apiKey=${apiKey}&regions=us&markets=h2h`;
+    const url = `https://api.the-odds-api.com/v4/sports/${oddsSport}/odds/?apiKey=${apiKey}&regions=us&markets=h2h&oddsFormat=american`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
 
     if (!res.ok) {
