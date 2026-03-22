@@ -1,8 +1,12 @@
+import { cookies } from "next/headers";
 import "./globals.css";
 
 const WHOP_URL = "https://whop.com/checkout/plan_nQHnE1nsW602p";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const cookieStore = await cookies();
+  const hasAccess = cookieStore.has("whop_access");
+  const ctaHref = hasAccess ? "/dashboard" : WHOP_URL;
   return (
     <div
       style={{
@@ -52,7 +56,7 @@ export default function LandingPage() {
         </p>
 
         <a
-          href={WHOP_URL}
+          href={ctaHref}
           style={{
             display: "inline-block",
             padding: "14px 40px",
