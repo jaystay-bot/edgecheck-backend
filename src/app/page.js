@@ -292,6 +292,12 @@ export default function Home() {
     }
   };
 
+  const getRecDisplay = (rec) => {
+    if (rec === "Lean") return "Slight Edge";
+    if (rec === "Avoid") return "No Edge";
+    return rec;
+  };
+
   const getRecColor = (rec) => {
     if (!rec) return "var(--text-dim)";
     if (rec === "Strong Bet") return "var(--green)";
@@ -299,6 +305,32 @@ export default function Home() {
     if (rec === "Avoid") return "var(--orange)";
     if (rec === "Fade") return "var(--red)";
     return "var(--text-dim)";
+  };
+
+  const getDecisionSummary = (rec) => {
+    if (rec === "Lean") return { text: "Slight edge detected \u2014 not a strong position", color: "var(--text-dim)" };
+    if (rec === "Avoid") return { text: "No betting edge \u2014 pass on this", color: "var(--orange)" };
+    if (rec === "Strong Bet") return { text: "Strong edge identified \u2014 high-value position", color: "var(--green)" };
+    if (rec === "Fade") return { text: "Negative edge \u2014 consider the opposite side", color: "var(--red)" };
+    return null;
+  };
+
+  const parseFullText = (text) => {
+    if (!text) return { sections: [] };
+    const sections = [];
+    // Extract named sections from the raw text
+    const sectionPatterns = [
+      { pattern: /KEY FACTORS:\s*\n([\s\S]*?)(?=\n\s*(?:ANALYSIS|RISK FACTORS|$))/i, label: "Why This Matters" },
+      { pattern: /ANALYSIS:\s*\n([\s\S]*?)(?=\n\s*(?:RISK FACTORS|$))/i, label: "Analysis" },
+      { pattern: /RISK FACTORS:\s*\n([\s\S]*?)$/i, label: "What Could Go Wrong" },
+    ];
+    for (const { pattern, label } of sectionPatterns) {
+      const match = text.match(pattern);
+      if (match?.[1]?.trim()) {
+        sections.push({ label, content: match[1].trim() });
+      }
+    }
+    return { sections };
   };
 
   return (
@@ -690,11 +722,12 @@ export default function Home() {
                   </div>
                 ) : (
                   <>
+                    {/* Metrics Row */}
                     <div
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
-                        marginBottom: 12,
+                        marginBottom: 4,
                       }}
                     >
                       <div>
@@ -720,20 +753,54 @@ export default function Home() {
                             color: getRecColor(analyses[game.id].recommendation),
                           }}
                         >
-                          {analyses[game.id].recommendation ?? "N/A"}
+                          {getRecDisplay(analyses[game.id].recommendation) ?? "N/A"}
                         </div>
                       </div>
                     </div>
-                    <div
-                      style={{
-                        fontSize: 13,
-                        lineHeight: 1.6,
-                        whiteSpace: "pre-wrap",
-                        color: "var(--text)",
-                      }}
-                    >
-                      {analyses[game.id].fullText}
-                    </div>
+
+                    {/* Decision Summary */}
+                    {(() => {
+                      const summary = getDecisionSummary(analyses[game.id].recommendation);
+                      if (!summary) return null;
+                      return (
+                        <div style={{ fontSize: 12, fontWeight: 500, color: summary.color, marginBottom: 14 }}>
+                          {summary.text}
+                        </div>
+                      );
+                    })()}
+
+                    {/* Parsed Sections */}
+                    {(() => {
+                      const { sections } = parseFullText(analyses[game.id].fullText);
+                      if (!sections.length) {
+                        return (
+                          <div style={{ fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap", color: "var(--text)" }}>
+                            {analyses[game.id].fullText}
+                          </div>
+                        );
+                      }
+                      return sections.map((section, i) => (
+                        <div key={section.label} style={{ marginTop: i === 0 ? 0 : 14 }}>
+                          <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>
+                            {section.label}
+                          </div>
+                          <div style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text)", whiteSpace: "pre-wrap" }}>
+                            {section.label === "Analysis"
+                              ? (() => {
+                                  const firstDot = section.content.indexOf(".");
+                                  if (firstDot === -1) return section.content;
+                                  return (
+                                    <>
+                                      <span style={{ fontWeight: 600 }}>{section.content.slice(0, firstDot + 1)}</span>
+                                      {section.content.slice(firstDot + 1)}
+                                    </>
+                                  );
+                                })()
+                              : section.content}
+                          </div>
+                        </div>
+                      ));
+                    })()}
                   </>
                 )}
               </div>
