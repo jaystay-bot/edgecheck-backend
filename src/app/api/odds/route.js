@@ -66,10 +66,24 @@ function emptyResponse() {
   );
 }
 
+function getApiKeys() {
+  const keys = [];
+  // Support numbered keys: ODDS_API_KEY_1, ODDS_API_KEY_2, ...
+  for (let i = 1; i <= 10; i++) {
+    const key = process.env[`ODDS_API_KEY_${i}`];
+    if (key) keys.push(key);
+  }
+  // Fallback to single ODDS_API_KEY
+  if (!keys.length && process.env.ODDS_API_KEY) {
+    keys.push(process.env.ODDS_API_KEY);
+  }
+  return keys;
+}
+
 export async function GET(request) {
-  const apiKey = process.env.ODDS_API_KEY;
-  if (!apiKey) {
-    console.warn("[EdgeCheck] ODDS_API_KEY not configured");
+  const apiKeys = getApiKeys();
+  if (!apiKeys.length) {
+    console.warn("[EdgeCheck] No ODDS_API_KEY configured");
     return emptyResponse();
   }
 
@@ -93,41 +107,43 @@ export async function GET(request) {
     );
   }
 
-  try {
-    const url = `https://api.the-odds-api.com/v4/sports/${oddsSport}/odds/?apiKey=${apiKey}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  // Try each API key, rotating on 401/429
+  for (let i = 0; i < apiKeys.length; i++) {
+    try {
+      const url = `https://api.the-odds-api.com/v4/sports/${oddsSport}/odds/?apiKey=${apiKeys[i]}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
 
-    if (!res.ok) {
-      console.error(`[EdgeCheck] Odds API error ${res.status}`);
-      // Serve stale cache if available, otherwise empty
-      if (cached) {
-        return NextResponse.json(
-          { games: cached.data },
-          { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" } }
-        );
+      if (res.status === 401 || res.status === 429) {
+        console.warn(`[EdgeCheck] Key ${i + 1} returned ${res.status}, trying next`);
+        continue;
       }
-      return emptyResponse();
-    }
 
-    const data = await res.json();
-    const games = parseGames(data);
+      if (!res.ok) {
+        console.error(`[EdgeCheck] Odds API error ${res.status}`);
+        break; // Non-auth error, don't try other keys
+      }
 
-    // Update cache
-    cache[sportKey] = { data: games, timestamp: Date.now() };
+      const data = await res.json();
+      const games = parseGames(data);
 
-    return NextResponse.json(
-      { games },
-      { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } }
-    );
-  } catch (err) {
-    console.error("[EdgeCheck] Odds API fetch error:", err.message);
-    // Serve stale cache if available, otherwise empty
-    if (cached) {
+      cache[sportKey] = { data: games, timestamp: Date.now() };
+
       return NextResponse.json(
-        { games: cached.data },
-        { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" } }
+        { games },
+        { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=300" } }
       );
+    } catch (err) {
+      console.error(`[EdgeCheck] Key ${i + 1} fetch error:`, err.message);
+      continue;
     }
-    return emptyResponse();
   }
+
+  // All keys exhausted — serve stale cache or empty
+  if (cached) {
+    return NextResponse.json(
+      { games: cached.data },
+      { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" } }
+    );
+  }
+  return emptyResponse();
 }
