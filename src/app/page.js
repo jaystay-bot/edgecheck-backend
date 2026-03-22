@@ -7,7 +7,6 @@ export default async function LandingPage() {
   const cookieStore = await cookies();
   const hasAccess = cookieStore.has("whop_access");
   const ctaHref = hasAccess ? "/dashboard" : WHOP_URL;
-  const oauthUrl = `https://whop.com/oauth?client_id=${process.env.WHOP_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.WHOP_REDIRECT_URI)}&response_type=code`;
   return (
     <div
       style={{
@@ -76,7 +75,7 @@ export default async function LandingPage() {
         {!hasAccess && (
           <div style={{ marginTop: 16 }}>
             <a
-              href={oauthUrl}
+              href="/auth/login"
               style={{
                 fontSize: 13,
                 color: "var(--text-dim)",

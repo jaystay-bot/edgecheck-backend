@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 const PUBLIC_PATHS = [
   "/",
   "/auth/callback",
+  "/auth/login",
   "/favicon.ico",
 ];
 

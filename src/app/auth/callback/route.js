@@ -4,26 +4,25 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
 
-  // --- No ?code= param: redirect through Whop OAuth ---
-  // This handles post-checkout redirects and direct visits.
-  // Instead of trying to guess which user with a company API key,
-  // send them through OAuth so Whop identifies them and returns a code.
+  // --- No ?code= param: redirect through /auth/login (PKCE) ---
   if (!code) {
-    const clientId = process.env.WHOP_CLIENT_ID;
-    const redirectUri = process.env.WHOP_REDIRECT_URI;
-
-    if (!clientId || !redirectUri) {
-      console.error("[EdgeCheck] WHOP_CLIENT_ID or WHOP_REDIRECT_URI not set");
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-
-    const oauthUrl = `https://whop.com/oauth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code`;
-    console.log("[EdgeCheck] No code param, redirecting to Whop OAuth");
-    return NextResponse.redirect(oauthUrl);
+    console.log("[EdgeCheck] No code param, redirecting to /auth/login for PKCE flow");
+    return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
   // --- OAuth flow: ?code= present ---
   console.log("[EdgeCheck] Code received:", code);
+
+  // Retrieve PKCE code_verifier from cookie
+  const codeVerifier = request.cookies.get("pkce_verifier")?.value;
+  if (!codeVerifier) {
+    console.error("[EdgeCheck] No pkce_verifier cookie found");
+    return Response.json({
+      error: "Missing PKCE verifier — OAuth session may have expired",
+      step: "pkce_verifier_check",
+    }, { status: 400 });
+  }
+
   try {
     const tokenBody = {
       code,
@@ -31,6 +30,7 @@ export async function GET(request) {
       client_secret: process.env.WHOP_CLIENT_SECRET,
       redirect_uri: process.env.WHOP_REDIRECT_URI,
       grant_type: "authorization_code",
+      code_verifier: codeVerifier,
     };
     console.log("[EdgeCheck] Token request body:", JSON.stringify({ ...tokenBody, client_secret: "[REDACTED]" }));
 
@@ -139,6 +139,7 @@ export async function GET(request) {
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });
+    response.cookies.delete("pkce_verifier");
 
     console.log("[EdgeCheck] Auth successful, redirecting to /dashboard");
     return response;
