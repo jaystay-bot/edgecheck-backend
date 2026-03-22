@@ -341,7 +341,7 @@ export default function Home() {
           <span style={{ color: "var(--accent)" }}>Edge</span>Check
         </h1>
         <p style={{ color: "var(--text-dim)", fontSize: 14 }}>
-          AI-Powered Sports Betting Edge Analyzer
+          Sports Betting Edge Analyzer
         </p>
       </div>
 
@@ -817,7 +817,7 @@ export default function Home() {
           fontSize: 12,
         }}
       >
-        EdgeCheck — Data from ESPN. Analysis powered by Claude AI.
+        EdgeCheck — Data from ESPN. Independent matchup analysis.
         <br />
         For entertainment purposes only. Please bet responsibly.
       </div>
