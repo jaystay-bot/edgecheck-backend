@@ -564,44 +564,52 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Odds Row */}
+            {/* Odds Section */}
             {game.odds && (
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "space-around",
                   background: "var(--surface2)",
                   borderRadius: 8,
-                  padding: "8px 12px",
+                  padding: "10px 14px",
                   marginBottom: 12,
                   fontSize: 13,
                 }}
               >
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ color: "var(--text-dim)", fontSize: 10 }}>SPREAD</div>
-                  <div style={{ fontWeight: 600 }}>
-                    {game.odds.spread?.home != null
-                      ? (() => {
-                          const hs = game.odds.spread.home > 0 ? `+${game.odds.spread.home}` : `${game.odds.spread.home}`;
-                          const awaySpread = game.odds.spread.away ?? -game.odds.spread.home;
-                          const as = awaySpread > 0 ? `+${awaySpread}` : `${awaySpread}`;
-                          return `${game.homeTeam.abbreviation} ${hs} / ${game.awayTeam.abbreviation} ${as}`;
-                        })()
-                      : "N/A"}
-                  </div>
-                </div>
-                {game.odds.moneyline?.home != null && game.odds.moneyline?.away != null && (
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ color: "var(--text-dim)", fontSize: 10 }}>MONEYLINE</div>
-                    <div style={{ fontWeight: 600 }}>
-                      {game.homeTeam.abbreviation} {game.odds.moneyline.home > 0 ? "+" : ""}{game.odds.moneyline.home} / {game.awayTeam.abbreviation} {game.odds.moneyline.away > 0 ? "+" : ""}{game.odds.moneyline.away}
+                {/* Spread */}
+                {game.odds.spread?.home != null && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ color: "var(--text-dim)", fontSize: 10, textTransform: "uppercase", marginBottom: 4 }}>Spread</div>
+                    <div style={{ display: "flex", justifyContent: "center", gap: 8, fontWeight: 600 }}>
+                      <span>{game.homeTeam.abbreviation} {game.odds.spread.home > 0 ? "+" : ""}{game.odds.spread.home}</span>
+                      <span style={{ color: "var(--text-dim)" }}>|</span>
+                      <span>{game.awayTeam.abbreviation} {(() => { const v = game.odds.spread.away ?? -game.odds.spread.home; return (v > 0 ? "+" : "") + v; })()}</span>
                     </div>
                   </div>
                 )}
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ color: "var(--text-dim)", fontSize: 10 }}>O/U</div>
-                  <div style={{ fontWeight: 600 }}>{game.odds.overUnder ?? "N/A"}</div>
-                </div>
+
+                {/* Moneyline */}
+                {game.odds.moneyline?.home != null && game.odds.moneyline?.away != null && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ color: "var(--text-dim)", fontSize: 10, textTransform: "uppercase", marginBottom: 4 }}>Moneyline</div>
+                    <div style={{ display: "flex", justifyContent: "center", gap: 8, fontWeight: 600 }}>
+                      <span>{game.homeTeam.abbreviation} {game.odds.moneyline.home > 0 ? "+" : ""}{game.odds.moneyline.home}</span>
+                      <span style={{ color: "var(--text-dim)" }}>|</span>
+                      <span>{game.awayTeam.abbreviation} {game.odds.moneyline.away > 0 ? "+" : ""}{game.odds.moneyline.away}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Total */}
+                {game.odds.overUnder != null && (
+                  <div>
+                    <div style={{ color: "var(--text-dim)", fontSize: 10, textTransform: "uppercase", marginBottom: 4 }}>Total ({game.odds.overUnder})</div>
+                    <div style={{ display: "flex", justifyContent: "center", gap: 8, fontWeight: 600 }}>
+                      <span>Over {game.odds.overUnder}</span>
+                      <span style={{ color: "var(--text-dim)" }}>|</span>
+                      <span>Under {game.odds.overUnder}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
