@@ -113,6 +113,77 @@ function parseGame(event, sportKey) {
   };
 }
 
+function normalizeTeamName(name) {
+  return (name ?? "").toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function teamsMatch(espnName, oddsName) {
+  const a = normalizeTeamName(espnName);
+  const b = normalizeTeamName(oddsName);
+  if (a === b) return true;
+  // Check if one contains the other (e.g. "Trail Blazers" in "Portland Trail Blazers")
+  if (a.length > 3 && b.length > 3) {
+    if (a.includes(b) || b.includes(a)) return true;
+  }
+  // Check last word match (city name differences — "LA Lakers" vs "Los Angeles Lakers")
+  const aWords = a.match(/[a-z]+/g) ?? [];
+  const bWords = b.match(/[a-z]+/g) ?? [];
+  const aLast = aWords[aWords.length - 1];
+  const bLast = bWords[bWords.length - 1];
+  if (aLast && bLast && aLast === bLast && aLast.length > 3) return true;
+  return false;
+}
+
+async function fetchOddsAPI(sportKey) {
+  try {
+    const res = await fetch(`/api/odds?sport=${sportKey}`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.games ?? [];
+  } catch (err) {
+    console.warn("Odds API fetch failed:", err.message);
+    return [];
+  }
+}
+
+function mergeMoneylineOdds(games, oddsGames) {
+  if (!oddsGames.length) return games;
+
+  return games.map((game) => {
+    // Find matching odds game by team names
+    const match = oddsGames.find(
+      (og) =>
+        (teamsMatch(game.homeTeam.name, og.homeTeam) &&
+         teamsMatch(game.awayTeam.name, og.awayTeam)) ||
+        (teamsMatch(game.homeTeam.name, og.awayTeam) &&
+         teamsMatch(game.awayTeam.name, og.homeTeam))
+    );
+
+    if (!match) return game;
+
+    // Determine if teams are flipped
+    const flipped = teamsMatch(game.homeTeam.name, match.awayTeam);
+    const homeML = flipped ? match.moneyline.away : match.moneyline.home;
+    const awayML = flipped ? match.moneyline.home : match.moneyline.away;
+
+    // Only fill in moneyline if we don't already have it from ESPN
+    const currentML = game.odds?.moneyline;
+    if (currentML?.home != null && currentML?.away != null) return game;
+
+    return {
+      ...game,
+      odds: {
+        ...(game.odds ?? {}),
+        moneyline: {
+          home: homeML,
+          away: awayML,
+        },
+        mlProvider: match.bookmaker,
+      },
+    };
+  });
+}
+
 async function fetchESPNGames(sportConfig) {
   const today = formatDateParam(new Date());
   const baseUrl = "https://site.api.espn.com/apis/site/v2/sports";
@@ -161,8 +232,13 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchESPNGames(sportConfig);
-      setGames(result.games);
+      // Fetch ESPN games and Odds API moneyline in parallel
+      const [result, oddsGames] = await Promise.all([
+        fetchESPNGames(sportConfig),
+        fetchOddsAPI(sportConfig.key),
+      ]);
+      const merged = mergeMoneylineOdds(result.games, oddsGames);
+      setGames(merged);
       setLeagueInfo(result.league);
     } catch (err) {
       console.error("Failed to load games:", err);
