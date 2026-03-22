@@ -32,34 +32,52 @@ export async function middleware(request) {
 
   // Verify membership with Whop
   try {
+    // Try user-scoped token first (OAuth flow)
     const res = await fetch("https://api.whop.com/api/v2/me/memberships", {
       headers: { Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(5000),
     });
 
-    if (!res.ok) {
-      // Token invalid or expired — clear cookie and redirect
-      const response = NextResponse.redirect(new URL("/", request.url));
-      response.cookies.delete("whop_access");
-      return response;
+    if (res.ok) {
+      const data = await res.json();
+      const memberships = data.data ?? data;
+
+      const hasAccess = Array.isArray(memberships) && memberships.some(
+        (m) =>
+          m.product_id === process.env.WHOP_PRODUCT_ID &&
+          m.status === "active"
+      );
+
+      if (hasAccess) return NextResponse.next();
     }
 
-    const data = await res.json();
-    const memberships = data.data ?? data;
+    // Fallback: cookie may hold a membership ID (post-checkout flow).
+    // Verify it using the server-side API key.
+    const apiKey = process.env.WHOP_API_KEY;
+    if (apiKey && token.startsWith("mem_")) {
+      const memberRes = await fetch(
+        `https://api.whop.com/api/v2/memberships/${token}`,
+        {
+          headers: { Authorization: `Bearer ${apiKey}` },
+          signal: AbortSignal.timeout(5000),
+        }
+      );
 
-    const hasAccess = Array.isArray(memberships) && memberships.some(
-      (m) =>
-        m.product_id === process.env.WHOP_PRODUCT_ID &&
-        m.status === "active"
-    );
-
-    if (!hasAccess) {
-      const response = NextResponse.redirect(new URL("/", request.url));
-      response.cookies.delete("whop_access");
-      return response;
+      if (memberRes.ok) {
+        const membership = await memberRes.json();
+        if (
+          membership.product_id === process.env.WHOP_PRODUCT_ID &&
+          membership.status === "active"
+        ) {
+          return NextResponse.next();
+        }
+      }
     }
 
-    return NextResponse.next();
+    // Neither method verified access — clear cookie
+    const response = NextResponse.redirect(new URL("/", request.url));
+    response.cookies.delete("whop_access");
+    return response;
   } catch (err) {
     console.error("[EdgeCheck] Middleware auth check failed:", err.message);
     // On network error, allow through (don't lock out users if Whop is down)
