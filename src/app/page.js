@@ -1,12 +1,20 @@
+import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import "./globals.css";
 
-const WHOP_URL = "https://whop.com/checkout/plan_nQHnE1nsW602p";
-
 export default async function LandingPage() {
+  const { userId } = await auth();
   const cookieStore = await cookies();
-  const hasAccess = cookieStore.has("whop_access");
-  const ctaHref = hasAccess ? "/dashboard" : WHOP_URL;
+  const hasWhopAccess = cookieStore.has("whop_access");
+
+  // If signed in with Whop access, go to dashboard
+  // If signed in without Whop access, go to Whop check
+  // If not signed in, go to sign-up
+  const ctaHref = userId
+    ? hasWhopAccess
+      ? "/dashboard"
+      : "/api/auth/check-whop"
+    : "/sign-up";
   return (
     <div
       style={{
@@ -72,10 +80,10 @@ export default async function LandingPage() {
           Check a Bet
         </a>
 
-        {!hasAccess && (
+        {!userId && (
           <div style={{ marginTop: 16 }}>
             <a
-              href="/auth/login"
+              href="/sign-in"
               style={{
                 fontSize: 13,
                 color: "var(--text-dim)",

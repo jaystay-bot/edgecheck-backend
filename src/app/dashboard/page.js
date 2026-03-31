@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { UserButton } from "@clerk/nextjs";
 import "../globals.css";
 
 const SPORTS = [
@@ -351,13 +352,19 @@ export default function Home() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px" }}>
       {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>
-          <span style={{ color: "var(--accent)" }}>Edge</span>Check
-        </h1>
-        <p style={{ color: "var(--text-dim)", fontSize: 14 }}>
-          Sports Betting Edge Analyzer
-        </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+        <div style={{ flex: 1 }} />
+        <div style={{ textAlign: "center" }}>
+          <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>
+            <span style={{ color: "var(--accent)" }}>Edge</span>Check
+          </h1>
+          <p style={{ color: "var(--text-dim)", fontSize: 14 }}>
+            Sports Betting Edge Analyzer
+          </p>
+        </div>
+        <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
+          <UserButton afterSignOutUrl="/" />
+        </div>
       </div>
 
       {/* Sport Tabs */}
