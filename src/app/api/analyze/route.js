@@ -1,6 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import Groq from "groq-sdk";
 
 // Standard Node.js serverless runtime (not edge) — 60s max on Vercel
 export const maxDuration = 60;
@@ -10,6 +11,13 @@ function getStripe() {
     return null;
   }
   return new Stripe(process.env.STRIPE_SECRET_KEY);
+}
+
+function getGroq() {
+  if (!process.env.GROQ_API_KEY) {
+    return null;
+  }
+  return new Groq({ apiKey: process.env.GROQ_API_KEY });
 }
 
 // --- Rate limiting: 20 requests per 10 minutes per IP ---
@@ -132,17 +140,14 @@ export async function POST(request) {
     );
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    console.error("[EdgeCheck] ANTHROPIC_API_KEY not configured");
+  const groq = getGroq();
+  if (!groq) {
+    console.error("[EdgeCheck] GROQ_API_KEY not configured");
     return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY not configured" },
+      { error: "GROQ_API_KEY not configured" },
       { status: 500 }
     );
   }
-
-  // Log API key prefix for debugging (safe - only shows first 10 chars)
-  console.log("[EdgeCheck] Using Anthropic API key:", apiKey.substring(0, 10) + "...");
 
   let body;
   try {
@@ -161,75 +166,44 @@ export async function POST(request) {
 
   const prompt = buildPrompt(game, betType, betValue);
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 9000);
-
-  const requestBody = {
-    model: "claude-3-5-sonnet-latest",
-    max_tokens: 1024,
-    messages: [{ role: "user", content: prompt }],
-  };
-
-  console.log("[EdgeCheck] Sending request to Anthropic API with model:", requestBody.model);
+  console.log("[EdgeCheck] Sending request to Groq API with model: llama-3.3-70b-versatile");
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal,
+    const chatCompletion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      max_tokens: 1024,
+      messages: [{ role: "user", content: prompt }],
     });
 
-    clearTimeout(timeout);
+    const analysisText = chatCompletion.choices?.[0]?.message?.content;
 
-    if (!res.ok) {
-      const errBody = await res.text();
-      console.error("[EdgeCheck] Anthropic API error:", res.status);
-      console.error("[EdgeCheck] Error body:", errBody);
-
-      // Parse error for better user message
-      let userMessage = "Failed to generate analysis";
-      try {
-        const errJson = JSON.parse(errBody);
-        if (errJson.error?.message) {
-          userMessage = errJson.error.message;
-        }
-      } catch {
-        // Keep default message
-      }
-
+    if (!analysisText) {
+      console.error("[EdgeCheck] Groq returned empty response:", JSON.stringify(chatCompletion));
       return NextResponse.json(
-        { error: userMessage, detail: errBody },
+        { error: "AI returned empty response", detail: JSON.stringify(chatCompletion) },
         { status: 502 }
       );
     }
 
-    const data = await res.json();
-    const analysisText =
-      data.content?.[0]?.type === "text"
-        ? data.content[0].text
-        : "Unable to generate analysis.";
+    console.log("[EdgeCheck] Groq response received, length:", analysisText.length);
 
     const analysis = parseAnalysis(analysisText);
 
     return NextResponse.json({ analysis, raw: analysisText });
   } catch (err) {
-    clearTimeout(timeout);
-    console.error("Claude API error:", err.name, err.message);
+    console.error("[EdgeCheck] Groq API error:", err.name, err.message);
+    console.error("[EdgeCheck] Full error:", JSON.stringify(err, Object.getOwnPropertyNames(err)));
 
-    if (err.name === "AbortError") {
-      return NextResponse.json(
-        { error: "Analysis timed out — please try again" },
-        { status: 504 }
-      );
+    // Extract the actual error message
+    let errorMessage = err.message || "Failed to generate analysis";
+
+    // Check for specific Groq error types
+    if (err.status) {
+      errorMessage = `Groq API error (${err.status}): ${err.message}`;
     }
 
     return NextResponse.json(
-      { error: "Failed to generate analysis", detail: err.message },
+      { error: errorMessage, detail: err.message },
       { status: 502 }
     );
   }

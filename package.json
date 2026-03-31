@@ -10,6 +10,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
     "@clerk/nextjs": "^5.7.5",
+    "groq-sdk": "^1.1.2",
     "next": "^14.2.21",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
