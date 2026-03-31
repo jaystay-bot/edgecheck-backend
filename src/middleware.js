@@ -59,15 +59,7 @@ export default async function middleware(request) {
       return NextResponse.redirect(signInUrl);
     }
 
-    // For protected routes, check Whop membership cookie
-    if (path === "/dashboard") {
-      const whopAccess = req.cookies.get("whop_access")?.value;
-      if (!whopAccess) {
-        // Redirect to Whop check (which also verifies email)
-        return NextResponse.redirect(new URL("/api/auth/check-whop", req.url));
-      }
-    }
-
+    // Dashboard page handles its own Whop verification
     return NextResponse.next();
   })(request);
 }
