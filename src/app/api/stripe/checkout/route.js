@@ -2,8 +2,14 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const PRICE_ID = "price_1THBHxJFbqI9Cax5qJmyvlKe";
+
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error("STRIPE_SECRET_KEY not configured");
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY);
+}
 
 export async function POST(request) {
   // Verify user is authenticated
@@ -20,6 +26,8 @@ export async function POST(request) {
   }
 
   try {
+    const stripe = getStripe();
+
     // Check if customer already exists
     const existingCustomers = await stripe.customers.list({ email, limit: 1 });
     let customerId;

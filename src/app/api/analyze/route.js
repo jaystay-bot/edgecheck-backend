@@ -5,8 +5,12 @@ import Stripe from "stripe";
 // Standard Node.js serverless runtime (not edge) — 60s max on Vercel
 export const maxDuration = 60;
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const PRICE_ID = "price_1THBHxJFbqI9Cax5qJmyvlKe";
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return null;
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY);
+}
 
 // --- Rate limiting: 20 requests per 10 minutes per IP ---
 const rateMap = new Map();
@@ -42,7 +46,8 @@ setInterval(() => {
 }, RATE_WINDOW);
 
 async function hasActiveSubscription(email) {
-  if (!process.env.STRIPE_SECRET_KEY) {
+  const stripe = getStripe();
+  if (!stripe) {
     console.error("[EdgeCheck] Missing STRIPE_SECRET_KEY");
     return false;
   }

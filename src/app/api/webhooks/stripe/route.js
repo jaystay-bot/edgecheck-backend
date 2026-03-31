@@ -1,17 +1,23 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return null;
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY);
+}
 
 export async function POST(request) {
   const body = await request.text();
   const signature = request.headers.get("stripe-signature");
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const stripe = getStripe();
 
   let event;
 
   try {
-    if (webhookSecret) {
+    if (webhookSecret && stripe) {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } else {
       // For development without webhook secret
