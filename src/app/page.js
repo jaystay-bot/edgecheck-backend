@@ -1,9 +1,16 @@
-import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import "./globals.css";
 
 export default async function LandingPage() {
-  const { userId } = await auth();
+  let userId = null;
+
+  // Only call auth() if Clerk is configured
+  if (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
+    const { auth } = await import("@clerk/nextjs/server");
+    const authResult = await auth();
+    userId = authResult.userId;
+  }
+
   const cookieStore = await cookies();
   const hasWhopAccess = cookieStore.has("whop_access");
 

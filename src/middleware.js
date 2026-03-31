@@ -1,39 +1,79 @@
 import { NextResponse } from "next/server";
 
-const PUBLIC_PATHS = [
+const PUBLIC_ROUTES = [
   "/",
-  "/auth/login",
-  "/favicon.ico",
+  "/sign-in",
+  "/sign-up",
+  "/verify-email",
+  "/api/webhooks",
+  "/api/auth/check-whop",
 ];
 
-const PUBLIC_PREFIXES = [
-  "/_next/",
-  "/api/auth/",
-];
-
-function isPublic(pathname) {
-  if (PUBLIC_PATHS.includes(pathname)) return true;
-  return PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+function isPublicRoute(pathname) {
+  return PUBLIC_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
 }
 
-export async function middleware(request) {
+export default async function middleware(request) {
   const { pathname } = request.nextUrl;
 
-  if (isPublic(pathname)) {
-    return NextResponse.next();
-  }
-
-  const token = request.cookies.get("whop_access")?.value;
-
-  if (!token) {
+  // If Clerk is not configured, only allow public routes
+  if (!process.env.CLERK_SECRET_KEY) {
+    if (isPublicRoute(pathname)) {
+      return NextResponse.next();
+    }
+    // Redirect to home if trying to access protected route without Clerk
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  return NextResponse.next();
+  // Clerk is configured — use Clerk middleware
+  const { clerkMiddleware, createRouteMatcher } = await import(
+    "@clerk/nextjs/server"
+  );
+
+  const isPublicClerkRoute = createRouteMatcher([
+    "/",
+    "/sign-in(.*)",
+    "/sign-up(.*)",
+    "/verify-email",
+    "/api/webhooks(.*)",
+    "/api/auth/check-whop",
+  ]);
+
+  return clerkMiddleware(async (auth, req) => {
+    const { pathname: path } = req.nextUrl;
+
+    // Allow public routes
+    if (isPublicClerkRoute(req)) {
+      return NextResponse.next();
+    }
+
+    // Get auth state
+    const { userId } = await auth();
+
+    // Not signed in → redirect to sign-in
+    if (!userId) {
+      const signInUrl = new URL("/sign-in", req.url);
+      signInUrl.searchParams.set("redirect_url", path);
+      return NextResponse.redirect(signInUrl);
+    }
+
+    // For protected routes, check Whop membership cookie
+    if (path === "/dashboard") {
+      const whopAccess = req.cookies.get("whop_access")?.value;
+      if (!whopAccess) {
+        // Redirect to Whop check (which also verifies email)
+        return NextResponse.redirect(new URL("/api/auth/check-whop", req.url));
+      }
+    }
+
+    return NextResponse.next();
+  })(request);
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

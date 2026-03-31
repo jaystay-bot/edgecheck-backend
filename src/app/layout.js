@@ -6,11 +6,18 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  // Only wrap with ClerkProvider if credentials are configured
+  const hasClerkCredentials = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body>{children}</body>
-      </html>
-    </ClerkProvider>
+    <html lang="en">
+      <body>
+        {hasClerkCredentials ? (
+          <ClerkProvider>{children}</ClerkProvider>
+        ) : (
+          children
+        )}
+      </body>
+    </html>
   );
 }
