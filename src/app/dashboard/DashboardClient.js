@@ -223,7 +223,7 @@ async function fetchESPNGames(sportConfig) {
   return { games: [], date: today, league: sportConfig.label };
 }
 
-export default function DashboardClient() {
+export default function DashboardClient({ userEmail }) {
   const [sport, setSport] = useState("nba");
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -232,8 +232,19 @@ export default function DashboardClient() {
   const [analyzing, setAnalyzing] = useState(null);
   const [analyses, setAnalyses] = useState({});
   const [selectedBets, setSelectedBets] = useState({});
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
 
   const sportConfig = SPORTS.find((s) => s.key === sport);
+
+  // Check for upgrade success on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgraded") === "true") {
+      // Remove the query param
+      window.history.replaceState({}, "", "/dashboard");
+    }
+  }, []);
 
   const fetchGames = useCallback(async () => {
     setLoading(true);
@@ -259,6 +270,26 @@ export default function DashboardClient() {
     fetchGames();
   }, [fetchGames]);
 
+  const handleUpgrade = async () => {
+    setUpgrading(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || "Failed to start checkout");
+        setUpgrading(false);
+      }
+    } catch (err) {
+      alert("Failed to start checkout: " + err.message);
+      setUpgrading(false);
+    }
+  };
+
   const analyzeBet = async (game) => {
     const options = getBetOptions(game);
     const selected = selectedBets[game.id] || options[0]?.value || "spread_home";
@@ -274,6 +305,14 @@ export default function DashboardClient() {
         body: JSON.stringify({ game, betType, betValue }),
       });
       const data = await res.json();
+
+      // Handle subscription required
+      if (res.status === 402 && data.code === "SUBSCRIPTION_REQUIRED") {
+        setShowUpgradeModal(true);
+        setAnalyzing(null);
+        return;
+      }
+
       if (!res.ok) throw new Error(data.error || "Analysis failed");
       setAnalyses((prev) => ({ ...prev, [game.id]: data.analysis }));
     } catch (err) {
@@ -340,6 +379,92 @@ export default function DashboardClient() {
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px" }}>
+      {/* Upgrade Modal */}
+      {showUpgradeModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0,0,0,0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: 20,
+          }}
+          onClick={() => setShowUpgradeModal(false)}
+        >
+          <div
+            style={{
+              background: "var(--surface)",
+              borderRadius: 16,
+              padding: 32,
+              maxWidth: 400,
+              width: "100%",
+              textAlign: "center",
+              border: "1px solid var(--border)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 48, marginBottom: 16 }}>&#128640;</div>
+            <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
+              Upgrade to <span style={{ color: "var(--accent)" }}>EdgeCheck Pro</span>
+            </h2>
+            <p style={{ color: "var(--text-dim)", marginBottom: 24, lineHeight: 1.6 }}>
+              Unlock AI-powered bet analysis with edge ratings, confidence scores, and detailed recommendations.
+            </p>
+            <div
+              style={{
+                background: "var(--surface2)",
+                borderRadius: 12,
+                padding: 16,
+                marginBottom: 24,
+              }}
+            >
+              <div style={{ fontSize: 36, fontWeight: 700 }}>
+                $4.99<span style={{ fontSize: 16, color: "var(--text-dim)" }}>/month</span>
+              </div>
+              <div style={{ fontSize: 13, color: "var(--text-dim)", marginTop: 4 }}>
+                Cancel anytime
+              </div>
+            </div>
+            <button
+              onClick={handleUpgrade}
+              disabled={upgrading}
+              style={{
+                width: "100%",
+                padding: "14px 24px",
+                background: upgrading ? "var(--border)" : "var(--accent)",
+                color: "#fff",
+                border: "none",
+                borderRadius: 10,
+                fontWeight: 700,
+                fontSize: 16,
+                cursor: upgrading ? "not-allowed" : "pointer",
+                marginBottom: 12,
+              }}
+            >
+              {upgrading ? "Redirecting..." : "Upgrade Now"}
+            </button>
+            <button
+              onClick={() => setShowUpgradeModal(false)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--text-dim)",
+                cursor: "pointer",
+                fontSize: 14,
+              }}
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div style={{ flex: 1 }} />

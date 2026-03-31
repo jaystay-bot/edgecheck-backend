@@ -6,7 +6,6 @@ const PUBLIC_ROUTES = [
   "/sign-up",
   "/verify-email",
   "/api/webhooks",
-  "/api/auth/check-whop",
 ];
 
 function isPublicRoute(pathname) {
@@ -38,7 +37,6 @@ export default async function middleware(request) {
     "/sign-up(.*)",
     "/verify-email",
     "/api/webhooks(.*)",
-    "/api/auth/check-whop",
   ]);
 
   return clerkMiddleware(async (auth, req) => {
@@ -59,7 +57,7 @@ export default async function middleware(request) {
       return NextResponse.redirect(signInUrl);
     }
 
-    // Dashboard page handles its own Whop verification
+    // Stripe subscription check happens on API calls (analyze)
     return NextResponse.next();
   })(request);
 }

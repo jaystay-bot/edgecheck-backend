@@ -1,7 +1,12 @@
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import Stripe from "stripe";
 
 // Standard Node.js serverless runtime (not edge) — 60s max on Vercel
 export const maxDuration = 60;
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const PRICE_ID = "price_1THBHxJFbqI9Cax5qJmyvlKe";
 
 // --- Rate limiting: 20 requests per 10 minutes per IP ---
 const rateMap = new Map();
@@ -36,7 +41,79 @@ setInterval(() => {
   }
 }, RATE_WINDOW);
 
+async function hasActiveSubscription(email) {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error("[EdgeCheck] Missing STRIPE_SECRET_KEY");
+    return false;
+  }
+
+  try {
+    // Find customer by email
+    const customers = await stripe.customers.list({ email, limit: 1 });
+    if (customers.data.length === 0) {
+      return false;
+    }
+
+    const customerId = customers.data[0].id;
+
+    // Check for active subscriptions
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "active",
+      limit: 1,
+    });
+
+    if (subscriptions.data.length > 0) {
+      return true;
+    }
+
+    // Also check for trialing subscriptions
+    const trialingSubs = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "trialing",
+      limit: 1,
+    });
+
+    return trialingSubs.data.length > 0;
+  } catch (err) {
+    console.error("[EdgeCheck] Stripe subscription check error:", err.message);
+    return false;
+  }
+}
+
 export async function POST(request) {
+  // Verify user is authenticated
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json(
+      { error: "Unauthorized", code: "UNAUTHORIZED" },
+      { status: 401 }
+    );
+  }
+
+  const user = await currentUser();
+  const email = user?.primaryEmailAddress?.emailAddress;
+
+  if (!email) {
+    return NextResponse.json(
+      { error: "No email found", code: "NO_EMAIL" },
+      { status: 400 }
+    );
+  }
+
+  // Check Stripe subscription
+  const hasSubscription = await hasActiveSubscription(email);
+  if (!hasSubscription) {
+    return NextResponse.json(
+      {
+        error: "Subscription required",
+        code: "SUBSCRIPTION_REQUIRED",
+        message: "Upgrade to EdgeCheck Pro to unlock AI analysis",
+      },
+      { status: 402 }
+    );
+  }
+
   // Rate limit check
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
