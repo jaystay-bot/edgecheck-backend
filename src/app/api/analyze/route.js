@@ -134,11 +134,15 @@ export async function POST(request) {
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
+    console.error("[EdgeCheck] ANTHROPIC_API_KEY not configured");
     return NextResponse.json(
       { error: "ANTHROPIC_API_KEY not configured" },
       { status: 500 }
     );
   }
+
+  // Log API key prefix for debugging (safe - only shows first 10 chars)
+  console.log("[EdgeCheck] Using Anthropic API key:", apiKey.substring(0, 10) + "...");
 
   let body;
   try {
@@ -160,6 +164,14 @@ export async function POST(request) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 9000);
 
+  const requestBody = {
+    model: "claude-sonnet-4-6",
+    max_tokens: 1024,
+    messages: [{ role: "user", content: prompt }],
+  };
+
+  console.log("[EdgeCheck] Sending request to Anthropic API with model:", requestBody.model);
+
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -168,11 +180,7 @@ export async function POST(request) {
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1024,
-        messages: [{ role: "user", content: prompt }],
-      }),
+      body: JSON.stringify(requestBody),
       signal: controller.signal,
     });
 
@@ -180,9 +188,22 @@ export async function POST(request) {
 
     if (!res.ok) {
       const errBody = await res.text();
-      console.error("Anthropic API error:", res.status, errBody);
+      console.error("[EdgeCheck] Anthropic API error:", res.status);
+      console.error("[EdgeCheck] Error body:", errBody);
+
+      // Parse error for better user message
+      let userMessage = "Failed to generate analysis";
+      try {
+        const errJson = JSON.parse(errBody);
+        if (errJson.error?.message) {
+          userMessage = errJson.error.message;
+        }
+      } catch {
+        // Keep default message
+      }
+
       return NextResponse.json(
-        { error: "Failed to generate analysis", detail: errBody },
+        { error: userMessage, detail: errBody },
         { status: 502 }
       );
     }
