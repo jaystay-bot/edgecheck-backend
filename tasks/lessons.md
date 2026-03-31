@@ -9,3 +9,5 @@ Use current model IDs not date-based ones — Model IDs like `claude-sonnet-4-20
 Email-only login bypasses paywall — Checking Whop membership by email alone lets anyone use any paying user's email. Use Clerk for proper auth with email verification BEFORE Whop check. Flow: Sign up → Verify email → Check Whop membership → Access granted.
 
 Clerk v5 requires Next.js 14 — Latest @clerk/nextjs v7 requires Next.js 15+. Use `@clerk/nextjs@5` for Next.js 14 projects.
+
+Handle missing Clerk credentials gracefully — ClerkProvider and auth() crash the entire app if `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` or `CLERK_SECRET_KEY` are missing. Check for credentials before using Clerk components/functions. This allows the landing page to work while env vars are being configured.
