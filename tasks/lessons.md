@@ -23,3 +23,5 @@ Remove all dead API references after provider migration — When replacing a pay
 Never show raw API errors to users — LLM APIs (Groq, OpenAI) return technical error messages that confuse users. Catch 429/rate limit errors specifically and show a clean message like "Analysis temporarily unavailable — check back in a few minutes". Add retry logic (30s delay) before giving up.
 
 Cache expensive API results in localStorage — Premium features like Heaters and Best Play make API calls on every page load. Cache results in localStorage with TTL (30 min for heaters, 1 hour for best play). Check cache first, show "Last updated X minutes ago", and add manual refresh button.
+
+Serverless in-memory caches don't persist — Vercel serverless functions may start fresh instances on each invocation. Module-level Maps/caches won't reliably persist data. Use client-side localStorage as primary cache, with on-demand generation fallback. For production persistence, use Vercel KV, Redis, or a database.
