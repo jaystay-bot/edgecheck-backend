@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import "./globals.css";
 
 export default async function LandingPage() {
@@ -11,17 +10,9 @@ export default async function LandingPage() {
     userId = authResult.userId;
   }
 
-  const cookieStore = await cookies();
-  const hasWhopAccess = cookieStore.has("whop_access");
-
-  // If signed in with Whop access, go to dashboard
-  // If signed in without Whop access, go to Whop check
+  // If signed in, go to dashboard (Stripe subscription checked there)
   // If not signed in, go to sign-up
-  const ctaHref = userId
-    ? hasWhopAccess
-      ? "/dashboard"
-      : "/api/auth/check-whop"
-    : "/sign-up";
+  const ctaHref = userId ? "/dashboard" : "/sign-up";
   return (
     <div
       style={{
