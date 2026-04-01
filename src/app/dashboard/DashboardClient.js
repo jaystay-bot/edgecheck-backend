@@ -70,6 +70,22 @@ const ChartIcon = ({ size = 16, color = "currentColor" }) => (
   </svg>
 );
 
+const CrownIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
+    <path d="M5 21h14" />
+  </svg>
+);
+
+const RefreshIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+    <path d="M21 3v5h-5" />
+    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+    <path d="M8 16H3v5" />
+  </svg>
+);
+
 function formatCountdown(isoTime) {
   const gameTime = new Date(isoTime);
   const now = new Date();
@@ -324,6 +340,11 @@ export default function DashboardClient({ userEmail }) {
   const [heatersLoading, setHeatersLoading] = useState(true);
   const [heatersError, setHeatersError] = useState(null);
 
+  // Best Play state
+  const [bestPlay, setBestPlay] = useState(null);
+  const [bestPlayLoading, setBestPlayLoading] = useState(true);
+  const [bestPlayRefreshing, setBestPlayRefreshing] = useState(false);
+
   // Props state
   const [activeView, setActiveView] = useState("games"); // games | props | linewatch
   const [propsCategories, setPropsCategories] = useState([]);
@@ -377,6 +398,40 @@ export default function DashboardClient({ userEmail }) {
     }
     fetchHeaters();
   }, []);
+
+  // Fetch Best Play on mount
+  const fetchBestPlay = useCallback(async (refresh = false) => {
+    if (refresh) {
+      setBestPlayRefreshing(true);
+    } else {
+      setBestPlayLoading(true);
+    }
+    try {
+      const url = refresh ? "/api/best-play?refresh=true" : "/api/best-play";
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (res.ok) {
+        setBestPlay(data);
+        if (data.isPaidUser !== undefined) {
+          setIsPaidUser(data.isPaidUser);
+        }
+      } else {
+        console.warn("Best Play fetch failed:", data.error);
+        setBestPlay(null);
+      }
+    } catch (err) {
+      console.warn("Best Play fetch error:", err.message);
+      setBestPlay(null);
+    } finally {
+      setBestPlayLoading(false);
+      setBestPlayRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBestPlay();
+  }, [fetchBestPlay]);
 
   // Fetch props when view changes to props or sport filter changes
   const fetchProps = useCallback(async () => {
@@ -743,6 +798,275 @@ export default function DashboardClient({ userEmail }) {
           Line Watch
         </button>
       </div>
+
+      {/* Best Play of the Day - Games View Only */}
+      {activeView === "games" && (
+        <div style={{ marginBottom: 20 }}>
+          {/* Loading State */}
+          {bestPlayLoading && (
+            <div
+              style={{
+                background: "linear-gradient(135deg, var(--surface) 0%, rgba(251,191,36,0.1) 100%)",
+                border: "2px solid var(--yellow)",
+                borderRadius: 16,
+                padding: 24,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                <div style={{ background: "var(--border)", height: 24, width: 24, borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
+                <div style={{ background: "var(--border)", height: 20, width: 180, borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
+              </div>
+              <div style={{ background: "var(--border)", height: 24, width: "60%", borderRadius: 4, marginBottom: 12, animation: "pulse 1.5s ease-in-out infinite" }} />
+              <div style={{ background: "var(--border)", height: 16, width: "80%", borderRadius: 4, marginBottom: 8, animation: "pulse 1.5s ease-in-out infinite" }} />
+              <div style={{ background: "var(--border)", height: 16, width: "70%", borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
+              <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
+            </div>
+          )}
+
+          {/* No Best Play Found */}
+          {!bestPlayLoading && bestPlay && !bestPlay.found && (
+            <div
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 16,
+                padding: 24,
+                textAlign: "center",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12 }}>
+                <CrownIcon size={24} color="var(--text-dim)" />
+                <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text-dim)" }}>Best Play of the Day</span>
+              </div>
+              <p style={{ fontSize: 14, color: "var(--text-dim)", margin: 0 }}>
+                {bestPlay.reason || "No strong edges found today"}
+              </p>
+            </div>
+          )}
+
+          {/* Best Play Found - Locked for Free Users */}
+          {!bestPlayLoading && bestPlay && bestPlay.found && bestPlay.locked && (
+            <div
+              style={{
+                background: "linear-gradient(135deg, var(--surface) 0%, rgba(251,191,36,0.15) 100%)",
+                border: "2px solid var(--yellow)",
+                borderRadius: 16,
+                padding: 24,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <CrownIcon size={24} color="var(--yellow)" />
+                  <span style={{ fontSize: 18, fontWeight: 700 }}>Best Play of the Day</span>
+                  <span style={{ background: "var(--surface2)", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 700, color: "var(--text-dim)" }}>
+                    {bestPlay.sport}
+                  </span>
+                </div>
+              </div>
+              <div
+                style={{
+                  padding: 20,
+                  background: "linear-gradient(135deg, var(--surface2) 0%, rgba(99,102,241,0.15) 100%)",
+                  borderRadius: 12,
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12 }}>
+                  <LockIcon size={20} color="var(--accent)" />
+                  <span style={{ fontWeight: 700, fontSize: 16, color: "var(--accent)" }}>Best Play Found</span>
+                </div>
+                <p style={{ fontSize: 13, color: "var(--text-dim)", margin: "0 0 16px 0" }}>
+                  Upgrade to see full analysis, ATS records, and key factors
+                </p>
+                <button
+                  onClick={handleUpgrade}
+                  disabled={upgrading}
+                  style={{
+                    padding: "10px 24px",
+                    background: "var(--accent)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    fontWeight: 700,
+                    fontSize: 14,
+                    cursor: upgrading ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {upgrading ? "..." : "Unlock Best Play"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Best Play Found - Full Card for Paid Users */}
+          {!bestPlayLoading && bestPlay && bestPlay.found && bestPlay.play && !bestPlay.locked && (
+            <div
+              style={{
+                background: "linear-gradient(135deg, var(--surface) 0%, rgba(251,191,36,0.15) 100%)",
+                border: "2px solid var(--yellow)",
+                borderRadius: 16,
+                padding: 24,
+              }}
+            >
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <CrownIcon size={24} color="var(--yellow)" />
+                  <span style={{ fontSize: 18, fontWeight: 700 }}>Best Play of the Day</span>
+                  <span style={{ background: "var(--surface2)", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 700, color: "var(--text-dim)" }}>
+                    {bestPlay.play.sport}
+                  </span>
+                </div>
+                <button
+                  onClick={() => fetchBestPlay(true)}
+                  disabled={bestPlayRefreshing}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "6px 12px",
+                    background: "var(--surface2)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 6,
+                    color: "var(--text-dim)",
+                    fontSize: 12,
+                    cursor: bestPlayRefreshing ? "not-allowed" : "pointer",
+                  }}
+                >
+                  <RefreshIcon size={14} color="var(--text-dim)" />
+                  {bestPlayRefreshing ? "Refreshing..." : "Refresh"}
+                </button>
+              </div>
+
+              {/* Main Info */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 4 }}>
+                  {bestPlay.play.awayTeam} @ {bestPlay.play.homeTeam}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                  <span style={{ fontSize: 22, fontWeight: 800 }}>{bestPlay.play.teamOrPlayer}</span>
+                  <span
+                    style={{
+                      background: bestPlay.play.heaterScore >= 9 ? "var(--green)" : "var(--yellow)",
+                      color: "#fff",
+                      padding: "4px 10px",
+                      borderRadius: 8,
+                      fontWeight: 700,
+                      fontSize: 16,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                  >
+                    <FlameIcon size={14} color="#fff" />
+                    {bestPlay.play.heaterScore}/10
+                  </span>
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>
+                  {bestPlay.play.betType}: {bestPlay.play.betValue}
+                  <span style={{ marginLeft: 10, color: bestPlay.play.odds > 0 ? "var(--green)" : "var(--text-dim)" }}>
+                    {bestPlay.play.odds > 0 ? "+" : ""}{bestPlay.play.odds}
+                  </span>
+                </div>
+              </div>
+
+              {/* ATS Stats Grid */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gap: 12,
+                  marginBottom: 16,
+                  background: "var(--surface2)",
+                  padding: 16,
+                  borderRadius: 10,
+                }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>ATS L5</div>
+                  <div style={{ fontSize: 15, fontWeight: 700 }}>{bestPlay.play.atsLast5}</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>ATS L10</div>
+                  <div style={{ fontSize: 15, fontWeight: 700 }}>{bestPlay.play.atsLast10}</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>Season ATS</div>
+                  <div style={{ fontSize: 15, fontWeight: 700 }}>{bestPlay.play.atsSeason}</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>H/A ATS</div>
+                  <div style={{ fontSize: 15, fontWeight: 700 }}>{bestPlay.play.homeAwayAts}</div>
+                </div>
+              </div>
+
+              {/* Write-up */}
+              {bestPlay.play.writeup && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-dim)", marginBottom: 6, textTransform: "uppercase" }}>
+                    Analysis
+                  </div>
+                  <p style={{ fontSize: 14, lineHeight: 1.7, margin: 0, color: "var(--text)" }}>
+                    {bestPlay.play.writeup}
+                  </p>
+                </div>
+              )}
+
+              {/* Key Factors */}
+              {bestPlay.play.keyFactors && bestPlay.play.keyFactors.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-dim)", marginBottom: 8, textTransform: "uppercase" }}>
+                    Key Factors
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: 20 }}>
+                    {bestPlay.play.keyFactors.map((factor, idx) => (
+                      <li key={idx} style={{ fontSize: 13, color: "var(--text)", marginBottom: 4 }}>
+                        {factor}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* What Could Go Wrong */}
+              {bestPlay.play.whatCouldGoWrong && (
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    background: "rgba(239,68,68,0.1)",
+                    borderRadius: 8,
+                    borderLeft: "3px solid var(--red)",
+                    marginBottom: 12,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                    <AlertTriangleIcon size={14} color="var(--red)" />
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--red)" }}>What Could Go Wrong</span>
+                  </div>
+                  <p style={{ fontSize: 13, lineHeight: 1.5, margin: 0, color: "var(--text-dim)" }}>
+                    {bestPlay.play.whatCouldGoWrong}
+                  </p>
+                </div>
+              )}
+
+              {/* Confidence + Cache Info */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 12, color: "var(--text-dim)" }}>Confidence:</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: bestPlay.play.confidence >= 8 ? "var(--green)" : "var(--text)" }}>
+                    {bestPlay.play.confidence}/10
+                  </span>
+                </div>
+                {bestPlay.cached && bestPlay.cacheAge > 0 && (
+                  <span style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                    Updated {bestPlay.cacheAge}m ago
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Sport Tabs - Games View Only */}
       {activeView === "games" && (
