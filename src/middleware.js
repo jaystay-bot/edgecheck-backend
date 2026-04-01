@@ -6,6 +6,7 @@ const PUBLIC_ROUTES = [
   "/sign-up",
   "/verify-email",
   "/api/webhooks",
+  "/api/batch-analyze",
 ];
 
 function isPublicRoute(pathname) {
@@ -37,6 +38,7 @@ export default async function middleware(request) {
     "/sign-up(.*)",
     "/verify-email",
     "/api/webhooks(.*)",
+    "/api/batch-analyze",
   ]);
 
   return clerkMiddleware(async (auth, req) => {
