@@ -19,3 +19,7 @@ Lazy-initialize third-party SDKs — Initializing SDKs like Stripe at module loa
 Use dynamic import for Clerk hook pages — Client components using `useUser` or `useClerk` fail during Next.js static generation at build time because ClerkProvider isn't available. Wrap the component with `dynamic(() => Promise.resolve(Component), { ssr: false })` to skip server-side rendering.
 
 Remove all dead API references after provider migration — When replacing a payment provider (Whop → Stripe), search the entire codebase for ALL references to the old provider's endpoints. Mobile users may hit cached routes that still call deleted APIs, causing 404 errors.
+
+Never show raw API errors to users — LLM APIs (Groq, OpenAI) return technical error messages that confuse users. Catch 429/rate limit errors specifically and show a clean message like "Analysis temporarily unavailable — check back in a few minutes". Add retry logic (30s delay) before giving up.
+
+Cache expensive API results in localStorage — Premium features like Heaters and Best Play make API calls on every page load. Cache results in localStorage with TTL (30 min for heaters, 1 hour for best play). Check cache first, show "Last updated X minutes ago", and add manual refresh button.
