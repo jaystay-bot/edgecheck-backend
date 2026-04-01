@@ -86,6 +86,21 @@ const RefreshIcon = ({ size = 16, color = "currentColor" }) => (
   </svg>
 );
 
+const InfoIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 16v-4" />
+    <path d="M12 8h.01" />
+  </svg>
+);
+
+function getHeaterScoreColor(score) {
+  if (score >= 8) return "var(--green)";
+  if (score >= 6) return "var(--yellow)";
+  if (score >= 4) return "var(--orange, #f97316)";
+  return "var(--text-dim)";
+}
+
 function formatCountdown(isoTime) {
   const gameTime = new Date(isoTime);
   const now = new Date();
@@ -945,22 +960,39 @@ export default function DashboardClient({ userEmail }) {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
                   <span style={{ fontSize: 22, fontWeight: 800 }}>{bestPlay.play.teamOrPlayer}</span>
-                  <span
-                    style={{
-                      background: bestPlay.play.heaterScore >= 9 ? "var(--green)" : "var(--yellow)",
-                      color: "#fff",
-                      padding: "4px 10px",
-                      borderRadius: 8,
-                      fontWeight: 700,
-                      fontSize: 16,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 4,
-                    }}
-                  >
-                    <FlameIcon size={14} color="#fff" />
-                    {bestPlay.play.heaterScore}/10
-                  </span>
+                  <div style={{ position: "relative", display: "inline-block" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        background: getHeaterScoreColor(bestPlay.play.heaterScore),
+                        padding: "6px 14px 4px",
+                        borderRadius: 10,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <FlameIcon size={14} color="#fff" />
+                        <span style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>
+                          {bestPlay.play.heaterScore}/10
+                        </span>
+                        <div
+                          className="heater-info-trigger"
+                          style={{
+                            marginLeft: 4,
+                            cursor: "help",
+                            opacity: 0.85,
+                          }}
+                          title="Heater Score rates the strength of this bet 1-10 based on ATS records, line value, matchup data, and sharp money indicators. 8+ = strong edge."
+                        >
+                          <InfoIcon size={12} color="#fff" />
+                        </div>
+                      </div>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.9)", letterSpacing: 1, marginTop: 2 }}>
+                        HEATER SCORE
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>
                   {bestPlay.play.betType}: {bestPlay.play.betValue}
