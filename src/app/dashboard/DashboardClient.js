@@ -105,11 +105,61 @@ function getHeaterScoreColor(score) {
 const CACHE_KEYS = {
   HEATERS: "edgecheck_heaters_cache",
   BEST_PLAY: "edgecheck_bestplay_cache",
+  ANALYSES: "edgecheck_analyses_cache",
 };
 const CACHE_TTL = {
   HEATERS: 30 * 60 * 1000, // 30 minutes
   BEST_PLAY: 60 * 60 * 1000, // 1 hour
+  ANALYSES: 4 * 60 * 60 * 1000, // 4 hours (until next batch)
 };
+
+// Get cached analysis for a specific game/bet combo
+function getCachedAnalysis(gameId, betKey) {
+  if (typeof window === "undefined") return null;
+  try {
+    const cached = localStorage.getItem(CACHE_KEYS.ANALYSES);
+    if (!cached) return null;
+    const data = JSON.parse(cached);
+    const key = `${gameId}_${betKey}`;
+    const entry = data[key];
+    if (!entry) return null;
+    if (Date.now() - entry.timestamp > CACHE_TTL.ANALYSES) {
+      // Expired - clean up
+      delete data[key];
+      localStorage.setItem(CACHE_KEYS.ANALYSES, JSON.stringify(data));
+      return null;
+    }
+    return entry;
+  } catch {
+    return null;
+  }
+}
+
+// Store analysis in localStorage
+function setCachedAnalysis(gameId, betKey, analysis) {
+  if (typeof window === "undefined") return;
+  try {
+    let data = {};
+    const cached = localStorage.getItem(CACHE_KEYS.ANALYSES);
+    if (cached) {
+      data = JSON.parse(cached);
+    }
+    const key = `${gameId}_${betKey}`;
+    data[key] = {
+      analysis,
+      timestamp: Date.now(),
+    };
+    // Clean old entries (keep last 50)
+    const entries = Object.entries(data);
+    if (entries.length > 50) {
+      entries.sort((a, b) => b[1].timestamp - a[1].timestamp);
+      data = Object.fromEntries(entries.slice(0, 50));
+    }
+    localStorage.setItem(CACHE_KEYS.ANALYSES, JSON.stringify(data));
+  } catch {
+    // localStorage full
+  }
+}
 
 function getCachedData(key) {
   if (typeof window === "undefined") return null;
@@ -667,6 +717,22 @@ export default function DashboardClient({ userEmail }) {
     const selectedOption = options.find((o) => o.value === selected);
     const betType = selectedOption?.label ?? "Spread";
     let betValue = selectedOption?.label ?? "";
+    const betKey = selected; // e.g., "spread_home", "ml_away", etc.
+
+    // Check localStorage cache first
+    const localCached = getCachedAnalysis(game.id, betKey);
+    if (localCached) {
+      setAnalyses((prev) => ({
+        ...prev,
+        [game.id]: {
+          ...localCached.analysis,
+          analyzedAt: formatLastUpdated(localCached.timestamp),
+          cached: true,
+          fromLocalCache: true,
+        },
+      }));
+      return;
+    }
 
     setAnalyzing(game.id);
     try {
@@ -699,6 +765,11 @@ export default function DashboardClient({ userEmail }) {
       }
 
       if (!res.ok) throw new Error(data.error || "Analysis failed");
+
+      // Cache in localStorage for future use
+      if (data.analysis) {
+        setCachedAnalysis(game.id, betKey, data.analysis);
+      }
 
       // Store analysis with timestamp
       setAnalyses((prev) => ({

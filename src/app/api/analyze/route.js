@@ -1,27 +1,54 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import Groq from "groq-sdk";
 import {
   getAnalysis,
+  setAnalysis,
   getLastBatchTimestamp,
   canUserRefresh,
-  recordUserRefresh,
   getNextRefreshTime,
 } from "../../../lib/analysis-cache";
 
-export const maxDuration = 10; // Fast lookup only - no live Groq calls
+export const maxDuration = 60;
 
 function getStripe() {
   if (!process.env.STRIPE_SECRET_KEY) return null;
   return new Stripe(process.env.STRIPE_SECRET_KEY);
 }
 
+function getGroq() {
+  if (!process.env.GROQ_API_KEY) return null;
+  return new Groq({ apiKey: process.env.GROQ_API_KEY });
+}
+
+// Per-user rate limit for on-demand analysis (when cache is empty)
+const userRateMap = new Map();
+const USER_RATE_LIMIT = 5 * 60 * 1000; // 5 minutes between on-demand analyses
+
+function canUserAnalyze(userId) {
+  const last = userRateMap.get(userId);
+  if (!last) return true;
+  return Date.now() - last >= USER_RATE_LIMIT;
+}
+
+function recordUserAnalysis(userId) {
+  userRateMap.set(userId, Date.now());
+}
+
+// Clean up old entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [userId, timestamp] of userRateMap) {
+    if (now - timestamp > USER_RATE_LIMIT * 2) {
+      userRateMap.delete(userId);
+    }
+  }
+}, USER_RATE_LIMIT);
+
 async function hasActiveSubscription(email) {
   const stripe = getStripe();
-  if (!stripe) {
-    console.error("[EdgeCheck] Missing STRIPE_SECRET_KEY");
-    return false;
-  }
+  if (!stripe) return false;
 
   try {
     const customers = await stripe.customers.list({ email, limit: 1 });
@@ -45,7 +72,7 @@ async function hasActiveSubscription(email) {
 
     return trialingSubs.data.length > 0;
   } catch (err) {
-    console.error("[EdgeCheck] Stripe subscription check error:", err.message);
+    console.error("[Analyze] Stripe error:", err.message);
     return false;
   }
 }
@@ -61,8 +88,89 @@ function formatTimeAgo(timestamp) {
   return `${hours} hours ago`;
 }
 
+function buildPrompt(game, betType, betValue) {
+  const homeTeam = game.homeTeam?.name ?? "Home Team";
+  const awayTeam = game.awayTeam?.name ?? "Away Team";
+  const homeRecord = game.homeTeam?.record ? ` (${game.homeTeam.record})` : "";
+  const awayRecord = game.awayTeam?.record ? ` (${game.awayTeam.record})` : "";
+  const odds = game.odds;
+
+  let oddsContext = "";
+  if (odds) {
+    oddsContext = `
+Current odds:
+- Spread: ${odds.spread?.home ?? "N/A"} (home) / ${odds.spread?.away ?? "N/A"} (away)
+- Moneyline: ${odds.moneyline?.home ?? "N/A"} (home) / ${odds.moneyline?.away ?? "N/A"} (away)
+- Over/Under: ${odds.overUnder ?? "N/A"}
+- Provider: ${odds.provider ?? "Unknown"}`;
+  }
+
+  return `You are an expert sports betting analyst. Analyze the following bet.
+
+Game: ${awayTeam}${awayRecord} @ ${homeTeam}${homeRecord}
+Sport: ${game.sport?.toUpperCase() ?? "Unknown"}
+Game Time: ${game.startTime ?? "TBD"}
+Venue: ${game.venue ?? "TBD"}
+${oddsContext}
+
+Bet Type: ${betType}
+${betValue ? `Bet Value: ${betValue}` : ""}
+
+Respond with ONLY a JSON object (no markdown):
+{
+  "edgeRating": 7,
+  "confidence": "Medium",
+  "recommendation": "Lean",
+  "keyFactors": ["factor 1", "factor 2", "factor 3"],
+  "analysis": "2-3 sentence analysis of this bet.",
+  "riskFactors": ["risk 1", "risk 2"]
+}
+
+edgeRating: 1-10 where 10 is strongest edge
+confidence: Low/Medium/High
+recommendation: Strong Bet/Lean/Avoid/Fade`;
+}
+
+function parseAnalysisResponse(text) {
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    const parsed = JSON.parse(jsonMatch[0]);
+    return {
+      edgeRating: Math.min(10, Math.max(1, parseInt(parsed.edgeRating, 10) || 5)),
+      confidence: parsed.confidence || "Medium",
+      recommendation: parsed.recommendation || "Lean",
+      keyFactors: parsed.keyFactors || [],
+      analysis: parsed.analysis || "",
+      riskFactors: parsed.riskFactors || [],
+      fullText: parsed.analysis || "",
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function generateOnDemandAnalysis(groq, game, betType, betValue) {
+  const prompt = buildPrompt(game, betType, betValue);
+
+  try {
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      max_tokens: 512,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const responseText = completion.choices?.[0]?.message?.content?.trim();
+    if (!responseText) return null;
+
+    return parseAnalysisResponse(responseText);
+  } catch (err) {
+    console.error("[Analyze] Groq error:", err.message);
+    return null;
+  }
+}
+
 export async function POST(request) {
-  // Verify user is authenticated
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json(
@@ -81,7 +189,6 @@ export async function POST(request) {
     );
   }
 
-  // Check Stripe subscription
   const hasSubscription = await hasActiveSubscription(email);
   if (!hasSubscription) {
     return NextResponse.json(
@@ -101,7 +208,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { game, betType } = body;
+  const { game, betType, betValue } = body;
   if (!game || !betType) {
     return NextResponse.json(
       { error: "Missing required fields: game, betType" },
@@ -111,74 +218,85 @@ export async function POST(request) {
 
   const gameId = game.id;
 
-  // Look up cached analysis - NO live Groq call
+  // Try to get from cache first
   const cached = getAnalysis(gameId);
   const lastBatch = getLastBatchTimestamp();
 
-  if (!cached) {
-    // No analysis available yet
+  // Determine the bet key from the type
+  let betKey = "spread_home";
+  const betTypeLower = (betType || "").toLowerCase();
+  const betValueLower = (betValue || "").toLowerCase();
+  const awayAbbrev = (game.awayTeam?.abbreviation || "").toLowerCase();
+
+  if (betTypeLower.includes("spread")) {
+    betKey = betValueLower.includes(awayAbbrev) ? "spread_away" : "spread_home";
+  } else if (betTypeLower.includes("ml") || betTypeLower.includes("money")) {
+    betKey = betValueLower.includes(awayAbbrev) ? "ml_away" : "ml_home";
+  } else if (betTypeLower.includes("over")) {
+    betKey = "over";
+  } else if (betTypeLower.includes("under")) {
+    betKey = "under";
+  }
+
+  // Return cached if available
+  if (cached?.betAnalyses?.[betKey]) {
+    return NextResponse.json({
+      analysis: cached.betAnalyses[betKey],
+      analyzedAt: cached.analyzedAt,
+      analyzedAtFormatted: formatTimeAgo(cached.analyzedAt),
+      cached: true,
+      canRefresh: canUserRefresh(userId),
+      nextRefreshIn: getNextRefreshTime(userId),
+    });
+  }
+
+  // Cache miss - generate on demand if user hasn't analyzed recently
+  if (!canUserAnalyze(userId)) {
     return NextResponse.json({
       analysis: null,
       pending: true,
       message: "Analysis loading — check back in a few minutes",
-      lastBatch: lastBatch ? formatTimeAgo(lastBatch) : null,
+      rateLimited: true,
     });
   }
 
-  // Map bet type to the cached analysis key
-  const betTypeMap = {
-    spread_home: "spread_home",
-    spread_away: "spread_away",
-    ml_home: "ml_home",
-    ml_away: "ml_away",
-    over: "over",
-    under: "under",
-  };
-
-  // Parse the betType from the label to determine which analysis to show
-  let analysisKey = "spread_home"; // default
-  const betTypeLower = (betType || "").toLowerCase();
-
-  if (betTypeLower.includes("spread")) {
-    if (betTypeLower.includes("away") || body.betValue?.toLowerCase().includes(game.awayTeam?.abbreviation?.toLowerCase())) {
-      analysisKey = "spread_away";
-    } else {
-      analysisKey = "spread_home";
-    }
-  } else if (betTypeLower.includes("ml") || betTypeLower.includes("money")) {
-    if (betTypeLower.includes("away") || body.betValue?.toLowerCase().includes(game.awayTeam?.abbreviation?.toLowerCase())) {
-      analysisKey = "ml_away";
-    } else {
-      analysisKey = "ml_home";
-    }
-  } else if (betTypeLower.includes("over")) {
-    analysisKey = "over";
-  } else if (betTypeLower.includes("under")) {
-    analysisKey = "under";
+  const groq = getGroq();
+  if (!groq) {
+    return NextResponse.json({
+      analysis: null,
+      pending: true,
+      message: "Analysis unavailable — check back soon",
+    });
   }
 
-  const analysis = cached.betAnalyses?.[analysisKey];
+  console.log(`[Analyze] Generating on-demand analysis for game ${gameId}`);
+  const analysis = await generateOnDemandAnalysis(groq, game, betType, betValue);
 
   if (!analysis) {
     return NextResponse.json({
       analysis: null,
       pending: true,
       message: "Analysis loading — check back in a few minutes",
-      lastBatch: lastBatch ? formatTimeAgo(lastBatch) : null,
     });
   }
 
+  // Record that user triggered an analysis
+  recordUserAnalysis(userId);
+
+  // Cache for this instance (won't persist across serverless invocations)
+  const betAnalyses = cached?.betAnalyses || {};
+  betAnalyses[betKey] = analysis;
+  setAnalysis(gameId, game, betAnalyses);
+
   return NextResponse.json({
     analysis,
-    analyzedAt: cached.analyzedAt,
-    analyzedAtFormatted: formatTimeAgo(cached.analyzedAt),
-    cached: true,
-    canRefresh: canUserRefresh(userId),
-    nextRefreshIn: getNextRefreshTime(userId),
+    analyzedAt: Date.now(),
+    analyzedAtFormatted: "just now",
+    cached: false,
+    onDemand: true,
   });
 }
 
-// GET endpoint to check analysis status for a game
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const gameId = searchParams.get("gameId");
