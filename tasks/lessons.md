@@ -15,3 +15,5 @@ Handle missing Clerk credentials gracefully — ClerkProvider and auth() crash t
 Verify paywall server-side on every load — Cookie-based paywall checks can be bypassed (cookies can be forged). Use a server component wrapper that calls the payment provider API on every protected page load. No valid membership → redirect to checkout.
 
 Lazy-initialize third-party SDKs — Initializing SDKs like Stripe at module load time (`const stripe = new Stripe(process.env.KEY)`) fails during Vercel builds when env vars aren't available. Use a getter function (`function getStripe() { return new Stripe(process.env.KEY); }`) and call it inside request handlers instead.
+
+Use dynamic import for Clerk hook pages — Client components using `useUser` or `useClerk` fail during Next.js static generation at build time because ClerkProvider isn't available. Wrap the component with `dynamic(() => Promise.resolve(Component), { ssr: false })` to skip server-side rendering.
