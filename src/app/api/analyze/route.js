@@ -168,45 +168,69 @@ export async function POST(request) {
 
   console.log("[EdgeCheck] Sending request to Groq API with model: llama-3.3-70b-versatile");
 
-  try {
-    const chatCompletion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      max_tokens: 1024,
-      messages: [{ role: "user", content: prompt }],
-    });
+  // Retry helper for Groq rate limits
+  async function callGroqWithRetry(groqClient, prompt, retryOnce = true) {
+    try {
+      const chatCompletion = await groqClient.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        max_tokens: 1024,
+        messages: [{ role: "user", content: prompt }],
+      });
+      return { success: true, data: chatCompletion };
+    } catch (err) {
+      // Check if it's a rate limit error (429)
+      const isRateLimit = err.status === 429 || err.message?.includes("429") || err.message?.toLowerCase().includes("rate limit");
 
-    const analysisText = chatCompletion.choices?.[0]?.message?.content;
+      if (isRateLimit && retryOnce) {
+        console.log("[EdgeCheck] Groq rate limited, waiting 30s before retry...");
+        await new Promise((r) => setTimeout(r, 30000));
+        return callGroqWithRetry(groqClient, prompt, false);
+      }
 
-    if (!analysisText) {
-      console.error("[EdgeCheck] Groq returned empty response:", JSON.stringify(chatCompletion));
+      return { success: false, error: err, isRateLimit };
+    }
+  }
+
+  const result = await callGroqWithRetry(groq, prompt);
+
+  if (!result.success) {
+    const err = result.error;
+    console.error("[EdgeCheck] Groq API error:", err.name, err.message);
+
+    // Return clean message for rate limits
+    if (result.isRateLimit) {
       return NextResponse.json(
-        { error: "AI returned empty response", detail: JSON.stringify(chatCompletion) },
-        { status: 502 }
+        {
+          error: "Analysis temporarily unavailable — check back in a few minutes",
+          code: "RATE_LIMITED"
+        },
+        { status: 429 }
       );
     }
 
-    console.log("[EdgeCheck] Groq response received, length:", analysisText.length);
-
-    const analysis = parseAnalysis(analysisText);
-
-    return NextResponse.json({ analysis, raw: analysisText });
-  } catch (err) {
-    console.error("[EdgeCheck] Groq API error:", err.name, err.message);
     console.error("[EdgeCheck] Full error:", JSON.stringify(err, Object.getOwnPropertyNames(err)));
-
-    // Extract the actual error message
-    let errorMessage = err.message || "Failed to generate analysis";
-
-    // Check for specific Groq error types
-    if (err.status) {
-      errorMessage = `Groq API error (${err.status}): ${err.message}`;
-    }
-
     return NextResponse.json(
-      { error: errorMessage, detail: err.message },
+      { error: "Failed to generate analysis", detail: err.message },
       { status: 502 }
     );
   }
+
+  const chatCompletion = result.data;
+  const analysisText = chatCompletion.choices?.[0]?.message?.content;
+
+  if (!analysisText) {
+    console.error("[EdgeCheck] Groq returned empty response:", JSON.stringify(chatCompletion));
+    return NextResponse.json(
+      { error: "AI returned empty response", detail: JSON.stringify(chatCompletion) },
+      { status: 502 }
+    );
+  }
+
+  console.log("[EdgeCheck] Groq response received, length:", analysisText.length);
+
+  const analysis = parseAnalysis(analysisText);
+
+  return NextResponse.json({ analysis, raw: analysisText });
 }
 
 function buildPrompt(game, betType, betValue) {

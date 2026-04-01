@@ -101,6 +101,62 @@ function getHeaterScoreColor(score) {
   return "var(--text-dim)";
 }
 
+// localStorage caching utilities
+const CACHE_KEYS = {
+  HEATERS: "edgecheck_heaters_cache",
+  BEST_PLAY: "edgecheck_bestplay_cache",
+};
+const CACHE_TTL = {
+  HEATERS: 30 * 60 * 1000, // 30 minutes
+  BEST_PLAY: 60 * 60 * 1000, // 1 hour
+};
+
+function getCachedData(key) {
+  if (typeof window === "undefined") return null;
+  try {
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+    const { data, timestamp } = JSON.parse(cached);
+    const ttl = key === CACHE_KEYS.HEATERS ? CACHE_TTL.HEATERS : CACHE_TTL.BEST_PLAY;
+    if (Date.now() - timestamp > ttl) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return { data, timestamp };
+  } catch {
+    return null;
+  }
+}
+
+function setCachedData(key, data) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+  } catch {
+    // localStorage full or unavailable
+  }
+}
+
+function clearCache(key) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // ignore
+  }
+}
+
+function formatLastUpdated(timestamp) {
+  if (!timestamp) return "";
+  const minutes = Math.floor((Date.now() - timestamp) / 60000);
+  if (minutes < 1) return "Just now";
+  if (minutes === 1) return "1 minute ago";
+  if (minutes < 60) return `${minutes} minutes ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours === 1) return "1 hour ago";
+  return `${hours} hours ago`;
+}
+
 function formatCountdown(isoTime) {
   const gameTime = new Date(isoTime);
   const now = new Date();
@@ -359,6 +415,11 @@ export default function DashboardClient({ userEmail }) {
   const [bestPlay, setBestPlay] = useState(null);
   const [bestPlayLoading, setBestPlayLoading] = useState(true);
   const [bestPlayRefreshing, setBestPlayRefreshing] = useState(false);
+  const [bestPlayTimestamp, setBestPlayTimestamp] = useState(null);
+
+  // Heaters refresh state
+  const [heatersRefreshing, setHeatersRefreshing] = useState(false);
+  const [heatersTimestamp, setHeatersTimestamp] = useState(null);
 
   // Props state
   const [activeView, setActiveView] = useState("games"); // games | props | linewatch
@@ -385,52 +446,99 @@ export default function DashboardClient({ userEmail }) {
     }
   }, []);
 
-  // Fetch heaters on mount
-  useEffect(() => {
-    async function fetchHeaters() {
-      setHeatersLoading(true);
-      setHeatersError(null);
-      try {
-        const res = await fetch("/api/heaters");
-        const data = await res.json();
-
-        if (res.status === 402 && data.code === "SUBSCRIPTION_REQUIRED") {
-          // User doesn't have subscription - just hide heaters section
-          setHeaters([]);
-          setHeatersLoading(false);
-          return;
-        }
-
-        if (!res.ok) throw new Error(data.error || "Failed to load heaters");
-        setHeaters(data.heaters || []);
-      } catch (err) {
-        console.warn("Heaters fetch failed:", err.message);
-        setHeatersError(err.message);
-        setHeaters([]);
-      } finally {
+  // Fetch heaters with localStorage caching
+  const fetchHeatersData = useCallback(async (forceRefresh = false) => {
+    // Check cache first (unless forcing refresh)
+    if (!forceRefresh) {
+      const cached = getCachedData(CACHE_KEYS.HEATERS);
+      if (cached) {
+        setHeaters(cached.data);
+        setHeatersTimestamp(cached.timestamp);
         setHeatersLoading(false);
+        return;
       }
     }
-    fetchHeaters();
+
+    if (forceRefresh) {
+      setHeatersRefreshing(true);
+      clearCache(CACHE_KEYS.HEATERS);
+    } else {
+      setHeatersLoading(true);
+    }
+    setHeatersError(null);
+
+    try {
+      const res = await fetch("/api/heaters");
+      const data = await res.json();
+
+      if (res.status === 402 && data.code === "SUBSCRIPTION_REQUIRED") {
+        setHeaters([]);
+        setHeatersLoading(false);
+        setHeatersRefreshing(false);
+        return;
+      }
+
+      if (!res.ok) throw new Error(data.error || "Failed to load heaters");
+
+      const heatersList = data.heaters || [];
+      setHeaters(heatersList);
+      setHeatersTimestamp(Date.now());
+
+      // Cache the data
+      if (heatersList.length > 0) {
+        setCachedData(CACHE_KEYS.HEATERS, heatersList);
+      }
+    } catch (err) {
+      console.warn("Heaters fetch failed:", err.message);
+      setHeatersError(err.message);
+      setHeaters([]);
+    } finally {
+      setHeatersLoading(false);
+      setHeatersRefreshing(false);
+    }
   }, []);
 
-  // Fetch Best Play on mount
-  const fetchBestPlay = useCallback(async (refresh = false) => {
-    if (refresh) {
+  // Fetch heaters on mount
+  useEffect(() => {
+    fetchHeatersData();
+  }, [fetchHeatersData]);
+
+  // Fetch Best Play with localStorage caching
+  const fetchBestPlay = useCallback(async (forceRefresh = false) => {
+    // Check cache first (unless forcing refresh)
+    if (!forceRefresh) {
+      const cached = getCachedData(CACHE_KEYS.BEST_PLAY);
+      if (cached) {
+        setBestPlay(cached.data);
+        setBestPlayTimestamp(cached.timestamp);
+        if (cached.data.isPaidUser !== undefined) {
+          setIsPaidUser(cached.data.isPaidUser);
+        }
+        setBestPlayLoading(false);
+        return;
+      }
+    }
+
+    if (forceRefresh) {
       setBestPlayRefreshing(true);
+      clearCache(CACHE_KEYS.BEST_PLAY);
     } else {
       setBestPlayLoading(true);
     }
+
     try {
-      const url = refresh ? "/api/best-play?refresh=true" : "/api/best-play";
+      const url = forceRefresh ? "/api/best-play?refresh=true" : "/api/best-play";
       const res = await fetch(url);
       const data = await res.json();
 
       if (res.ok) {
         setBestPlay(data);
+        setBestPlayTimestamp(Date.now());
         if (data.isPaidUser !== undefined) {
           setIsPaidUser(data.isPaidUser);
         }
+        // Cache the data
+        setCachedData(CACHE_KEYS.BEST_PLAY, data);
       } else {
         console.warn("Best Play fetch failed:", data.error);
         setBestPlay(null);
@@ -576,12 +684,30 @@ export default function DashboardClient({ userEmail }) {
         return;
       }
 
+      // Handle rate limit with clean message
+      if (res.status === 429 || data.code === "RATE_LIMITED") {
+        setAnalyses((prev) => ({
+          ...prev,
+          [game.id]: {
+            error: "Analysis temporarily unavailable — check back in a few minutes",
+            fullText: "",
+            isRateLimited: true,
+          },
+        }));
+        setAnalyzing(null);
+        return;
+      }
+
       if (!res.ok) throw new Error(data.error || "Analysis failed");
       setAnalyses((prev) => ({ ...prev, [game.id]: data.analysis }));
     } catch (err) {
+      // Never show raw error text to users
+      const cleanError = err.message?.includes("429") || err.message?.toLowerCase().includes("rate")
+        ? "Analysis temporarily unavailable — check back in a few minutes"
+        : "Analysis failed — please try again";
       setAnalyses((prev) => ({
         ...prev,
-        [game.id]: { error: err.message, fullText: "" },
+        [game.id]: { error: cleanError, fullText: "" },
       }));
     } finally {
       setAnalyzing(null);
@@ -932,25 +1058,32 @@ export default function DashboardClient({ userEmail }) {
                     {bestPlay.play.sport}
                   </span>
                 </div>
-                <button
-                  onClick={() => fetchBestPlay(true)}
-                  disabled={bestPlayRefreshing}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "6px 12px",
-                    background: "var(--surface2)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 6,
-                    color: "var(--text-dim)",
-                    fontSize: 12,
-                    cursor: bestPlayRefreshing ? "not-allowed" : "pointer",
-                  }}
-                >
-                  <RefreshIcon size={14} color="var(--text-dim)" />
-                  {bestPlayRefreshing ? "Refreshing..." : "Refresh"}
-                </button>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  {bestPlayTimestamp && (
+                    <span style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                      Updated {formatLastUpdated(bestPlayTimestamp)}
+                    </span>
+                  )}
+                  <button
+                    onClick={() => fetchBestPlay(true)}
+                    disabled={bestPlayRefreshing}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "6px 12px",
+                      background: "var(--surface2)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 6,
+                      color: "var(--text-dim)",
+                      fontSize: 12,
+                      cursor: bestPlayRefreshing ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    <RefreshIcon size={14} color="var(--text-dim)" />
+                    {bestPlayRefreshing ? "Refreshing..." : "Refresh"}
+                  </button>
+                </div>
               </div>
 
               {/* Main Info */}
@@ -1149,23 +1282,51 @@ export default function DashboardClient({ userEmail }) {
             marginBottom: 20,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-            <span style={{ fontSize: 24 }}>&#128293;</span>
-            <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
-              Today&apos;s Heaters
-            </h2>
-            <span
-              style={{
-                background: "var(--red)",
-                color: "#fff",
-                padding: "2px 8px",
-                borderRadius: 12,
-                fontSize: 11,
-                fontWeight: 700,
-              }}
-            >
-              {heaters.length} HOT
-            </span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 24 }}>&#128293;</span>
+              <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
+                Today&apos;s Heaters
+              </h2>
+              <span
+                style={{
+                  background: "var(--red)",
+                  color: "#fff",
+                  padding: "2px 8px",
+                  borderRadius: 12,
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              >
+                {heaters.length} HOT
+              </span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {heatersTimestamp && (
+                <span style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                  Updated {formatLastUpdated(heatersTimestamp)}
+                </span>
+              )}
+              <button
+                onClick={() => fetchHeatersData(true)}
+                disabled={heatersRefreshing}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "6px 12px",
+                  background: "var(--surface2)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 6,
+                  color: "var(--text-dim)",
+                  fontSize: 12,
+                  cursor: heatersRefreshing ? "not-allowed" : "pointer",
+                }}
+              >
+                <RefreshIcon size={14} color="var(--text-dim)" />
+                {heatersRefreshing ? "Refreshing..." : "Refresh"}
+              </button>
+            </div>
           </div>
           <p style={{ color: "var(--text-dim)", fontSize: 13, marginBottom: 16 }}>
             AI-scanned bets with edge scores of 7+ across NBA, MLB, and NHL
