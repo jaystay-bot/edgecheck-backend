@@ -4,6 +4,50 @@ import { useState, useEffect, useCallback } from "react";
 import { UserButton } from "@clerk/nextjs";
 import "../globals.css";
 
+// Lucide icons as simple SVG components
+const FlameIcon = ({ size = 20, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+  </svg>
+);
+
+const TrendingUpIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+    <polyline points="16 7 22 7 22 13" />
+  </svg>
+);
+
+const AlertTriangleIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    <path d="M12 9v4" />
+    <path d="M12 17h.01" />
+  </svg>
+);
+
+const TargetIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
+  </svg>
+);
+
+const UserIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+const LockIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </svg>
+);
+
 const SPORTS = [
   { key: "nba", label: "NBA", espn: "basketball/nba" },
   { key: "nfl", label: "NFL", espn: "football/nfl" },
@@ -238,6 +282,15 @@ export default function DashboardClient({ userEmail }) {
   const [heatersLoading, setHeatersLoading] = useState(true);
   const [heatersError, setHeatersError] = useState(null);
 
+  // Props state
+  const [activeView, setActiveView] = useState("games"); // games | props
+  const [props, setProps] = useState([]);
+  const [propsLoading, setPropsLoading] = useState(false);
+  const [propsFilter, setPropsFilter] = useState("all"); // all | heaters | nba | mlb | nhl
+  const [propsSport, setPropsSport] = useState("all"); // all | nba | mlb | nhl
+  const [propsTotal, setPropsTotal] = useState(0);
+  const [isPaidUser, setIsPaidUser] = useState(false);
+
   const sportConfig = SPORTS.find((s) => s.key === sport);
 
   // Check for upgrade success on mount
@@ -277,6 +330,37 @@ export default function DashboardClient({ userEmail }) {
     }
     fetchHeaters();
   }, []);
+
+  // Fetch props when view changes to props or sport filter changes
+  const fetchProps = useCallback(async () => {
+    setPropsLoading(true);
+    try {
+      const sportParam = propsSport === "all" ? "all" : propsSport;
+      const filterParam = propsFilter === "heaters" ? "heaters" : "all";
+      const res = await fetch(`/api/props?sport=${sportParam}&filter=${filterParam}`);
+      const data = await res.json();
+
+      if (res.ok) {
+        setProps(data.props || []);
+        setPropsTotal(data.total || 0);
+        setIsPaidUser(data.isPaidUser || false);
+      } else {
+        console.warn("Props fetch failed:", data.error);
+        setProps([]);
+      }
+    } catch (err) {
+      console.warn("Props fetch error:", err.message);
+      setProps([]);
+    } finally {
+      setPropsLoading(false);
+    }
+  }, [propsSport, propsFilter]);
+
+  useEffect(() => {
+    if (activeView === "props") {
+      fetchProps();
+    }
+  }, [activeView, fetchProps]);
 
   const fetchGames = useCallback(async () => {
     setLoading(true);
@@ -513,7 +597,58 @@ export default function DashboardClient({ userEmail }) {
         </div>
       </div>
 
-      {/* Sport Tabs */}
+      {/* View Toggle: Games | Props */}
+      <div
+        style={{
+          display: "flex",
+          gap: 4,
+          marginBottom: 16,
+          background: "var(--surface)",
+          borderRadius: 10,
+          padding: 4,
+          width: "fit-content",
+        }}
+      >
+        <button
+          onClick={() => setActiveView("games")}
+          style={{
+            padding: "10px 20px",
+            borderRadius: 8,
+            border: "none",
+            background: activeView === "games" ? "var(--accent)" : "transparent",
+            color: activeView === "games" ? "#fff" : "var(--text-dim)",
+            cursor: "pointer",
+            fontWeight: 700,
+            fontSize: 14,
+            transition: "all 0.15s",
+          }}
+        >
+          Games
+        </button>
+        <button
+          onClick={() => setActiveView("props")}
+          style={{
+            padding: "10px 20px",
+            borderRadius: 8,
+            border: "none",
+            background: activeView === "props" ? "var(--accent)" : "transparent",
+            color: activeView === "props" ? "#fff" : "var(--text-dim)",
+            cursor: "pointer",
+            fontWeight: 700,
+            fontSize: 14,
+            transition: "all 0.15s",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <FlameIcon size={16} color={activeView === "props" ? "#fff" : "var(--text-dim)"} />
+          Props
+        </button>
+      </div>
+
+      {/* Sport Tabs - Games View Only */}
+      {activeView === "games" && (
       <div
         style={{
           display: "flex",
@@ -545,7 +680,11 @@ export default function DashboardClient({ userEmail }) {
           </button>
         ))}
       </div>
+      )}
 
+      {/* Today's Heaters Section - Games View Only */}
+      {activeView === "games" && (
+      <>
       {/* Today's Heaters Section */}
       {!heatersLoading && heaters.length > 0 && (
         <div
@@ -1149,6 +1288,349 @@ export default function DashboardClient({ userEmail }) {
             )}
           </div>
         ))}
+      </>
+      )}
+
+      {/* Props View */}
+      {activeView === "props" && (
+        <>
+          {/* Props Filter Bar */}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              marginBottom: 16,
+              alignItems: "center",
+            }}
+          >
+            {/* Sport Filter */}
+            <div style={{ display: "flex", gap: 4 }}>
+              {["all", "nba", "mlb", "nhl"].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setPropsSport(s)}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 6,
+                    border: "1px solid",
+                    borderColor: propsSport === s ? "var(--accent)" : "var(--border)",
+                    background: propsSport === s ? "var(--accent)" : "var(--surface)",
+                    color: propsSport === s ? "#fff" : "var(--text-dim)",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    fontSize: 12,
+                  }}
+                >
+                  {s === "all" ? "All Sports" : s.toUpperCase()}
+                </button>
+              ))}
+            </div>
+
+            {/* Type Filter */}
+            <div style={{ display: "flex", gap: 4, marginLeft: 8 }}>
+              <button
+                onClick={() => setPropsFilter("all")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 6,
+                  border: "1px solid",
+                  borderColor: propsFilter === "all" ? "var(--accent)" : "var(--border)",
+                  background: propsFilter === "all" ? "var(--accent)" : "var(--surface)",
+                  color: propsFilter === "all" ? "#fff" : "var(--text-dim)",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: 12,
+                }}
+              >
+                All Props
+              </button>
+              <button
+                onClick={() => setPropsFilter("heaters")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 6,
+                  border: "1px solid",
+                  borderColor: propsFilter === "heaters" ? "var(--red)" : "var(--border)",
+                  background: propsFilter === "heaters" ? "var(--red)" : "var(--surface)",
+                  color: propsFilter === "heaters" ? "#fff" : "var(--text-dim)",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                <FlameIcon size={12} color={propsFilter === "heaters" ? "#fff" : "var(--text-dim)"} />
+                Heaters Only
+              </button>
+            </div>
+
+            {/* Props Count */}
+            {!propsLoading && (
+              <span style={{ color: "var(--text-dim)", fontSize: 13, marginLeft: "auto" }}>
+                {propsTotal} props found today
+              </span>
+            )}
+          </div>
+
+          {/* Props Loading Skeleton */}
+          {propsLoading && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 12,
+                    padding: 20,
+                  }}
+                >
+                  <div style={{ display: "flex", gap: 16 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ background: "var(--border)", height: 16, width: 150, borderRadius: 4, marginBottom: 8, animation: "pulse 1.5s ease-in-out infinite" }} />
+                      <div style={{ background: "var(--border)", height: 20, width: 200, borderRadius: 4, marginBottom: 12, animation: "pulse 1.5s ease-in-out infinite" }} />
+                      <div style={{ background: "var(--border)", height: 14, width: "100%", borderRadius: 4, marginBottom: 6, animation: "pulse 1.5s ease-in-out infinite" }} />
+                      <div style={{ background: "var(--border)", height: 14, width: "80%", borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
+                    </div>
+                    <div style={{ background: "var(--border)", height: 60, width: 60, borderRadius: 8, animation: "pulse 1.5s ease-in-out infinite" }} />
+                  </div>
+                </div>
+              ))}
+              <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
+            </div>
+          )}
+
+          {/* No Props */}
+          {!propsLoading && props.length === 0 && (
+            <div
+              style={{
+                textAlign: "center",
+                padding: 60,
+                color: "var(--text-dim)",
+                background: "var(--surface)",
+                borderRadius: 12,
+                border: "1px solid var(--border)",
+              }}
+            >
+              <FlameIcon size={48} color="var(--text-dim)" />
+              <p style={{ fontSize: 18, marginTop: 16, marginBottom: 8 }}>
+                No props available right now
+              </p>
+              <p style={{ fontSize: 13 }}>
+                Check back closer to game time for player props
+              </p>
+            </div>
+          )}
+
+          {/* Props List */}
+          {!propsLoading && props.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {props.map((prop) => (
+                <div
+                  key={prop.id}
+                  style={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 12,
+                    padding: 20,
+                  }}
+                >
+                  {/* Prop Header */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                    <div style={{ flex: 1 }}>
+                      {/* Sport Badge + Matchup */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                        <span
+                          style={{
+                            background: "var(--surface2)",
+                            padding: "2px 6px",
+                            borderRadius: 4,
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "var(--text-dim)",
+                          }}
+                        >
+                          {prop.sport}
+                        </span>
+                        <span style={{ fontSize: 12, color: "var(--text-dim)" }}>
+                          {prop.awayTeam} @ {prop.homeTeam}
+                        </span>
+                      </div>
+
+                      {/* Player Name + Team */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                        <UserIcon size={16} color="var(--accent)" />
+                        <span style={{ fontWeight: 700, fontSize: 17 }}>{prop.playerName}</span>
+                        <span style={{ fontSize: 13, color: "var(--text-dim)" }}>({prop.team})</span>
+                      </div>
+
+                      {/* Prop Line + Odds */}
+                      <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
+                        {prop.overUnder} {prop.line} {prop.propType}
+                        <span style={{ marginLeft: 8, color: prop.odds > 0 ? "var(--green)" : "var(--text-dim)" }}>
+                          {prop.odds > 0 ? "+" : ""}{prop.odds}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Heater Score Badge */}
+                    {prop.heaterScore ? (
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 70 }}>
+                        <div
+                          style={{
+                            background:
+                              prop.heaterScore >= 9 ? "var(--green)"
+                              : prop.heaterScore >= 8 ? "var(--yellow)"
+                              : "var(--orange)",
+                            color: "#fff",
+                            padding: "8px 14px",
+                            borderRadius: 10,
+                            fontWeight: 700,
+                            fontSize: 22,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
+                        >
+                          <FlameIcon size={18} color="#fff" />
+                          {prop.heaterScore}
+                        </div>
+                        <span style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 4 }}>HEATER</span>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          background: "var(--surface2)",
+                          padding: "12px",
+                          borderRadius: 10,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <LockIcon size={16} color="var(--text-dim)" />
+                        <span style={{ fontSize: 11, color: "var(--text-dim)" }}>PRO</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Paid User Stats */}
+                  {isPaidUser && prop.heaterScore && (
+                    <>
+                      {/* Stats Row */}
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 16,
+                          marginBottom: 12,
+                          padding: "10px 14px",
+                          background: "var(--surface2)",
+                          borderRadius: 8,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <TargetIcon size={14} color="var(--green)" />
+                          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>Last 10:</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--red)" }}>
+                            {prop.hitRateLast10}/10
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <TrendingUpIcon size={14} color="var(--accent)" />
+                          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>Season:</span>
+                          <span style={{ fontSize: 13, fontWeight: 700 }}>{prop.seasonHitRate}%</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>L10 Avg:</span>
+                          <span style={{ fontSize: 13, fontWeight: 700 }}>{prop.last10Avg}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
+                          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>Confidence:</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: prop.confidence >= 8 ? "var(--green)" : "var(--text-dim)" }}>
+                            {prop.confidence}/10
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Write-up */}
+                      {prop.writeup && (
+                        <div style={{ marginBottom: 12 }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-dim)", marginBottom: 6, textTransform: "uppercase" }}>
+                            Analysis
+                          </div>
+                          <p style={{ fontSize: 14, lineHeight: 1.6, margin: 0, color: "var(--text)" }}>
+                            {prop.writeup}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Risk Section */}
+                      {prop.risk && (
+                        <div
+                          style={{
+                            padding: "10px 14px",
+                            background: "rgba(239,68,68,0.1)",
+                            borderRadius: 8,
+                            borderLeft: "3px solid var(--red)",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                            <AlertTriangleIcon size={14} color="var(--red)" />
+                            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--red)" }}>What Could Go Wrong</span>
+                          </div>
+                          <p style={{ fontSize: 13, lineHeight: 1.5, margin: 0, color: "var(--text-dim)" }}>
+                            {prop.risk}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Free User Upsell */}
+                  {!isPaidUser && (
+                    <div
+                      style={{
+                        padding: "16px",
+                        background: "linear-gradient(135deg, var(--surface2) 0%, rgba(99,102,241,0.1) 100%)",
+                        borderRadius: 8,
+                        textAlign: "center",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 8 }}>
+                        <LockIcon size={16} color="var(--accent)" />
+                        <span style={{ fontWeight: 600, color: "var(--accent)" }}>Unlock Full Analysis</span>
+                      </div>
+                      <p style={{ fontSize: 12, color: "var(--text-dim)", margin: "0 0 12px 0" }}>
+                        Get hit rates, AI write-ups, risk factors, and heater scores
+                      </p>
+                      <button
+                        onClick={handleUpgrade}
+                        disabled={upgrading}
+                        style={{
+                          padding: "8px 20px",
+                          background: "var(--accent)",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 6,
+                          fontWeight: 600,
+                          fontSize: 13,
+                          cursor: upgrading ? "not-allowed" : "pointer",
+                        }}
+                      >
+                        {upgrading ? "..." : "Upgrade to Pro"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
       {/* Footer */}
       <div
