@@ -55,6 +55,41 @@ const EyeIcon = ({ size = 16, color = "currentColor" }) => (
   </svg>
 );
 
+const ClockIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
+const ChartIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="20" x2="18" y2="10" />
+    <line x1="12" y1="20" x2="12" y2="4" />
+    <line x1="6" y1="20" x2="6" y2="14" />
+  </svg>
+);
+
+function formatCountdown(isoTime) {
+  const gameTime = new Date(isoTime);
+  const now = new Date();
+  const diff = gameTime - now;
+
+  if (diff <= 0) return "Started";
+
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+  if (hours > 24) {
+    const days = Math.floor(hours / 24);
+    return `${days}d ${hours % 24}h`;
+  }
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+}
+
 const SPORTS = [
   { key: "nba", label: "NBA", espn: "basketball/nba" },
   { key: "nfl", label: "NFL", espn: "football/nfl" },
@@ -291,12 +326,11 @@ export default function DashboardClient({ userEmail }) {
 
   // Props state
   const [activeView, setActiveView] = useState("games"); // games | props | linewatch
-  const [props, setProps] = useState([]);
+  const [propsCategories, setPropsCategories] = useState([]);
   const [propsLoading, setPropsLoading] = useState(false);
-  const [propsFilter, setPropsFilter] = useState("all"); // all | heaters | nba | mlb | nhl
-  const [propsSport, setPropsSport] = useState("all"); // all | nba | mlb | nhl
-  const [propsTotal, setPropsTotal] = useState(0);
+  const [propsSport, setPropsSport] = useState("mlb"); // mlb | nba | nhl
   const [isPaidUser, setIsPaidUser] = useState(false);
+  const [propsScored, setPropsScored] = useState(false);
 
   // Line Watch state
   const [lineWatchGames, setLineWatchGames] = useState([]);
@@ -348,26 +382,24 @@ export default function DashboardClient({ userEmail }) {
   const fetchProps = useCallback(async () => {
     setPropsLoading(true);
     try {
-      const sportParam = propsSport === "all" ? "all" : propsSport;
-      const filterParam = propsFilter === "heaters" ? "heaters" : "all";
-      const res = await fetch(`/api/props?sport=${sportParam}&filter=${filterParam}`);
+      const res = await fetch(`/api/props?sport=${propsSport}`);
       const data = await res.json();
 
       if (res.ok) {
-        setProps(data.props || []);
-        setPropsTotal(data.total || 0);
+        setPropsCategories(data.categories || []);
         setIsPaidUser(data.isPaidUser || false);
+        setPropsScored(data.scored || false);
       } else {
         console.warn("Props fetch failed:", data.error);
-        setProps([]);
+        setPropsCategories([]);
       }
     } catch (err) {
       console.warn("Props fetch error:", err.message);
-      setProps([]);
+      setPropsCategories([]);
     } finally {
       setPropsLoading(false);
     }
-  }, [propsSport, propsFilter]);
+  }, [propsSport]);
 
   useEffect(() => {
     if (activeView === "props") {
@@ -1359,108 +1391,63 @@ export default function DashboardClient({ userEmail }) {
       {/* Props View */}
       {activeView === "props" && (
         <>
-          {/* Props Filter Bar */}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 8,
-              marginBottom: 16,
-              alignItems: "center",
-            }}
-          >
-            {/* Sport Filter */}
-            <div style={{ display: "flex", gap: 4 }}>
-              {["all", "nba", "mlb", "nhl"].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setPropsSport(s)}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 6,
-                    border: "1px solid",
-                    borderColor: propsSport === s ? "var(--accent)" : "var(--border)",
-                    background: propsSport === s ? "var(--accent)" : "var(--surface)",
-                    color: propsSport === s ? "#fff" : "var(--text-dim)",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                    fontSize: 12,
-                  }}
-                >
-                  {s === "all" ? "All Sports" : s.toUpperCase()}
-                </button>
-              ))}
+          {/* Props Header */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <ChartIcon size={20} color="var(--accent)" />
+              <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Smart Props</h2>
+              {!propsLoading && propsScored && (
+                <span style={{ fontSize: 11, color: "var(--green)", background: "rgba(34,197,94,0.1)", padding: "2px 8px", borderRadius: 10 }}>
+                  AI Scored
+                </span>
+              )}
             </div>
+            <p style={{ fontSize: 13, color: "var(--text-dim)", margin: 0 }}>
+              Top-ranked props by category. Cached 4 hours. One API call per sport.
+            </p>
+          </div>
 
-            {/* Type Filter */}
-            <div style={{ display: "flex", gap: 4, marginLeft: 8 }}>
+          {/* Sport Filter */}
+          <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+            {["mlb", "nba", "nhl"].map((s) => (
               <button
-                onClick={() => setPropsFilter("all")}
+                key={s}
+                onClick={() => setPropsSport(s)}
                 style={{
-                  padding: "6px 12px",
-                  borderRadius: 6,
+                  padding: "8px 16px",
+                  borderRadius: 8,
                   border: "1px solid",
-                  borderColor: propsFilter === "all" ? "var(--accent)" : "var(--border)",
-                  background: propsFilter === "all" ? "var(--accent)" : "var(--surface)",
-                  color: propsFilter === "all" ? "#fff" : "var(--text-dim)",
+                  borderColor: propsSport === s ? "var(--accent)" : "var(--border)",
+                  background: propsSport === s ? "var(--accent)" : "var(--surface)",
+                  color: propsSport === s ? "#fff" : "var(--text-dim)",
                   cursor: "pointer",
                   fontWeight: 600,
-                  fontSize: 12,
+                  fontSize: 13,
                 }}
               >
-                All Props
+                {s.toUpperCase()}
               </button>
-              <button
-                onClick={() => setPropsFilter("heaters")}
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: 6,
-                  border: "1px solid",
-                  borderColor: propsFilter === "heaters" ? "var(--red)" : "var(--border)",
-                  background: propsFilter === "heaters" ? "var(--red)" : "var(--surface)",
-                  color: propsFilter === "heaters" ? "#fff" : "var(--text-dim)",
-                  cursor: "pointer",
-                  fontWeight: 600,
-                  fontSize: 12,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
-                }}
-              >
-                <FlameIcon size={12} color={propsFilter === "heaters" ? "#fff" : "var(--text-dim)"} />
-                Heaters Only
-              </button>
-            </div>
-
-            {/* Props Count */}
-            {!propsLoading && (
-              <span style={{ color: "var(--text-dim)", fontSize: 13, marginLeft: "auto" }}>
-                {propsTotal} props found today
-              </span>
-            )}
+            ))}
           </div>
 
           {/* Props Loading Skeleton */}
           {propsLoading && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  style={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                    padding: 20,
-                  }}
-                >
-                  <div style={{ display: "flex", gap: 16 }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ background: "var(--border)", height: 16, width: 150, borderRadius: 4, marginBottom: 8, animation: "pulse 1.5s ease-in-out infinite" }} />
-                      <div style={{ background: "var(--border)", height: 20, width: 200, borderRadius: 4, marginBottom: 12, animation: "pulse 1.5s ease-in-out infinite" }} />
-                      <div style={{ background: "var(--border)", height: 14, width: "100%", borderRadius: 4, marginBottom: 6, animation: "pulse 1.5s ease-in-out infinite" }} />
-                      <div style={{ background: "var(--border)", height: 14, width: "80%", borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
-                    </div>
-                    <div style={{ background: "var(--border)", height: 60, width: 60, borderRadius: 8, animation: "pulse 1.5s ease-in-out infinite" }} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              {[1, 2].map((i) => (
+                <div key={i}>
+                  <div style={{ background: "var(--border)", height: 20, width: 180, borderRadius: 4, marginBottom: 12, animation: "pulse 1.5s ease-in-out infinite" }} />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {[1, 2, 3].map((j) => (
+                      <div key={j} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
+                        <div style={{ display: "flex", gap: 16 }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ background: "var(--border)", height: 14, width: 120, borderRadius: 4, marginBottom: 8, animation: "pulse 1.5s ease-in-out infinite" }} />
+                            <div style={{ background: "var(--border)", height: 18, width: 180, borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
+                          </div>
+                          <div style={{ background: "var(--border)", height: 50, width: 50, borderRadius: 8, animation: "pulse 1.5s ease-in-out infinite" }} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -1469,7 +1456,7 @@ export default function DashboardClient({ userEmail }) {
           )}
 
           {/* No Props */}
-          {!propsLoading && props.length === 0 && (
+          {!propsLoading && propsCategories.length === 0 && (
             <div
               style={{
                 textAlign: "center",
@@ -1482,7 +1469,7 @@ export default function DashboardClient({ userEmail }) {
             >
               <FlameIcon size={48} color="var(--text-dim)" />
               <p style={{ fontSize: 18, marginTop: 16, marginBottom: 8 }}>
-                No props available right now
+                No {propsSport.toUpperCase()} props available
               </p>
               <p style={{ fontSize: 13 }}>
                 Check back closer to game time for player props
@@ -1490,204 +1477,221 @@ export default function DashboardClient({ userEmail }) {
             </div>
           )}
 
-          {/* Props List */}
-          {!propsLoading && props.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {props.map((prop) => (
-                <div
-                  key={prop.id}
-                  style={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                    padding: 20,
-                  }}
-                >
-                  {/* Prop Header */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                    <div style={{ flex: 1 }}>
-                      {/* Sport Badge + Matchup */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                        <span
-                          style={{
-                            background: "var(--surface2)",
-                            padding: "2px 6px",
-                            borderRadius: 4,
-                            fontSize: 10,
-                            fontWeight: 700,
-                            color: "var(--text-dim)",
-                          }}
-                        >
-                          {prop.sport}
-                        </span>
-                        <span style={{ fontSize: 12, color: "var(--text-dim)" }}>
-                          {prop.awayTeam} @ {prop.homeTeam}
-                        </span>
-                      </div>
-
-                      {/* Player Name + Team */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                        <UserIcon size={16} color="var(--accent)" />
-                        <span style={{ fontWeight: 700, fontSize: 17 }}>{prop.playerName}</span>
-                        <span style={{ fontSize: 13, color: "var(--text-dim)" }}>({prop.team})</span>
-                      </div>
-
-                      {/* Prop Line + Odds */}
-                      <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
-                        {prop.overUnder} {prop.line} {prop.propType}
-                        <span style={{ marginLeft: 8, color: prop.odds > 0 ? "var(--green)" : "var(--text-dim)" }}>
-                          {prop.odds > 0 ? "+" : ""}{prop.odds}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Heater Score Badge */}
-                    {prop.heaterScore ? (
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 70 }}>
-                        <div
-                          style={{
-                            background:
-                              prop.heaterScore >= 9 ? "var(--green)"
-                              : prop.heaterScore >= 8 ? "var(--yellow)"
-                              : "var(--orange)",
-                            color: "#fff",
-                            padding: "8px 14px",
-                            borderRadius: 10,
-                            fontWeight: 700,
-                            fontSize: 22,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 4,
-                          }}
-                        >
-                          <FlameIcon size={18} color="#fff" />
-                          {prop.heaterScore}
-                        </div>
-                        <span style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 4 }}>HEATER</span>
-                      </div>
-                    ) : (
-                      <div
-                        style={{
-                          background: "var(--surface2)",
-                          padding: "12px",
-                          borderRadius: 10,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                        }}
-                      >
-                        <LockIcon size={16} color="var(--text-dim)" />
-                        <span style={{ fontSize: 11, color: "var(--text-dim)" }}>PRO</span>
-                      </div>
-                    )}
+          {/* Props Categories */}
+          {!propsLoading && propsCategories.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+              {propsCategories.map((category) => (
+                <div key={category.id}>
+                  {/* Category Header */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                    <FlameIcon size={18} color="var(--accent)" />
+                    <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>{category.name}</h3>
+                    <span style={{ fontSize: 12, color: "var(--text-dim)" }}>
+                      ({category.props.length} props)
+                    </span>
                   </div>
 
-                  {/* Paid User Stats */}
-                  {isPaidUser && prop.heaterScore && (
-                    <>
-                      {/* Stats Row */}
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 16,
-                          marginBottom: 12,
-                          padding: "10px 14px",
-                          background: "var(--surface2)",
-                          borderRadius: 8,
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <TargetIcon size={14} color="var(--green)" />
-                          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>Last 10:</span>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--red)" }}>
-                            {prop.hitRateLast10}/10
-                          </span>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <TrendingUpIcon size={14} color="var(--accent)" />
-                          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>Season:</span>
-                          <span style={{ fontSize: 13, fontWeight: 700 }}>{prop.seasonHitRate}%</span>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>L10 Avg:</span>
-                          <span style={{ fontSize: 13, fontWeight: 700 }}>{prop.last10Avg}</span>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
-                          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>Confidence:</span>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: prop.confidence >= 8 ? "var(--green)" : "var(--text-dim)" }}>
-                            {prop.confidence}/10
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Write-up */}
-                      {prop.writeup && (
-                        <div style={{ marginBottom: 12 }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-dim)", marginBottom: 6, textTransform: "uppercase" }}>
-                            Analysis
-                          </div>
-                          <p style={{ fontSize: 14, lineHeight: 1.6, margin: 0, color: "var(--text)" }}>
-                            {prop.writeup}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Risk Section */}
-                      {prop.risk && (
+                  {/* Category Props */}
+                  {category.props.length === 0 ? (
+                    <div style={{ padding: 20, background: "var(--surface)", borderRadius: 10, color: "var(--text-dim)", fontSize: 13, textAlign: "center" }}>
+                      No props in this category tonight
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {category.props.map((prop) => (
                         <div
+                          key={prop.id}
                           style={{
-                            padding: "10px 14px",
-                            background: "rgba(239,68,68,0.1)",
-                            borderRadius: 8,
-                            borderLeft: "3px solid var(--red)",
+                            background: "var(--surface)",
+                            border: prop.heaterScore >= 8 ? "2px solid var(--green)" : "1px solid var(--border)",
+                            borderRadius: 12,
+                            padding: 16,
                           }}
                         >
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                            <AlertTriangleIcon size={14} color="var(--red)" />
-                            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--red)" }}>What Could Go Wrong</span>
-                          </div>
-                          <p style={{ fontSize: 13, lineHeight: 1.5, margin: 0, color: "var(--text-dim)" }}>
-                            {prop.risk}
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  )}
+                          {/* Prop Header Row */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                            <div style={{ flex: 1 }}>
+                              {/* Matchup + Countdown */}
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                                <span style={{ fontSize: 12, color: "var(--text-dim)" }}>
+                                  {prop.awayTeam} @ {prop.homeTeam}
+                                </span>
+                                <div style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--accent)", fontSize: 11 }}>
+                                  <ClockIcon size={12} color="var(--accent)" />
+                                  {formatCountdown(prop.commenceTime)}
+                                </div>
+                              </div>
 
-                  {/* Free User Upsell */}
-                  {!isPaidUser && (
-                    <div
-                      style={{
-                        padding: "16px",
-                        background: "linear-gradient(135deg, var(--surface2) 0%, rgba(99,102,241,0.1) 100%)",
-                        borderRadius: 8,
-                        textAlign: "center",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 8 }}>
-                        <LockIcon size={16} color="var(--accent)" />
-                        <span style={{ fontWeight: 600, color: "var(--accent)" }}>Unlock Full Analysis</span>
-                      </div>
-                      <p style={{ fontSize: 12, color: "var(--text-dim)", margin: "0 0 12px 0" }}>
-                        Get hit rates, AI write-ups, risk factors, and heater scores
-                      </p>
-                      <button
-                        onClick={handleUpgrade}
-                        disabled={upgrading}
-                        style={{
-                          padding: "8px 20px",
-                          background: "var(--accent)",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: 6,
-                          fontWeight: 600,
-                          fontSize: 13,
-                          cursor: upgrading ? "not-allowed" : "pointer",
-                        }}
-                      >
-                        {upgrading ? "..." : "Upgrade to Pro"}
-                      </button>
+                              {/* Player Name */}
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                                <UserIcon size={16} color="var(--accent)" />
+                                <span style={{ fontWeight: 700, fontSize: 16 }}>{prop.playerName}</span>
+                              </div>
+
+                              {/* Prop Line + Best Odds */}
+                              <div style={{ fontSize: 14, fontWeight: 600 }}>
+                                {prop.overUnder} {prop.line} {prop.propType}
+                                <span style={{ marginLeft: 8, color: prop.bestOdds > 0 ? "var(--green)" : "var(--text-dim)" }}>
+                                  {prop.bestOdds > 0 ? "+" : ""}{prop.bestOdds}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Heater Score Badge */}
+                            {prop.heaterScore ? (
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 60 }}>
+                                <div
+                                  style={{
+                                    background:
+                                      prop.heaterScore >= 9 ? "var(--green)"
+                                      : prop.heaterScore >= 8 ? "var(--yellow)"
+                                      : prop.heaterScore >= 7 ? "var(--orange)"
+                                      : "var(--surface2)",
+                                    color: prop.heaterScore >= 7 ? "#fff" : "var(--text)",
+                                    padding: "6px 12px",
+                                    borderRadius: 8,
+                                    fontWeight: 700,
+                                    fontSize: 20,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                  }}
+                                >
+                                  <FlameIcon size={16} color={prop.heaterScore >= 7 ? "#fff" : "var(--text-dim)"} />
+                                  {prop.heaterScore}
+                                </div>
+                                <span style={{ fontSize: 9, color: "var(--text-dim)", marginTop: 2 }}>HEATER</span>
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  background: "var(--surface2)",
+                                  padding: "10px",
+                                  borderRadius: 8,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 4,
+                                }}
+                              >
+                                <LockIcon size={14} color="var(--text-dim)" />
+                                <span style={{ fontSize: 10, color: "var(--text-dim)" }}>PRO</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Paid User Stats + Analysis */}
+                          {isPaidUser && prop.heaterScore && (
+                            <>
+                              {/* Stats Row */}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: 12,
+                                  marginBottom: 10,
+                                  padding: "8px 12px",
+                                  background: "var(--surface2)",
+                                  borderRadius: 6,
+                                  flexWrap: "wrap",
+                                  fontSize: 12,
+                                }}
+                              >
+                                {prop.relevantStat && (
+                                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                    <ChartIcon size={12} color="var(--accent)" />
+                                    <span style={{ color: "var(--text-dim)" }}>Stat:</span>
+                                    <span style={{ fontWeight: 700 }}>{prop.relevantStat}</span>
+                                  </div>
+                                )}
+                                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                  <TargetIcon size={12} color="var(--green)" />
+                                  <span style={{ color: "var(--text-dim)" }}>Hit Rate:</span>
+                                  <span style={{ fontWeight: 700, color: prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--red)" }}>
+                                    {prop.hitRateLast10}/10
+                                  </span>
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" }}>
+                                  <span style={{ color: "var(--text-dim)" }}>Confidence:</span>
+                                  <span style={{ fontWeight: 700, color: prop.confidence >= 8 ? "var(--green)" : "var(--text-dim)" }}>
+                                    {prop.confidence}/10
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Write-up */}
+                              {prop.writeup && (
+                                <p style={{ fontSize: 13, lineHeight: 1.6, margin: "0 0 8px 0", color: "var(--text)" }}>
+                                  {prop.writeup}
+                                </p>
+                              )}
+
+                              {/* Key Factor */}
+                              {prop.keyFactor && (
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+                                  <TrendingUpIcon size={12} color="var(--accent)" />
+                                  <span style={{ color: "var(--accent)", fontWeight: 600 }}>Key:</span>
+                                  <span style={{ color: "var(--text-dim)" }}>{prop.keyFactor}</span>
+                                </div>
+                              )}
+
+                              {/* Multi-book odds */}
+                              {prop.odds && prop.odds.length > 1 && (
+                                <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                  {prop.odds.slice(0, 4).map((o, idx) => (
+                                    <span
+                                      key={idx}
+                                      style={{
+                                        fontSize: 10,
+                                        padding: "2px 6px",
+                                        background: "var(--surface2)",
+                                        borderRadius: 4,
+                                        color: "var(--text-dim)",
+                                      }}
+                                    >
+                                      {o.bookmaker}: {o.price > 0 ? "+" : ""}{o.price}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                          )}
+
+                          {/* Free User Upsell */}
+                          {!isPaidUser && (
+                            <div
+                              style={{
+                                padding: "12px",
+                                background: "linear-gradient(135deg, var(--surface2) 0%, rgba(99,102,241,0.1) 100%)",
+                                borderRadius: 6,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginTop: 8,
+                              }}
+                            >
+                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                <LockIcon size={14} color="var(--accent)" />
+                                <span style={{ fontSize: 12, color: "var(--text-dim)" }}>Unlock hit rates, AI analysis, and heater scores</span>
+                              </div>
+                              <button
+                                onClick={handleUpgrade}
+                                disabled={upgrading}
+                                style={{
+                                  padding: "6px 14px",
+                                  background: "var(--accent)",
+                                  color: "#fff",
+                                  border: "none",
+                                  borderRadius: 6,
+                                  fontWeight: 600,
+                                  fontSize: 12,
+                                  cursor: upgrading ? "not-allowed" : "pointer",
+                                }}
+                              >
+                                {upgrading ? "..." : "Upgrade"}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
