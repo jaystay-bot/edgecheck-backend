@@ -48,6 +48,13 @@ const LockIcon = ({ size = 16, color = "currentColor" }) => (
   </svg>
 );
 
+const EyeIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
 const SPORTS = [
   { key: "nba", label: "NBA", espn: "basketball/nba" },
   { key: "nfl", label: "NFL", espn: "football/nfl" },
@@ -283,13 +290,19 @@ export default function DashboardClient({ userEmail }) {
   const [heatersError, setHeatersError] = useState(null);
 
   // Props state
-  const [activeView, setActiveView] = useState("games"); // games | props
+  const [activeView, setActiveView] = useState("games"); // games | props | linewatch
   const [props, setProps] = useState([]);
   const [propsLoading, setPropsLoading] = useState(false);
   const [propsFilter, setPropsFilter] = useState("all"); // all | heaters | nba | mlb | nhl
   const [propsSport, setPropsSport] = useState("all"); // all | nba | mlb | nhl
   const [propsTotal, setPropsTotal] = useState(0);
   const [isPaidUser, setIsPaidUser] = useState(false);
+
+  // Line Watch state
+  const [lineWatchGames, setLineWatchGames] = useState([]);
+  const [lineWatchLoading, setLineWatchLoading] = useState(false);
+  const [lineWatchError, setLineWatchError] = useState(null);
+  const [lineWatchValueAlerts, setLineWatchValueAlerts] = useState(0);
 
   const sportConfig = SPORTS.find((s) => s.key === sport);
 
@@ -361,6 +374,38 @@ export default function DashboardClient({ userEmail }) {
       fetchProps();
     }
   }, [activeView, fetchProps]);
+
+  // Fetch Line Watch data
+  const fetchLineWatch = useCallback(async () => {
+    setLineWatchLoading(true);
+    setLineWatchError(null);
+    try {
+      const res = await fetch("/api/line-watch");
+      const data = await res.json();
+
+      if (res.status === 402 && data.code === "SUBSCRIPTION_REQUIRED") {
+        setLineWatchError("subscription_required");
+        setLineWatchGames([]);
+        return;
+      }
+
+      if (!res.ok) throw new Error(data.error || "Failed to load Line Watch");
+      setLineWatchGames(data.games || []);
+      setLineWatchValueAlerts(data.valueAlerts || 0);
+    } catch (err) {
+      console.warn("Line Watch fetch error:", err.message);
+      setLineWatchError(err.message);
+      setLineWatchGames([]);
+    } finally {
+      setLineWatchLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeView === "linewatch") {
+      fetchLineWatch();
+    }
+  }, [activeView, fetchLineWatch]);
 
   const fetchGames = useCallback(async () => {
     setLoading(true);
@@ -644,6 +689,26 @@ export default function DashboardClient({ userEmail }) {
         >
           <FlameIcon size={16} color={activeView === "props" ? "#fff" : "var(--text-dim)"} />
           Props
+        </button>
+        <button
+          onClick={() => setActiveView("linewatch")}
+          style={{
+            padding: "10px 20px",
+            borderRadius: 8,
+            border: "none",
+            background: activeView === "linewatch" ? "var(--accent)" : "transparent",
+            color: activeView === "linewatch" ? "#fff" : "var(--text-dim)",
+            cursor: "pointer",
+            fontWeight: 700,
+            fontSize: 14,
+            transition: "all 0.15s",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <EyeIcon size={16} color={activeView === "linewatch" ? "#fff" : "var(--text-dim)"} />
+          Line Watch
         </button>
       </div>
 
@@ -1623,6 +1688,360 @@ export default function DashboardClient({ userEmail }) {
                       >
                         {upgrading ? "..." : "Upgrade to Pro"}
                       </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Line Watch View */}
+      {activeView === "linewatch" && (
+        <>
+          {/* Line Watch Header */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <EyeIcon size={20} color="var(--accent)" />
+              <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Tomorrow&apos;s Line Watch</h2>
+            </div>
+            <p style={{ fontSize: 13, color: "var(--text-dim)", margin: 0 }}>
+              AI-predicted lines vs current market. Value alerts when gap is 2+ points.
+            </p>
+            {!lineWatchLoading && lineWatchValueAlerts > 0 && (
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  marginTop: 8,
+                  padding: "6px 12px",
+                  background: "rgba(34,197,94,0.1)",
+                  borderRadius: 20,
+                  border: "1px solid var(--green)",
+                }}
+              >
+                <AlertTriangleIcon size={14} color="var(--green)" />
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--green)" }}>
+                  {lineWatchValueAlerts} Value Alert{lineWatchValueAlerts > 1 ? "s" : ""} Found
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Line Watch Loading */}
+          {lineWatchLoading && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 12,
+                    padding: 20,
+                  }}
+                >
+                  <div style={{ display: "flex", gap: 16 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ background: "var(--border)", height: 16, width: 80, borderRadius: 4, marginBottom: 8, animation: "pulse 1.5s ease-in-out infinite" }} />
+                      <div style={{ background: "var(--border)", height: 20, width: 250, borderRadius: 4, marginBottom: 12, animation: "pulse 1.5s ease-in-out infinite" }} />
+                      <div style={{ background: "var(--border)", height: 40, width: "100%", borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
+            </div>
+          )}
+
+          {/* Subscription Required */}
+          {!lineWatchLoading && lineWatchError === "subscription_required" && (
+            <div
+              style={{
+                textAlign: "center",
+                padding: 60,
+                background: "var(--surface)",
+                borderRadius: 12,
+                border: "1px solid var(--border)",
+              }}
+            >
+              <LockIcon size={48} color="var(--accent)" />
+              <h3 style={{ fontSize: 20, marginTop: 16, marginBottom: 8 }}>
+                Unlock Line Watch
+              </h3>
+              <p style={{ fontSize: 14, color: "var(--text-dim)", marginBottom: 20 }}>
+                Get AI-predicted lines and value alerts with EdgeCheck Pro
+              </p>
+              <button
+                onClick={handleUpgrade}
+                disabled={upgrading}
+                style={{
+                  padding: "12px 28px",
+                  background: "var(--accent)",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: 15,
+                  cursor: upgrading ? "not-allowed" : "pointer",
+                }}
+              >
+                {upgrading ? "..." : "Upgrade to Pro"}
+              </button>
+            </div>
+          )}
+
+          {/* Line Watch Error */}
+          {!lineWatchLoading && lineWatchError && lineWatchError !== "subscription_required" && (
+            <div
+              style={{
+                textAlign: "center",
+                padding: 40,
+                color: "var(--red)",
+                background: "var(--surface)",
+                borderRadius: 12,
+                border: "1px solid var(--border)",
+              }}
+            >
+              <AlertTriangleIcon size={32} color="var(--red)" />
+              <p style={{ marginTop: 12 }}>{lineWatchError}</p>
+            </div>
+          )}
+
+          {/* No Games */}
+          {!lineWatchLoading && !lineWatchError && lineWatchGames.length === 0 && (
+            <div
+              style={{
+                textAlign: "center",
+                padding: 60,
+                color: "var(--text-dim)",
+                background: "var(--surface)",
+                borderRadius: 12,
+                border: "1px solid var(--border)",
+              }}
+            >
+              <EyeIcon size={48} color="var(--text-dim)" />
+              <p style={{ fontSize: 18, marginTop: 16, marginBottom: 8 }}>
+                No games scheduled for tomorrow
+              </p>
+              <p style={{ fontSize: 13 }}>
+                Check back later for upcoming matchups
+              </p>
+            </div>
+          )}
+
+          {/* Line Watch Games */}
+          {!lineWatchLoading && !lineWatchError && lineWatchGames.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {lineWatchGames.map((game) => (
+                <div
+                  key={game.id}
+                  style={{
+                    background: "var(--surface)",
+                    border: game.hasValueAlert ? "2px solid var(--green)" : "1px solid var(--border)",
+                    borderRadius: 12,
+                    padding: 20,
+                    position: "relative",
+                  }}
+                >
+                  {/* Value Alert Badge */}
+                  {game.hasValueAlert && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: -10,
+                        right: 16,
+                        background: "var(--green)",
+                        color: "#fff",
+                        padding: "4px 12px",
+                        borderRadius: 12,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <AlertTriangleIcon size={12} color="#fff" />
+                      VALUE ALERT
+                    </div>
+                  )}
+
+                  {/* Game Header */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                    <span
+                      style={{
+                        background: "var(--surface2)",
+                        padding: "2px 6px",
+                        borderRadius: 4,
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "var(--text-dim)",
+                      }}
+                    >
+                      {game.sport}
+                    </span>
+                    <span style={{ fontWeight: 700, fontSize: 16 }}>
+                      {game.awayTeam} @ {game.homeTeam}
+                    </span>
+                  </div>
+
+                  {/* Lines Comparison Grid */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr 1fr",
+                      gap: 12,
+                      marginBottom: 16,
+                      background: "var(--surface2)",
+                      padding: 16,
+                      borderRadius: 10,
+                    }}
+                  >
+                    {/* Headers */}
+                    <div style={{ fontWeight: 600, fontSize: 12, color: "var(--text-dim)" }}></div>
+                    <div style={{ fontWeight: 600, fontSize: 12, color: "var(--text-dim)", textAlign: "center" }}>Current Line</div>
+                    <div style={{ fontWeight: 600, fontSize: 12, color: "var(--accent)", textAlign: "center" }}>Our Prediction</div>
+
+                    {/* Spread Row */}
+                    <div style={{ fontWeight: 600, fontSize: 13, display: "flex", alignItems: "center" }}>Spread</div>
+                    <div style={{ textAlign: "center", fontSize: 15, fontWeight: 700 }}>
+                      {game.currentOdds?.homeSpread != null ? (
+                        <>
+                          {game.homeAbbrev || game.homeTeam.split(" ").pop()}{" "}
+                          {game.currentOdds.homeSpread > 0 ? "+" : ""}{game.currentOdds.homeSpread}
+                        </>
+                      ) : (
+                        <span style={{ color: "var(--text-dim)" }}>N/A</span>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        textAlign: "center",
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: game.spreadGap?.hasValue ? "var(--green)" : "var(--text)",
+                      }}
+                    >
+                      {game.homeAbbrev || game.homeTeam.split(" ").pop()}{" "}
+                      {game.prediction?.predictedHomeSpread > 0 ? "+" : ""}
+                      {game.prediction?.predictedHomeSpread?.toFixed(1)}
+                      {game.spreadGap?.hasValue && (
+                        <span style={{ fontSize: 11, marginLeft: 6, color: "var(--green)" }}>
+                          ({game.spreadGap.gap}pt gap)
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Total Row */}
+                    <div style={{ fontWeight: 600, fontSize: 13, display: "flex", alignItems: "center" }}>Total</div>
+                    <div style={{ textAlign: "center", fontSize: 15, fontWeight: 700 }}>
+                      {game.currentOdds?.total != null ? (
+                        <>O/U {game.currentOdds.total}</>
+                      ) : (
+                        <span style={{ color: "var(--text-dim)" }}>N/A</span>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        textAlign: "center",
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: game.totalGap?.hasValue ? "var(--green)" : "var(--text)",
+                      }}
+                    >
+                      O/U {game.prediction?.predictedTotal?.toFixed(1)}
+                      {game.totalGap?.hasValue && (
+                        <span style={{ fontSize: 11, marginLeft: 6, color: "var(--green)" }}>
+                          ({game.totalGap.gap}pt gap)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Confidence Meters */}
+                  <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>Spread Confidence</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ flex: 1, height: 6, background: "var(--surface2)", borderRadius: 3, overflow: "hidden" }}>
+                          <div
+                            style={{
+                              width: `${(game.prediction?.spreadConfidence || 0) * 10}%`,
+                              height: "100%",
+                              background: game.prediction?.spreadConfidence >= 8 ? "var(--green)" : game.prediction?.spreadConfidence >= 6 ? "var(--yellow)" : "var(--text-dim)",
+                              borderRadius: 3,
+                            }}
+                          />
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 700 }}>{game.prediction?.spreadConfidence}/10</span>
+                      </div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>Total Confidence</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ flex: 1, height: 6, background: "var(--surface2)", borderRadius: 3, overflow: "hidden" }}>
+                          <div
+                            style={{
+                              width: `${(game.prediction?.totalConfidence || 0) * 10}%`,
+                              height: "100%",
+                              background: game.prediction?.totalConfidence >= 8 ? "var(--green)" : game.prediction?.totalConfidence >= 6 ? "var(--yellow)" : "var(--text-dim)",
+                              borderRadius: 3,
+                            }}
+                          />
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 700 }}>{game.prediction?.totalConfidence}/10</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Analysis */}
+                  {game.prediction?.spreadAnalysis && (
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-dim)", marginBottom: 6, textTransform: "uppercase" }}>
+                        Spread Analysis
+                      </div>
+                      <p style={{ fontSize: 13, lineHeight: 1.6, margin: 0, color: "var(--text)" }}>
+                        {game.prediction.spreadAnalysis}
+                      </p>
+                    </div>
+                  )}
+
+                  {game.prediction?.totalAnalysis && (
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-dim)", marginBottom: 6, textTransform: "uppercase" }}>
+                        Total Analysis
+                      </div>
+                      <p style={{ fontSize: 13, lineHeight: 1.6, margin: 0, color: "var(--text)" }}>
+                        {game.prediction.totalAnalysis}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Key Factors */}
+                  {game.prediction?.keyFactors?.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-dim)", marginBottom: 6, textTransform: "uppercase" }}>
+                        Key Factors
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {game.prediction.keyFactors.map((factor, idx) => (
+                          <span
+                            key={idx}
+                            style={{
+                              background: "var(--surface2)",
+                              padding: "4px 10px",
+                              borderRadius: 12,
+                              fontSize: 12,
+                              color: "var(--text-dim)",
+                            }}
+                          >
+                            {factor}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
