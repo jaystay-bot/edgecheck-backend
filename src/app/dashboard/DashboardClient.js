@@ -684,14 +684,14 @@ export default function DashboardClient({ userEmail }) {
         return;
       }
 
-      // Handle rate limit with clean message
-      if (res.status === 429 || data.code === "RATE_LIMITED") {
+      // Handle pending analysis (not yet generated)
+      if (data.pending) {
         setAnalyses((prev) => ({
           ...prev,
           [game.id]: {
-            error: "Analysis temporarily unavailable — check back in a few minutes",
+            pending: true,
+            message: data.message || "Analysis loading — check back in a few minutes",
             fullText: "",
-            isRateLimited: true,
           },
         }));
         setAnalyzing(null);
@@ -699,15 +699,23 @@ export default function DashboardClient({ userEmail }) {
       }
 
       if (!res.ok) throw new Error(data.error || "Analysis failed");
-      setAnalyses((prev) => ({ ...prev, [game.id]: data.analysis }));
-    } catch (err) {
-      // Never show raw error text to users
-      const cleanError = err.message?.includes("429") || err.message?.toLowerCase().includes("rate")
-        ? "Analysis temporarily unavailable — check back in a few minutes"
-        : "Analysis failed — please try again";
+
+      // Store analysis with timestamp
       setAnalyses((prev) => ({
         ...prev,
-        [game.id]: { error: cleanError, fullText: "" },
+        [game.id]: {
+          ...data.analysis,
+          analyzedAt: data.analyzedAtFormatted || "recently",
+          cached: data.cached,
+        },
+      }));
+    } catch (err) {
+      setAnalyses((prev) => ({
+        ...prev,
+        [game.id]: {
+          error: "Analysis failed — please try again",
+          fullText: "",
+        },
       }));
     } finally {
       setAnalyzing(null);
@@ -1811,12 +1819,30 @@ export default function DashboardClient({ userEmail }) {
                   border: "1px solid var(--border)",
                 }}
               >
-                {analyses[game.id].error ? (
+                {/* Pending state */}
+                {analyses[game.id].pending ? (
+                  <div style={{ textAlign: "center", padding: "12px 0" }}>
+                    <div style={{ fontSize: 14, color: "var(--text-dim)", marginBottom: 8 }}>
+                      {analyses[game.id].message || "Analysis loading — check back in a few minutes"}
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                      Analyses are updated at 8 AM, 12 PM, 4 PM, and 6 PM
+                    </div>
+                  </div>
+                ) : analyses[game.id].error ? (
                   <div style={{ color: "var(--red)" }}>
-                    Analysis error: {analyses[game.id].error}
+                    {analyses[game.id].error}
                   </div>
                 ) : (
                   <>
+                    {/* Timestamp */}
+                    {analyses[game.id].analyzedAt && (
+                      <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                        <ClockIcon size={12} color="var(--text-dim)" />
+                        Analysis updated {analyses[game.id].analyzedAt}
+                      </div>
+                    )}
+
                     {/* Metrics Row */}
                     <div
                       style={{
@@ -1864,38 +1890,80 @@ export default function DashboardClient({ userEmail }) {
                       );
                     })()}
 
-                    {/* Parsed Sections */}
-                    {(() => {
-                      const { sections } = parseFullText(analyses[game.id].fullText);
-                      if (!sections.length) {
-                        return (
-                          <div style={{ fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap", color: "var(--text)" }}>
-                            {analyses[game.id].fullText}
-                          </div>
-                        );
-                      }
-                      return sections.map((section, i) => (
-                        <div key={section.label} style={{ marginTop: i === 0 ? 0 : 14 }}>
-                          <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>
-                            {section.label}
-                          </div>
-                          <div style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text)", whiteSpace: "pre-wrap" }}>
-                            {section.label === "Analysis"
-                              ? (() => {
-                                  const firstDot = section.content.indexOf(".");
-                                  if (firstDot === -1) return section.content;
-                                  return (
-                                    <>
-                                      <span style={{ fontWeight: 600 }}>{section.content.slice(0, firstDot + 1)}</span>
-                                      {section.content.slice(firstDot + 1)}
-                                    </>
-                                  );
-                                })()
-                              : section.content}
-                          </div>
+                    {/* Key Factors (from batch analysis) */}
+                    {analyses[game.id].keyFactors?.length > 0 && (
+                      <div style={{ marginBottom: 14 }}>
+                        <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>
+                          KEY FACTORS
                         </div>
-                      ));
-                    })()}
+                        <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.6, color: "var(--text)" }}>
+                          {analyses[game.id].keyFactors.map((factor, i) => (
+                            <li key={i}>{factor}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Analysis Text */}
+                    {analyses[game.id].analysis && (
+                      <div style={{ marginBottom: 14 }}>
+                        <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>
+                          ANALYSIS
+                        </div>
+                        <div style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text)" }}>
+                          {analyses[game.id].analysis}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Risk Factors (from batch analysis) */}
+                    {analyses[game.id].riskFactors?.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>
+                          RISK FACTORS
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.6, color: "var(--text)" }}>
+                          {analyses[game.id].riskFactors.map((risk, i) => (
+                            <li key={i}>{risk}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Fallback to fullText if no structured data */}
+                    {!analyses[game.id].keyFactors?.length && !analyses[game.id].analysis && analyses[game.id].fullText && (
+                      (() => {
+                        const { sections } = parseFullText(analyses[game.id].fullText);
+                        if (!sections.length) {
+                          return (
+                            <div style={{ fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap", color: "var(--text)" }}>
+                              {analyses[game.id].fullText}
+                            </div>
+                          );
+                        }
+                        return sections.map((section, i) => (
+                          <div key={section.label} style={{ marginTop: i === 0 ? 0 : 14 }}>
+                            <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>
+                              {section.label}
+                            </div>
+                            <div style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text)", whiteSpace: "pre-wrap" }}>
+                              {section.label === "Analysis"
+                                ? (() => {
+                                    const firstDot = section.content.indexOf(".");
+                                    if (firstDot === -1) return section.content;
+                                    return (
+                                      <>
+                                        <span style={{ fontWeight: 600 }}>{section.content.slice(0, firstDot + 1)}</span>
+                                        {section.content.slice(firstDot + 1)}
+                                      </>
+                                    );
+                                  })()
+                                : section.content}
+                            </div>
+                          </div>
+                        ));
+                      })()
+                    )}
                   </>
                 )}
               </div>
