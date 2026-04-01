@@ -3,7 +3,8 @@
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 
-export default function VerifyEmailPage() {
+// Wrapper to handle missing ClerkProvider during build
+function VerifyEmailContent() {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const [checking, setChecking] = useState(false);
@@ -127,3 +128,24 @@ export default function VerifyEmailPage() {
     </div>
   );
 }
+
+// Export with dynamic to prevent build-time Clerk errors
+import dynamic from "next/dynamic";
+
+const VerifyEmailPage = dynamic(() => Promise.resolve(VerifyEmailContent), {
+  ssr: false,
+  loading: () => (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      Loading...
+    </div>
+  ),
+});
+
+export default VerifyEmailPage;

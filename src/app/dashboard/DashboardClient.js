@@ -234,6 +234,9 @@ export default function DashboardClient({ userEmail }) {
   const [selectedBets, setSelectedBets] = useState({});
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
+  const [heaters, setHeaters] = useState([]);
+  const [heatersLoading, setHeatersLoading] = useState(true);
+  const [heatersError, setHeatersError] = useState(null);
 
   const sportConfig = SPORTS.find((s) => s.key === sport);
 
@@ -244,6 +247,35 @@ export default function DashboardClient({ userEmail }) {
       // Remove the query param
       window.history.replaceState({}, "", "/dashboard");
     }
+  }, []);
+
+  // Fetch heaters on mount
+  useEffect(() => {
+    async function fetchHeaters() {
+      setHeatersLoading(true);
+      setHeatersError(null);
+      try {
+        const res = await fetch("/api/heaters");
+        const data = await res.json();
+
+        if (res.status === 402 && data.code === "SUBSCRIPTION_REQUIRED") {
+          // User doesn't have subscription - just hide heaters section
+          setHeaters([]);
+          setHeatersLoading(false);
+          return;
+        }
+
+        if (!res.ok) throw new Error(data.error || "Failed to load heaters");
+        setHeaters(data.heaters || []);
+      } catch (err) {
+        console.warn("Heaters fetch failed:", err.message);
+        setHeatersError(err.message);
+        setHeaters([]);
+      } finally {
+        setHeatersLoading(false);
+      }
+    }
+    fetchHeaters();
   }, []);
 
   const fetchGames = useCallback(async () => {
@@ -513,6 +545,180 @@ export default function DashboardClient({ userEmail }) {
           </button>
         ))}
       </div>
+
+      {/* Today's Heaters Section */}
+      {!heatersLoading && heaters.length > 0 && (
+        <div
+          style={{
+            background: "linear-gradient(135deg, var(--surface) 0%, rgba(239,68,68,0.1) 100%)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            padding: 20,
+            marginBottom: 20,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+            <span style={{ fontSize: 24 }}>&#128293;</span>
+            <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
+              Today&apos;s Heaters
+            </h2>
+            <span
+              style={{
+                background: "var(--red)",
+                color: "#fff",
+                padding: "2px 8px",
+                borderRadius: 12,
+                fontSize: 11,
+                fontWeight: 700,
+              }}
+            >
+              {heaters.length} HOT
+            </span>
+          </div>
+          <p style={{ color: "var(--text-dim)", fontSize: 13, marginBottom: 16 }}>
+            AI-scanned bets with edge scores of 7+ across NBA, MLB, and NHL
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {heaters.map((heater) => (
+              <div
+                key={heater.id}
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 10,
+                  padding: "12px 16px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <span
+                      style={{
+                        background: "var(--surface2)",
+                        padding: "2px 6px",
+                        borderRadius: 4,
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "var(--text-dim)",
+                      }}
+                    >
+                      {heater.sport}
+                    </span>
+                    <span style={{ fontSize: 13, color: "var(--text-dim)" }}>
+                      {heater.awayTeam} @ {heater.homeTeam}
+                    </span>
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+                    {heater.betType}: {heater.betValue}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
+                    {heater.reason}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    minWidth: 60,
+                  }}
+                >
+                  <div
+                    style={{
+                      background:
+                        heater.heaterScore >= 9
+                          ? "var(--green)"
+                          : heater.heaterScore >= 8
+                            ? "var(--yellow)"
+                            : "var(--orange)",
+                      color: "#fff",
+                      padding: "6px 12px",
+                      borderRadius: 8,
+                      fontWeight: 700,
+                      fontSize: 18,
+                    }}
+                  >
+                    {heater.heaterScore}
+                  </div>
+                  <span style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 2 }}>
+                    EDGE
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Heaters Loading Skeleton */}
+      {heatersLoading && (
+        <div
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            padding: 20,
+            marginBottom: 20,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+            <span style={{ fontSize: 24 }}>&#128293;</span>
+            <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
+              Today&apos;s Heaters
+            </h2>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                style={{
+                  background: "var(--surface2)",
+                  borderRadius: 10,
+                  padding: "16px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      background: "var(--border)",
+                      height: 12,
+                      width: 80,
+                      borderRadius: 4,
+                      marginBottom: 8,
+                      animation: "pulse 1.5s ease-in-out infinite",
+                    }}
+                  />
+                  <div
+                    style={{
+                      background: "var(--border)",
+                      height: 16,
+                      width: 200,
+                      borderRadius: 4,
+                      animation: "pulse 1.5s ease-in-out infinite",
+                    }}
+                  />
+                </div>
+                <div
+                  style={{
+                    background: "var(--border)",
+                    height: 40,
+                    width: 50,
+                    borderRadius: 8,
+                    animation: "pulse 1.5s ease-in-out infinite",
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
+        </div>
+      )}
 
       {/* Loading */}
       {loading && (
