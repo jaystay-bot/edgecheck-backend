@@ -25,3 +25,5 @@ Never show raw API errors to users — LLM APIs (Groq, OpenAI) return technical 
 Cache expensive API results in localStorage — Premium features like Heaters and Best Play make API calls on every page load. Cache results in localStorage with TTL (30 min for heaters, 1 hour for best play). Check cache first, show "Last updated X minutes ago", and add manual refresh button.
 
 Serverless in-memory caches don't persist — Vercel serverless functions may start fresh instances on each invocation. Module-level Maps/caches won't reliably persist data. Use client-side localStorage as primary cache, with on-demand generation fallback. For production persistence, use Vercel KV, Redis, or a database.
+
+AI scoring thresholds cause empty results — When using AI (Groq/LLM) to score bets, high thresholds (7+, 8+) often result in empty lists because AI scoring is inconsistent. Lower thresholds (5+ for heaters, 6+ for best play) ensure features display more reliably. The AI-generated scores are not real analytics data anyway.
