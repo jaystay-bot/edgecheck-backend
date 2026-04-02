@@ -339,7 +339,7 @@ Respond with ONLY a JSON object (no markdown):
   "whatCouldGoWrong": "2 sentence explanation of the main risks."
 }
 
-heaterScore: 1-10 (ONLY 8+ if truly elite edge)
+heaterScore: 1-10 (6+ for good edge, 8+ for elite)
 confidence: 1-10
 atsLast5: recent ATS record (W-L format)
 atsLast10: last 10 ATS record
@@ -432,7 +432,7 @@ async function findBestPlay(groq, apiKey) {
     const results = await Promise.all(
       batch.map(async (candidate) => {
         const score = await scoreBetWithGroq(groq, candidate);
-        if (score && score.heaterScore >= 8 && score.heaterScore > bestScore) {
+        if (score && score.heaterScore >= 6 && score.heaterScore > bestScore) {
           return { ...candidate, ...score };
         }
         return null;
@@ -455,8 +455,8 @@ async function findBestPlay(groq, apiKey) {
     }
   }
 
-  if (!bestCandidate || bestScore < 8) {
-    console.log(`[BestPlay] No play scored 8+. Best was ${bestScore}`);
+  if (!bestCandidate || bestScore < 6) {
+    console.log(`[BestPlay] No play scored 6+. Best was ${bestScore}`);
     return { found: false, reason: "No strong edges found today" };
   }
 

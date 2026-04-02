@@ -280,7 +280,7 @@ async function generateHeaters() {
     const results = await Promise.all(
       batch.map(async (bet) => {
         const result = await scoreBetWithGroq(groq, bet);
-        if (result && result.score >= 7) {
+        if (result && result.score >= 5) {
           return { ...bet, heaterScore: result.score, reason: result.reason };
         }
         return null;
@@ -294,7 +294,7 @@ async function generateHeaters() {
     }
   }
 
-  console.log(`[Heaters] Found ${scoredBets.length} heaters (score >= 7)`);
+  console.log(`[Heaters] Found ${scoredBets.length} heaters (score >= 5)`);
 
   // Sort by score descending, limit to 15
   const heaters = scoredBets
