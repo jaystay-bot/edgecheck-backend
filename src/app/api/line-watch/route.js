@@ -249,13 +249,13 @@ async function generateLineWatch(groq, apiKey) {
 
   if (allGames.length === 0) return [];
 
-  // Fetch current odds from Odds API
+  // Fetch current odds from Odds API (serialized to avoid rate limiting)
   console.log("[LineWatch] Fetching current odds...");
-  const [nbaOdds, mlbOdds, nhlOdds] = await Promise.all([
-    fetchOddsForSport("nba", apiKey),
-    fetchOddsForSport("mlb", apiKey),
-    fetchOddsForSport("nhl", apiKey),
-  ]);
+  const nbaOdds = await fetchOddsForSport("nba", apiKey);
+  await new Promise((r) => setTimeout(r, 100));
+  const mlbOdds = await fetchOddsForSport("mlb", apiKey);
+  await new Promise((r) => setTimeout(r, 100));
+  const nhlOdds = await fetchOddsForSport("nhl", apiKey);
 
   const oddsMap = {
     NBA: nbaOdds,

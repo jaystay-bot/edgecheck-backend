@@ -416,19 +416,29 @@ function calculateEV(odds, estimatedWinProb) {
 async function findBestPlays(apiKey) {
   console.log("[BestPlay] Scanning all sports for Top Plays of the Day...");
 
-  // Fetch games from all sports (parallel)
-  const propsSports = ["nba", "mlb", "nhl"]; // Props only available for these
-  const gameResults = await Promise.all(
-    Object.keys(SPORT_MAP).map((sport) => fetchGamesForSport(sport, apiKey))
-  );
-  const allGames = gameResults.flat();
-  console.log(`[BestPlay] Found ${allGames.length} total games across ${Object.keys(SPORT_MAP).length} sports`);
+  // Fetch games in batches to avoid rate limiting (max 3 concurrent)
+  const sports = Object.keys(SPORT_MAP);
+  const allGames = [];
+  const batchSize = 3;
 
-  // Fetch props from supported sports
-  const propResults = await Promise.all(
-    propsSports.map((sport) => fetchPropsForSport(sport, apiKey))
-  );
-  const allProps = propResults.flat();
+  for (let i = 0; i < sports.length; i += batchSize) {
+    const batch = sports.slice(i, i + batchSize);
+    const results = await Promise.all(batch.map((sport) => fetchGamesForSport(sport, apiKey)));
+    allGames.push(...results.flat());
+    if (i + batchSize < sports.length) {
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  }
+  console.log(`[BestPlay] Found ${allGames.length} total games across ${sports.length} sports`);
+
+  // Fetch props from supported sports (serialized to avoid rate limiting)
+  const propsSports = ["nba", "mlb", "nhl"];
+  const allProps = [];
+  for (const sport of propsSports) {
+    const props = await fetchPropsForSport(sport, apiKey);
+    allProps.push(...props);
+    await new Promise((r) => setTimeout(r, 100));
+  }
   console.log(`[BestPlay] Found ${allProps.length} total props`);
 
   // Generate all bet candidates

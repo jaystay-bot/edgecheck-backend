@@ -12,7 +12,7 @@ const SPORT_MAP = {
 
 // In-memory cache: { [sportKey]: { data, timestamp } }
 const cache = {};
-const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes (match other routes to reduce API calls)
 
 export const dynamic = "force-dynamic";
 

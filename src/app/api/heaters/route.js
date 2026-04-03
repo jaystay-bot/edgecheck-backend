@@ -266,12 +266,20 @@ function scoreBetFromOdds(bet) {
 async function generateHeaters() {
   console.log("[Heaters] Fetching games from all sports...");
 
-  // Fetch games from all sports in parallel
-  const sportResults = await Promise.all(
-    Object.keys(SPORT_MAP).map((sport) => fetchGamesForSport(sport))
-  );
+  // Fetch games in batches to avoid rate limiting (max 3 concurrent)
+  const sports = Object.keys(SPORT_MAP);
+  const allGames = [];
+  const batchSize = 3;
 
-  const allGames = sportResults.flat();
+  for (let i = 0; i < sports.length; i += batchSize) {
+    const batch = sports.slice(i, i + batchSize);
+    const results = await Promise.all(batch.map((sport) => fetchGamesForSport(sport)));
+    allGames.push(...results.flat());
+    // Small delay between batches to avoid rate limiting
+    if (i + batchSize < sports.length) {
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  }
   console.log(`[Heaters] Found ${allGames.length} total games across ${Object.keys(SPORT_MAP).length} sports`);
 
   if (allGames.length === 0) return [];
