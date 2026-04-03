@@ -116,7 +116,7 @@ async function fetchOddsForSport(sport, apiKey) {
   if (!config) return [];
 
   try {
-    const url = `https://api.the-odds-api.com/v4/sports/${config.oddsKey}/odds?apiKey=${apiKey}&regions=us&markets=spreads,totals&oddsFormat=american`;
+    const url = `https://api.the-odds-api.com/v4/sports/${config.oddsKey}/odds?apiKey=${apiKey}&bookmakers=fanduel,draftkings&markets=spreads,totals&oddsFormat=american`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) return [];
     return await res.json();

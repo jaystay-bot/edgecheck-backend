@@ -147,7 +147,7 @@ async function fetchAllPropsForSport(sportKey, apiKey) {
   const allMarkets = [...new Set(config.categories.flatMap((c) => c.markets))];
 
   try {
-    const url = `https://api.the-odds-api.com/v4/sports/${config.oddsKey}/odds?apiKey=${apiKey}&regions=us&markets=${allMarkets.join(",")}&oddsFormat=american`;
+    const url = `https://api.the-odds-api.com/v4/sports/${config.oddsKey}/odds?apiKey=${apiKey}&bookmakers=fanduel,draftkings&markets=${allMarkets.join(",")}&oddsFormat=american`;
     console.log(`[Props] Fetching ALL ${sportKey.toUpperCase()} props in one call...`);
 
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });

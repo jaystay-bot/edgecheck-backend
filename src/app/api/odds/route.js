@@ -143,7 +143,7 @@ export async function GET(request) {
   // Try each API key, rotating on 401/429
   for (let i = 0; i < apiKeys.length; i++) {
     try {
-      const url = `https://api.the-odds-api.com/v4/sports/${oddsSport}/odds/?apiKey=${apiKeys[i]}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`;
+      const url = `https://api.the-odds-api.com/v4/sports/${oddsSport}/odds/?apiKey=${apiKeys[i]}&bookmakers=fanduel,draftkings&markets=h2h,spreads,totals&oddsFormat=american`;
       const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
 
       if (res.status === 401 || res.status === 429) {
