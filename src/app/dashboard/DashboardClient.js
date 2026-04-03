@@ -2222,7 +2222,7 @@ export default function DashboardClient({ userEmail }) {
                                 </div>
                                 <span style={{ fontSize: 9, color: "var(--text-dim)", marginTop: 2 }}>HEATER</span>
                               </div>
-                            ) : (
+                            ) : !isPaidUser ? (
                               <div
                                 style={{
                                   background: "var(--surface2)",
@@ -2236,7 +2236,7 @@ export default function DashboardClient({ userEmail }) {
                                 <LockIcon size={14} color="var(--text-dim)" />
                                 <span style={{ fontSize: 10, color: "var(--text-dim)" }}>PRO</span>
                               </div>
-                            )}
+                            ) : null}
                           </div>
 
                           {/* Paid User Stats + Analysis */}
