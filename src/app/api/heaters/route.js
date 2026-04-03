@@ -7,8 +7,12 @@ export const maxDuration = 60;
 
 const SPORT_MAP = {
   nba: "basketball_nba",
+  nfl: "americanfootball_nfl",
   mlb: "baseball_mlb",
   nhl: "icehockey_nhl",
+  ncaaf: "americanfootball_ncaaf",
+  ncaab: "basketball_ncaab",
+  mls: "soccer_usa_mls",
 };
 
 // In-memory cache for heaters
@@ -247,14 +251,12 @@ async function generateHeaters() {
   console.log("[Heaters] Fetching games from all sports...");
 
   // Fetch games from all sports in parallel
-  const [nbaGames, mlbGames, nhlGames] = await Promise.all([
-    fetchGamesForSport("nba"),
-    fetchGamesForSport("mlb"),
-    fetchGamesForSport("nhl"),
-  ]);
+  const sportResults = await Promise.all(
+    Object.keys(SPORT_MAP).map((sport) => fetchGamesForSport(sport))
+  );
 
-  const allGames = [...nbaGames, ...mlbGames, ...nhlGames];
-  console.log(`[Heaters] Found ${allGames.length} total games`);
+  const allGames = sportResults.flat();
+  console.log(`[Heaters] Found ${allGames.length} total games across ${Object.keys(SPORT_MAP).length} sports`);
 
   if (allGames.length === 0) return [];
 
@@ -297,11 +299,21 @@ async function generateHeaters() {
   console.log(`[Heaters] Found ${scoredBets.length} heaters (score >= 5)`);
 
   // Sort by score descending, limit to 15
-  const heaters = scoredBets
-    .sort((a, b) => b.heaterScore - a.heaterScore)
-    .slice(0, 15);
+  if (scoredBets.length > 0) {
+    return scoredBets
+      .sort((a, b) => b.heaterScore - a.heaterScore)
+      .slice(0, 15);
+  }
 
-  return heaters;
+  // Fallback: if no bets scored >= 5, return top bets from sample with default scores
+  // This ensures we always show picks when games exist
+  console.log("[Heaters] No high-scoring bets, returning best available from sample");
+  const fallbackHeaters = sampledBets.slice(0, 10).map((bet, idx) => ({
+    ...bet,
+    heaterScore: 5 - Math.floor(idx / 3), // 5, 5, 5, 4, 4, 4, 3, 3, 3, 2
+    reason: "Today's betting opportunity - monitor line movement",
+  }));
+  return fallbackHeaters;
 }
 
 export async function GET(request) {

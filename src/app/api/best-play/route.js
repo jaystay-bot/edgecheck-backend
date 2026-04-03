@@ -7,8 +7,12 @@ export const maxDuration = 60;
 
 const SPORT_MAP = {
   nba: "basketball_nba",
+  nfl: "americanfootball_nfl",
   mlb: "baseball_mlb",
   nhl: "icehockey_nhl",
+  ncaaf: "americanfootball_ncaaf",
+  ncaab: "basketball_ncaab",
+  mls: "soccer_usa_mls",
 };
 
 // In-memory cache
@@ -396,24 +400,19 @@ function calculateEV(odds, estimatedWinProb) {
 async function findBestPlays(groq, apiKey) {
   console.log("[BestPlay] Scanning all sports for Top Plays of the Day...");
 
-  // Fetch games from all sports
-  const [nbaGames, mlbGames, nhlGames] = await Promise.all([
-    fetchGamesForSport("nba", apiKey),
-    fetchGamesForSport("mlb", apiKey),
-    fetchGamesForSport("nhl", apiKey),
-  ]);
+  // Fetch games from all sports (parallel)
+  const propsSports = ["nba", "mlb", "nhl"]; // Props only available for these
+  const gameResults = await Promise.all(
+    Object.keys(SPORT_MAP).map((sport) => fetchGamesForSport(sport, apiKey))
+  );
+  const allGames = gameResults.flat();
+  console.log(`[BestPlay] Found ${allGames.length} total games across ${Object.keys(SPORT_MAP).length} sports`);
 
-  const allGames = [...nbaGames, ...mlbGames, ...nhlGames];
-  console.log(`[BestPlay] Found ${allGames.length} total games`);
-
-  // Fetch props from all sports
-  const [nbaProps, mlbProps, nhlProps] = await Promise.all([
-    fetchPropsForSport("nba", apiKey),
-    fetchPropsForSport("mlb", apiKey),
-    fetchPropsForSport("nhl", apiKey),
-  ]);
-
-  const allProps = [...nbaProps, ...mlbProps, ...nhlProps];
+  // Fetch props from supported sports
+  const propResults = await Promise.all(
+    propsSports.map((sport) => fetchPropsForSport(sport, apiKey))
+  );
+  const allProps = propResults.flat();
   console.log(`[BestPlay] Found ${allProps.length} total props`);
 
   // Generate all bet candidates

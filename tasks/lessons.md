@@ -39,3 +39,7 @@ Always display game date/time for betting features — Betting decisions depend 
 Format date+time together in betting UIs — When displaying game times, include both the date (e.g., "Thu, Apr 3") and time (e.g., "7:00 PM") together. Users need the full context without having to look elsewhere.
 
 Return multiple elite picks not just one — For "best play" features, users want 1-3 top picks with high scores (8+), not a single result. Sample more candidates (40+), filter to score 8+, and return up to 3 elite plays with EV/edge data. Fall back gracefully to 6+ plays if no 8+ found.
+
+Include all sports in betting features — Don't limit Heaters/Best Play to just NBA/MLB/NHL. Include all supported sports (NFL, NCAAF, NCAAB, MLS) to maximize available picks. There are always lines available across different sports/seasons.
+
+Always return picks when games exist — If AI scoring returns no high scores, fall back to showing the best available picks with default scores. Users expect to see picks, not empty states. Empty results frustrate users when betting lines are clearly available.
