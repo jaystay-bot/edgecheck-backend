@@ -26,6 +26,86 @@ function getOddsApiKey() {
   return process.env.ODDS_API_KEY || null;
 }
 
+// Fetch MLB props from Underdog Fantasy API (same as props/route.js)
+async function fetchMLBPropsFromUnderdog() {
+  try {
+    console.log("[BestPlay] Fetching MLB props from Underdog Fantasy...");
+    const res = await fetch("https://api.underdogfantasy.com/beta/v5/over_under_lines", {
+      signal: AbortSignal.timeout(20000),
+      headers: { "User-Agent": "Mozilla/5.0" },
+    });
+
+    if (!res.ok) {
+      console.warn(`[BestPlay] Underdog API returned ${res.status}`);
+      return [];
+    }
+
+    const data = await res.json();
+    const lines = data.over_under_lines || [];
+    console.log(`[BestPlay] Underdog returned ${lines.length} total prop lines`);
+
+    const mlbProps = [];
+
+    for (const line of lines) {
+      const options = line.options || [];
+      if (options.length < 1) continue;
+
+      const subheader = options[0].selection_subheader || "";
+      const playerName = options[0].selection_header || "";
+
+      // Filter for MLB Home Runs (exact match, not combos)
+      if (subheader.includes("Home Run") && !subheader.includes("+")) {
+        const overOdds = options[0]?.american_price;
+
+        mlbProps.push({
+          type: "prop",
+          sportKey: "mlb",
+          eventId: line.id,
+          homeTeam: "MLB",
+          awayTeam: "Game",
+          commenceTime: new Date().toISOString(),
+          playerName,
+          propType: "batter_home_runs",
+          line: parseFloat(line.stat_value) || 0.5,
+          overUnder: "Over",
+          odds: parseInt(overOdds) || -110,
+          bookmaker: "Underdog",
+        });
+      }
+
+      // Filter for MLB Hits (not combos, only 0.5 or 1.5 lines)
+      if (subheader.includes("Hits") && !subheader.includes("+")) {
+        const hitLine = parseFloat(line.stat_value) || 0.5;
+
+        if (hitLine === 0.5 || hitLine === 1.5) {
+          const overOdds = options[0]?.american_price;
+
+          mlbProps.push({
+            type: "prop",
+            sportKey: "mlb",
+            eventId: line.id,
+            homeTeam: "MLB",
+            awayTeam: "Game",
+            commenceTime: new Date().toISOString(),
+            playerName,
+            propType: "batter_hits",
+            line: hitLine,
+            overUnder: "Over",
+            odds: parseInt(overOdds) || -110,
+            bookmaker: "Underdog",
+          });
+        }
+      }
+    }
+
+    console.log(`[BestPlay] Parsed ${mlbProps.length} MLB props from Underdog`);
+    return mlbProps.slice(0, 20); // Limit to 20
+  } catch (err) {
+    console.error("[BestPlay] Failed to fetch from Underdog:", err.message);
+    return [];
+  }
+}
+
 async function fetchGamesForSport(sportKey, apiKey) {
   const oddsSport = SPORT_MAP[sportKey];
   if (!oddsSport) return [];
@@ -47,12 +127,16 @@ async function fetchGamesForSport(sportKey, apiKey) {
 }
 
 async function fetchPropsForSport(sportKey, apiKey) {
+  // Use Underdog Fantasy for MLB props (Odds API returns empty for MLB player props)
+  if (sportKey === "mlb") {
+    return await fetchMLBPropsFromUnderdog();
+  }
+
   const oddsSport = SPORT_MAP[sportKey];
   if (!oddsSport) return [];
 
   const markets = {
     nba: "player_points,player_assists,player_rebounds",
-    mlb: "batter_hits,batter_home_runs,pitcher_strikeouts",
     nhl: "player_goals,player_shots_on_goal",
   };
 
