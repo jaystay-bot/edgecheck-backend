@@ -393,13 +393,12 @@ function mergeOddsData(games, oddsGames) {
     const existing = game.odds ?? {};
     const merged = { ...existing };
 
-    if (existing.moneyline?.home == null || existing.moneyline?.away == null) {
-      const homeML = flipped ? match.moneyline.away : match.moneyline.home;
-      const awayML = flipped ? match.moneyline.home : match.moneyline.away;
-      if (homeML != null && awayML != null) {
-        merged.moneyline = { home: homeML, away: awayML };
-        merged.mlProvider = match.bookmaker;
-      }
+    // Always use Odds API moneyline - it's the authoritative source for betting lines
+    const homeML = flipped ? match.moneyline?.away : match.moneyline?.home;
+    const awayML = flipped ? match.moneyline?.home : match.moneyline?.away;
+    if (homeML != null && awayML != null) {
+      merged.moneyline = { home: homeML, away: awayML };
+      merged.mlProvider = match.bookmaker;
     }
 
     if (existing.spread?.home == null) {

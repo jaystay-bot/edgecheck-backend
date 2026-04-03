@@ -43,3 +43,5 @@ Return multiple elite picks not just one — For "best play" features, users wan
 Include all sports in betting features — Don't limit Heaters/Best Play to just NBA/MLB/NHL. Include all supported sports (NFL, NCAAF, NCAAB, MLS) to maximize available picks. There are always lines available across different sports/seasons.
 
 Always return picks when games exist — If AI scoring returns no high scores, fall back to showing the best available picks with default scores. Users expect to see picks, not empty states. Empty results frustrate users when betting lines are clearly available.
+
+Always use Odds API data over ESPN for betting lines — ESPN odds data is often incomplete or missing (especially moneylines). When merging ESPN game data with Odds API data, always overwrite with Odds API values since that's the authoritative source for betting lines. Don't conditionally skip the merge based on ESPN having partial data.
