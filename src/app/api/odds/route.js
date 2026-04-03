@@ -141,9 +141,11 @@ export async function GET(request) {
   }
 
   // Try each API key, rotating on 401/429
+  console.log(`[EdgeCheck] Fetching ${sportKey} odds, ${apiKeys.length} keys available`);
   for (let i = 0; i < apiKeys.length; i++) {
     try {
       const url = `https://api.the-odds-api.com/v4/sports/${oddsSport}/odds/?apiKey=${apiKeys[i]}&bookmakers=fanduel,draftkings&markets=h2h,spreads,totals&oddsFormat=american`;
+      console.log(`[EdgeCheck] Trying key ${i + 1} for ${sportKey}...`);
       const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
 
       if (res.status === 401 || res.status === 429) {
@@ -157,7 +159,20 @@ export async function GET(request) {
       }
 
       const data = await res.json();
+      console.log(`[EdgeCheck] ${sportKey}: API returned ${data.length} events`);
+
+      // Log sample event structure for debugging
+      if (data.length > 0) {
+        const sample = data[0];
+        console.log(`[EdgeCheck] Sample event: ${sample.home_team} vs ${sample.away_team}, ${sample.bookmakers?.length || 0} bookmakers`);
+        if (sample.bookmakers?.length > 0) {
+          const bm = sample.bookmakers[0];
+          console.log(`[EdgeCheck] Sample bookmaker: ${bm.title}, markets: ${bm.markets?.map(m => m.key).join(',')}`);
+        }
+      }
+
       const games = parseGames(data);
+      console.log(`[EdgeCheck] ${sportKey}: Parsed ${games.length} games, ${games.filter(g => g.moneyline.home !== null).length} with moneylines`);
 
       cache[sportKey] = { data: games, timestamp: Date.now() };
 
@@ -173,10 +188,12 @@ export async function GET(request) {
 
   // All keys exhausted — serve stale cache or empty
   if (cached) {
+    console.warn(`[EdgeCheck] All keys exhausted for ${sportKey}, serving stale cache (${cached.data.length} games)`);
     return NextResponse.json(
       { games: cached.data },
       { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" } }
     );
   }
+  console.error(`[EdgeCheck] All keys exhausted for ${sportKey}, no cache available - returning empty`);
   return emptyResponse();
 }
