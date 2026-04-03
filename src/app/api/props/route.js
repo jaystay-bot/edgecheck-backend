@@ -138,8 +138,93 @@ async function hasActiveSubscription(email) {
   }
 }
 
+// Fetch MLB props from Underdog Fantasy API (free, no auth required)
+async function fetchMLBPropsFromUnderdog() {
+  try {
+    console.log("[Props] Fetching MLB props from Underdog Fantasy...");
+    const res = await fetch("https://api.underdogfantasy.com/beta/v5/over_under_lines", {
+      signal: AbortSignal.timeout(20000),
+      headers: { "User-Agent": "Mozilla/5.0" },
+    });
+
+    if (!res.ok) {
+      console.warn(`[Props] Underdog API returned ${res.status}`);
+      return [];
+    }
+
+    const data = await res.json();
+    const lines = data.over_under_lines || [];
+    console.log(`[Props] Underdog returned ${lines.length} total prop lines`);
+
+    const mlbProps = [];
+
+    for (const line of lines) {
+      const options = line.options || [];
+      if (options.length < 1) continue;
+
+      const subheader = options[0].selection_subheader || "";
+      const playerName = options[0].selection_header || "";
+
+      // Filter for MLB Home Runs (exact match, not combos)
+      if (subheader.includes("Home Run") && !subheader.includes("+")) {
+        const overOdds = options[0]?.american_price;
+        const underOdds = options[1]?.american_price;
+
+        mlbProps.push({
+          id: `underdog_hr_${line.id || playerName}`,
+          sport: "MLB",
+          eventId: line.id,
+          homeTeam: "MLB",
+          awayTeam: "Game",
+          commenceTime: new Date().toISOString(),
+          playerName,
+          propType: "Home Runs",
+          marketKey: "batter_home_runs",
+          line: parseFloat(line.stat_value) || 0.5,
+          overUnder: "Over",
+          odds: [{ bookmaker: "Underdog", price: parseInt(overOdds) || -110 }],
+        });
+      }
+
+      // Filter for MLB Hits (exact "Higher X.X Hits" only, not combos like "Hits + Runs + RBIs")
+      if (subheader.match(/^Higher [\d.]+ Hits$/) && !subheader.includes("+")) {
+        const overOdds = options[0]?.american_price;
+
+        mlbProps.push({
+          id: `underdog_hit_${line.id || playerName}`,
+          sport: "MLB",
+          eventId: line.id,
+          homeTeam: "MLB",
+          awayTeam: "Game",
+          commenceTime: new Date().toISOString(),
+          playerName,
+          propType: "Hits",
+          marketKey: "batter_hits",
+          line: parseFloat(line.stat_value) || 0.5,
+          overUnder: "Over",
+          odds: [{ bookmaker: "Underdog", price: parseInt(overOdds) || -110 }],
+        });
+      }
+    }
+
+    const hrCount = mlbProps.filter((p) => p.marketKey === "batter_home_runs").length;
+    const hitCount = mlbProps.filter((p) => p.marketKey === "batter_hits").length;
+    console.log(`[Props] Parsed ${hrCount} HR props, ${hitCount} Hit props from Underdog`);
+
+    return mlbProps;
+  } catch (err) {
+    console.error("[Props] Failed to fetch from Underdog:", err.message);
+    return [];
+  }
+}
+
 // Fetch ALL props for a sport in ONE call
 async function fetchAllPropsForSport(sportKey, apiKey) {
+  // Use Underdog for MLB props (more reliable data)
+  if (sportKey === "mlb") {
+    return await fetchMLBPropsFromUnderdog();
+  }
+
   const config = SPORT_CONFIG[sportKey];
   if (!config) return [];
 
