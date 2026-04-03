@@ -432,7 +432,7 @@ async function findBestPlay(groq, apiKey) {
     const results = await Promise.all(
       batch.map(async (candidate) => {
         const score = await scoreBetWithGroq(groq, candidate);
-        if (score && score.heaterScore >= 6 && score.heaterScore > bestScore) {
+        if (score) {
           return { ...candidate, ...score };
         }
         return null;
@@ -455,12 +455,13 @@ async function findBestPlay(groq, apiKey) {
     }
   }
 
-  if (!bestCandidate || bestScore < 6) {
-    console.log(`[BestPlay] No play scored 6+. Best was ${bestScore}`);
-    return { found: false, reason: "No strong edges found today" };
+  // Always return the best candidate if we have one, regardless of score
+  if (!bestCandidate) {
+    console.log(`[BestPlay] No candidates could be scored`);
+    return { found: false, reason: "Unable to analyze games today" };
   }
 
-  console.log(`[BestPlay] Found Best Play: ${bestCandidate.teamOrPlayer} - Score ${bestScore}`);
+  console.log(`[BestPlay] Best Play: ${bestCandidate.teamOrPlayer} - Score ${bestScore}/10`);
   return { found: true, play: bestCandidate };
 }
 

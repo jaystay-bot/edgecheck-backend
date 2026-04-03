@@ -27,3 +27,5 @@ Cache expensive API results in localStorage — Premium features like Heaters an
 Serverless in-memory caches don't persist — Vercel serverless functions may start fresh instances on each invocation. Module-level Maps/caches won't reliably persist data. Use client-side localStorage as primary cache, with on-demand generation fallback. For production persistence, use Vercel KV, Redis, or a database.
 
 AI scoring thresholds cause empty results — When using AI (Groq/LLM) to score bets, high thresholds (7+, 8+) often result in empty lists because AI scoring is inconsistent. Lower thresholds (5+ for heaters, 6+ for best play) ensure features display more reliably. The AI-generated scores are not real analytics data anyway.
+
+Always return the best result when data exists — Don't fail with "no results found" when candidates exist but don't meet an arbitrary threshold. If games are available, always show the highest-scoring option. Users expect to see something, not an empty state when data is present.
