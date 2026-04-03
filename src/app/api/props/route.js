@@ -186,24 +186,30 @@ async function fetchMLBPropsFromUnderdog() {
         });
       }
 
-      // Filter for MLB Hits (exact "Higher X.X Hits" only, not combos like "Hits + Runs + RBIs")
-      if (subheader.match(/^Higher [\d.]+ Hits$/) && !subheader.includes("+")) {
-        const overOdds = options[0]?.american_price;
+      // Filter for MLB Hits (not combos like "Hits + Runs + RBIs")
+      // Only allow realistic lines: 0.5 or 1.5 hits
+      if (subheader.includes("Hits") && !subheader.includes("+")) {
+        const hitLine = parseFloat(line.stat_value) || 0.5;
 
-        mlbProps.push({
-          id: `underdog_hit_${line.id || playerName}`,
-          sport: "MLB",
-          eventId: line.id,
-          homeTeam: "MLB",
-          awayTeam: "Game",
-          commenceTime: new Date().toISOString(),
-          playerName,
-          propType: "Hits",
-          marketKey: "batter_hits",
-          line: parseFloat(line.stat_value) || 0.5,
-          overUnder: "Over",
-          odds: [{ bookmaker: "Underdog", price: parseInt(overOdds) || -110 }],
-        });
+        // Only include realistic hit lines (0.5 or 1.5)
+        if (hitLine === 0.5 || hitLine === 1.5) {
+          const overOdds = options[0]?.american_price;
+
+          mlbProps.push({
+            id: `underdog_hit_${line.id || playerName}`,
+            sport: "MLB",
+            eventId: line.id,
+            homeTeam: "MLB",
+            awayTeam: "Game",
+            commenceTime: new Date().toISOString(),
+            playerName,
+            propType: "Hits",
+            marketKey: "batter_hits",
+            line: hitLine,
+            overUnder: "Over",
+            odds: [{ bookmaker: "Underdog", price: parseInt(overOdds) || -110 }],
+          });
+        }
       }
     }
 
