@@ -227,6 +227,50 @@ function formatCountdown(isoTime) {
   return `${minutes}m`;
 }
 
+// Explain American odds in plain English
+function explainOdds(odds) {
+  if (odds === null || odds === undefined) return null;
+  if (odds > 0) {
+    return `+${odds} means $100 wins $${odds}`;
+  } else {
+    return `${odds} means bet $${Math.abs(odds)} to win $100`;
+  }
+}
+
+// Format game time for display
+function formatGameTime(gameTime, commenceTime) {
+  // If we have gameTime from API (e.g., "Fri 07:00pm"), use it
+  if (gameTime) return gameTime;
+
+  // Otherwise format from commenceTime
+  if (!commenceTime) return null;
+
+  const date = new Date(commenceTime);
+  const now = new Date();
+
+  // If game already started
+  if (date <= now) return "Live";
+
+  // Format as "Today 7:05 PM" or "Fri 7:05 PM"
+  const isToday = date.toDateString() === now.toDateString();
+  const time = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+  if (isToday) return `Today ${time}`;
+
+  const day = date.toLocaleDateString("en-US", { weekday: "short" });
+  return `${day} ${time}`;
+}
+
+// Get tier badge color
+function getTierColor(tier) {
+  switch (tier) {
+    case "Top Pick": return { bg: "var(--green)", text: "#fff" };
+    case "Strong": return { bg: "var(--yellow)", text: "#000" };
+    case "Value": return { bg: "var(--orange)", text: "#fff" };
+    default: return { bg: "var(--surface2)", text: "var(--text-dim)" };
+  }
+}
+
 const SPORTS = [
   { key: "nba", label: "NBA", espn: "basketball/nba" },
   { key: "nfl", label: "NFL", espn: "football/nfl" },
@@ -489,6 +533,9 @@ export default function DashboardClient({ userEmail }) {
   const [lineWatchLoading, setLineWatchLoading] = useState(false);
   const [lineWatchError, setLineWatchError] = useState(null);
   const [lineWatchValueAlerts, setLineWatchValueAlerts] = useState(0);
+
+  // Expanded prop card state
+  const [expandedPropId, setExpandedPropId] = useState(null);
 
   const sportConfig = SPORTS.find((s) => s.key === sport);
 
@@ -2158,7 +2205,12 @@ export default function DashboardClient({ userEmail }) {
                     </div>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      {category.props.map((prop) => (
+                      {category.props.map((prop) => {
+                        const isExpanded = expandedPropId === prop.id;
+                        const tierColors = getTierColor(prop.tier);
+                        const gameTimeStr = formatGameTime(prop.gameTime, prop.commenceTime);
+
+                        return (
                         <div
                           key={prop.id}
                           style={{
@@ -2166,20 +2218,42 @@ export default function DashboardClient({ userEmail }) {
                             border: prop.heaterScore >= 8 ? "2px solid var(--green)" : "1px solid var(--border)",
                             borderRadius: 12,
                             padding: 16,
+                            cursor: isPaidUser ? "pointer" : "default",
+                            transition: "all 0.2s ease",
                           }}
+                          onClick={() => isPaidUser && setExpandedPropId(isExpanded ? null : prop.id)}
                         >
                           {/* Prop Header Row */}
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                             <div style={{ flex: 1 }}>
-                              {/* Matchup + Countdown */}
+                              {/* Tier Badge + Game Time */}
                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                                <span style={{ fontSize: 12, color: "var(--text-dim)" }}>
-                                  {prop.awayTeam} @ {prop.homeTeam}
-                                </span>
-                                <div style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--accent)", fontSize: 11 }}>
-                                  <ClockIcon size={12} color="var(--accent)" />
-                                  {formatCountdown(prop.commenceTime)}
-                                </div>
+                                {prop.tier && (
+                                  <span style={{
+                                    background: tierColors.bg,
+                                    color: tierColors.text,
+                                    padding: "2px 8px",
+                                    borderRadius: 4,
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    textTransform: "uppercase",
+                                  }}>
+                                    {prop.tier}
+                                  </span>
+                                )}
+                                {gameTimeStr && (
+                                  <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
+                                    <ClockIcon size={12} color={gameTimeStr === "Live" ? "var(--red)" : "var(--accent)"} />
+                                    <span style={{ color: gameTimeStr === "Live" ? "var(--red)" : "var(--accent)", fontWeight: gameTimeStr === "Live" ? 700 : 400 }}>
+                                      {gameTimeStr}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Matchup */}
+                              <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 4 }}>
+                                {prop.matchup || `${prop.awayTeam} @ ${prop.homeTeam}`}
                               </div>
 
                               {/* Player Name */}
@@ -2188,12 +2262,19 @@ export default function DashboardClient({ userEmail }) {
                                 <span style={{ fontWeight: 700, fontSize: 16 }}>{prop.playerName}</span>
                               </div>
 
-                              {/* Prop Line + Best Odds */}
+                              {/* Prop Line + Best Odds with explanation */}
                               <div style={{ fontSize: 14, fontWeight: 600 }}>
                                 {prop.overUnder} {prop.line} {prop.propType}
-                                <span style={{ marginLeft: 8, color: prop.bestOdds > 0 ? "var(--green)" : "var(--text-dim)" }}>
+                                <span
+                                  style={{ marginLeft: 8, color: prop.bestOdds > 0 ? "var(--green)" : "var(--text-dim)" }}
+                                  title={explainOdds(prop.bestOdds)}
+                                >
                                   {prop.bestOdds > 0 ? "+" : ""}{prop.bestOdds}
                                 </span>
+                              </div>
+                              {/* Odds explanation inline */}
+                              <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 2 }}>
+                                {explainOdds(prop.bestOdds)}
                               </div>
                             </div>
 
@@ -2221,6 +2302,12 @@ export default function DashboardClient({ userEmail }) {
                                   {prop.heaterScore}
                                 </div>
                                 <span style={{ fontSize: 9, color: "var(--text-dim)", marginTop: 2 }}>HEATER</span>
+                                {/* Expand hint for paid users */}
+                                {isPaidUser && (
+                                  <span style={{ fontSize: 9, color: "var(--accent)", marginTop: 4 }}>
+                                    {isExpanded ? "tap to collapse" : "tap for details"}
+                                  </span>
+                                )}
                               </div>
                             ) : !isPaidUser ? (
                               <div
@@ -2279,40 +2366,45 @@ export default function DashboardClient({ userEmail }) {
                                 </div>
                               </div>
 
-                              {/* Write-up */}
-                              {prop.writeup && (
-                                <p style={{ fontSize: 13, lineHeight: 1.6, margin: "0 0 8px 0", color: "var(--text)" }}>
-                                  {prop.writeup}
-                                </p>
-                              )}
+                              {/* Expanded Details */}
+                              {isExpanded && (
+                                <>
+                                  {/* Write-up */}
+                                  {prop.writeup && (
+                                    <p style={{ fontSize: 13, lineHeight: 1.6, margin: "0 0 8px 0", color: "var(--text)" }}>
+                                      {prop.writeup}
+                                    </p>
+                                  )}
 
-                              {/* Key Factor */}
-                              {prop.keyFactor && (
-                                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
-                                  <TrendingUpIcon size={12} color="var(--accent)" />
-                                  <span style={{ color: "var(--accent)", fontWeight: 600 }}>Key:</span>
-                                  <span style={{ color: "var(--text-dim)" }}>{prop.keyFactor}</span>
-                                </div>
-                              )}
+                                  {/* Key Factor */}
+                                  {prop.keyFactor && (
+                                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+                                      <TrendingUpIcon size={12} color="var(--accent)" />
+                                      <span style={{ color: "var(--accent)", fontWeight: 600 }}>Key:</span>
+                                      <span style={{ color: "var(--text-dim)" }}>{prop.keyFactor}</span>
+                                    </div>
+                                  )}
 
-                              {/* Multi-book odds */}
-                              {prop.odds && prop.odds.length > 1 && (
-                                <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                  {prop.odds.slice(0, 4).map((o, idx) => (
-                                    <span
-                                      key={idx}
-                                      style={{
-                                        fontSize: 10,
-                                        padding: "2px 6px",
-                                        background: "var(--surface2)",
-                                        borderRadius: 4,
-                                        color: "var(--text-dim)",
-                                      }}
-                                    >
-                                      {o.bookmaker}: {o.price > 0 ? "+" : ""}{o.price}
-                                    </span>
-                                  ))}
-                                </div>
+                                  {/* Multi-book odds */}
+                                  {prop.odds && prop.odds.length > 1 && (
+                                    <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                      {prop.odds.slice(0, 4).map((o, idx) => (
+                                        <span
+                                          key={idx}
+                                          style={{
+                                            fontSize: 10,
+                                            padding: "2px 6px",
+                                            background: "var(--surface2)",
+                                            borderRadius: 4,
+                                            color: "var(--text-dim)",
+                                          }}
+                                        >
+                                          {o.bookmaker}: {o.price > 0 ? "+" : ""}{o.price}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </>
                           )}
@@ -2353,7 +2445,8 @@ export default function DashboardClient({ userEmail }) {
                             </div>
                           )}
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
