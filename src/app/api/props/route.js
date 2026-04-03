@@ -463,23 +463,27 @@ export async function GET(request) {
     allCategories.push(...categories);
   }
 
-  // For free users, strip out edge analysis data
+  // For free users, strip out edge analysis data (create copies to avoid mutating cache)
   if (!isPaidUser) {
-    for (const category of allCategories) {
-      category.props = category.props.map((prop) => ({
-        id: prop.id,
-        sport: prop.sport,
-        eventId: prop.eventId,
-        homeTeam: prop.homeTeam,
-        awayTeam: prop.awayTeam,
-        commenceTime: prop.commenceTime,
-        playerName: prop.playerName,
-        propType: prop.propType,
-        line: prop.line,
-        overUnder: prop.overUnder,
-        bestOdds: prop.bestOdds,
-        // Strip: impliedProbability, modelProbability, edge, odds
-      }));
+    for (let i = 0; i < allCategories.length; i++) {
+      const category = allCategories[i];
+      allCategories[i] = {
+        ...category,
+        props: category.props.map((prop) => ({
+          id: prop.id,
+          sport: prop.sport,
+          eventId: prop.eventId,
+          homeTeam: prop.homeTeam,
+          awayTeam: prop.awayTeam,
+          commenceTime: prop.commenceTime,
+          playerName: prop.playerName,
+          propType: prop.propType,
+          line: prop.line,
+          overUnder: prop.overUnder,
+          bestOdds: prop.bestOdds,
+          // Strip: impliedProbability, modelProbability, edge, odds
+        })),
+      };
     }
   }
 
