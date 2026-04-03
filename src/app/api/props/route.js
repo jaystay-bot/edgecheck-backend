@@ -8,6 +8,9 @@ export const maxDuration = 60;
 // Minimum edge percentage required to show a prop (0 = show all props, sort by edge)
 const MIN_EDGE_PERCENT = 0;
 
+// Minimum heater score to display a prop (filters weak plays)
+const MIN_HEATER_SCORE = 7.0;
+
 // Sport and category configuration with STRICT limits per user requirements
 const SPORT_CONFIG = {
   mlb: {
@@ -25,7 +28,7 @@ const SPORT_CONFIG = {
         id: "hits",
         name: "Hit Props",
         markets: ["batter_hits"],
-        maxProps: 10, // Max 10 Hit props per requirements
+        maxProps: 5, // Reduced to show only top-quality plays
         filterFn: (prop) => prop.overUnder === "Over",
       },
     ],
@@ -202,21 +205,24 @@ function scoreMLBProp(prop, bestOdds, edge) {
   }
 
   // === MLB CONTEXT SCORE (from MLB Stats API) ===
-  // Lineup position bonus (top of order = more ABs)
+  // Lineup position bonus (top of order = more ABs) - AMPLIFIED for differentiation
   if (lineupSpot) {
-    if (lineupSpot <= 3) {
-      contextScore += 1.0;
-      factors.push(`Batting ${lineupSpot}${lineupSpot === 1 ? "st" : lineupSpot === 2 ? "nd" : "rd"} - top of order`);
+    if (lineupSpot <= 2) {
+      contextScore += 1.5; // Top 2 get extra boost
+      factors.push(`Batting ${lineupSpot}${lineupSpot === 1 ? "st" : "nd"} - premium spot`);
+    } else if (lineupSpot === 3) {
+      contextScore += 1.2;
+      factors.push("Batting 3rd - cleanup vicinity");
     } else if (lineupSpot <= 5) {
-      contextScore += 0.5;
+      contextScore += 0.6;
       factors.push(`Batting ${lineupSpot}th - middle of order`);
-    } else if (lineupSpot >= 8) {
-      riskPenalty += 0.3;
+    } else if (lineupSpot >= 7) {
+      riskPenalty += 0.6; // Stronger penalty for bottom of order
       risks.push(`Batting ${lineupSpot}th - fewer ABs expected`);
     }
   }
 
-  // Handedness matchup bonus
+  // Handedness matchup bonus - AMPLIFIED
   if (batSide && pitcherHand) {
     const hasAdvantage =
       (batSide === "L" && pitcherHand === "R") ||
@@ -224,44 +230,47 @@ function scoreMLBProp(prop, bestOdds, edge) {
       batSide === "S"; // Switch hitters always have advantage
 
     if (hasAdvantage) {
-      contextScore += 0.5;
+      contextScore += 0.8; // Increased from 0.5
       factors.push(handednessMatchup || `${batSide === "S" ? "Switch-hitter" : "Platoon"} advantage`);
     } else {
       // Same-side matchup (disadvantage)
-      riskPenalty += 0.3;
+      riskPenalty += 0.5; // Increased from 0.3
       risks.push(handednessMatchup || "Same-side pitcher matchup");
     }
   }
 
-  // === RECENT PERFORMANCE SCORE ===
+  // === RECENT PERFORMANCE SCORE === AMPLIFIED
   if (avgLast5 !== null) {
     if (isBatterHot) {
-      contextScore += 1.0;
+      contextScore += 1.5; // Increased from 1.0
       factors.push(`Hot bat - .${(avgLast5 * 1000).toFixed(0)} last 5 games`);
     } else if (isBatterCold) {
-      riskPenalty += 0.5;
+      riskPenalty += 1.0; // Increased from 0.5
       risks.push(`Cold bat - .${(avgLast5 * 1000).toFixed(0)} last 5 games`);
-    } else if (avgLast5 >= 0.250) {
-      contextScore += 0.3;
+    } else if (avgLast5 >= 0.280) {
+      contextScore += 0.5;
       factors.push(`Solid recent - .${(avgLast5 * 1000).toFixed(0)} last 5`);
+    } else if (avgLast5 < 0.220) {
+      riskPenalty += 0.4;
+      risks.push(`Struggling - .${(avgLast5 * 1000).toFixed(0)} last 5`);
     }
 
     if (batterTrend === "heating up") {
-      contextScore += 0.3;
+      contextScore += 0.5; // Increased from 0.3
       factors.push("Trending up");
     } else if (batterTrend === "cooling off") {
-      riskPenalty += 0.2;
+      riskPenalty += 0.4; // Increased from 0.2
       risks.push("Trending down");
     }
   }
 
-  // === PITCHER QUALITY SCORE ===
+  // === PITCHER QUALITY SCORE === AMPLIFIED
   if (pitcherQuality && pitcherQuality !== "unknown") {
     if (isPitcherStruggling) {
-      contextScore += 0.8;
+      contextScore += 1.2; // Increased from 0.8
       factors.push(`vs ${pitcherQuality} pitcher (${pitcherERA?.toFixed(2)} ERA)`);
     } else if (isPitcherElite) {
-      riskPenalty += 0.6;
+      riskPenalty += 1.0; // Increased from 0.6
       risks.push(`vs ${pitcherQuality} pitcher (${pitcherERA?.toFixed(2)} ERA)`);
     } else if (pitcherQuality === "average") {
       // Neutral - no adjustment
@@ -307,9 +316,22 @@ function scoreMLBProp(prop, bestOdds, edge) {
   const keyFactor = factors.length > 0 ? factors[0] : "Standard line";
   const riskReason = risks.length > 0 ? risks.join(". ") : "Normal variance";
 
+  // === TIER LABEL based on final score ===
+  let tier;
+  if (heaterScore >= 9.0) {
+    tier = "Top Pick";
+  } else if (heaterScore >= 8.0) {
+    tier = "Strong";
+  } else if (heaterScore >= 7.0) {
+    tier = "Value";
+  } else {
+    tier = "Risky";
+  }
+
   return {
     heaterScore,
     confidence,
+    tier, // NEW: Easy label for quick identification
     writeup,
     keyFactor,
     keyFactors: factors,
@@ -576,6 +598,15 @@ function organizeIntoCategories(allProps, sportKey) {
 
     // Add edge data and filter by minimum edge requirement
     categoryProps = addEdgeDataToProps(categoryProps);
+
+    // Filter by minimum heater score for quality control (MLB only)
+    if (sportKey === "mlb") {
+      const beforeCount = categoryProps.length;
+      categoryProps = categoryProps.filter((p) => p.heaterScore >= MIN_HEATER_SCORE);
+      if (beforeCount > 0 && categoryProps.length < beforeCount) {
+        console.log(`[Props] Filtered ${beforeCount - categoryProps.length} weak ${category.name} (below ${MIN_HEATER_SCORE} score)`);
+      }
+    }
 
     // Sort by heaterScore (if available) or edge (highest first)
     categoryProps.sort((a, b) => {
