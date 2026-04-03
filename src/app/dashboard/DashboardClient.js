@@ -795,11 +795,10 @@ export default function DashboardClient({ userEmail }) {
 
   const formatTime = (iso) => {
     try {
-      return new Date(iso).toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        timeZoneName: "short",
-      });
+      const d = new Date(iso);
+      const date = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+      const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      return `${date} ${time}`;
     } catch {
       return "";
     }
