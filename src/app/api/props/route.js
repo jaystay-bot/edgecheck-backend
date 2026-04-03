@@ -378,16 +378,19 @@ function addEdgeDataToProps(props) {
       const modelProb = calculateModelProbability(prop.odds, prop.propType);
       const edge = parseFloat(calculateEdge(modelProb, impliedProb));
 
+      // Single-source props (Underdog) can't have meaningful edge calculation
+      const isSingleSource = prop.odds.length === 1;
+
       return {
         ...prop,
         bestOdds,
         impliedProbability: (impliedProb * 100).toFixed(1),
         modelProbability: (modelProb * 100).toFixed(1),
         edge: edge.toFixed(1),
-        hasEdge: edge >= MIN_EDGE_PERCENT,
+        hasEdge: isSingleSource || edge >= MIN_EDGE_PERCENT,
       };
     })
-    .filter((prop) => prop.hasEdge); // Only return props with positive edge
+    .filter((prop) => prop.hasEdge);
 }
 
 async function getPropsForSport(sportKey, apiKey) {
