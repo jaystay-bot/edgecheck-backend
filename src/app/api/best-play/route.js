@@ -1,7 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import Groq from "groq-sdk";
 
 export const maxDuration = 60;
 
@@ -22,11 +21,6 @@ const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 function getStripe() {
   if (!process.env.STRIPE_SECRET_KEY) return null;
   return new Stripe(process.env.STRIPE_SECRET_KEY);
-}
-
-function getGroq() {
-  if (!process.env.GROQ_API_KEY) return null;
-  return new Groq({ apiKey: process.env.GROQ_API_KEY });
 }
 
 function getOddsApiKey() {
@@ -304,84 +298,106 @@ function formatPropType(marketKey) {
   return mapping[marketKey] || marketKey;
 }
 
-async function scoreBetWithGroq(groq, bet) {
-  const isGameBet = bet.type === "game";
+// Deterministic scoring based on raw odds data - no AI
+function scoreBetFromOdds(bet) {
+  const odds = bet.odds;
+  if (odds == null) return null;
 
-  const prompt = `You are an expert sports betting analyst finding the BEST PLAY OF THE DAY. Score this bet from 1-10 where 10 is the absolute strongest edge.
+  // Calculate implied probability
+  const impliedProb = odds > 0 ? 100 / (odds + 100) : Math.abs(odds) / (Math.abs(odds) + 100);
 
-Sport: ${bet.sport}
-Game: ${bet.awayTeam} @ ${bet.homeTeam}
-Game Time: ${bet.commenceTime}
-Bet Type: ${bet.betType}
-Selection: ${bet.teamOrPlayer}
-Line: ${bet.betValue}
-Odds: ${bet.odds > 0 ? "+" : ""}${bet.odds}
+  // Base score starts at 5
+  let score = 5.0;
+  let confidence = 5;
+  const factors = [];
+  const risks = [];
 
-This is for finding THE SINGLE BEST BET of the entire day. Be extremely selective - only score 8+ if this is a truly exceptional edge.
-
-${isGameBet ? `For this game bet, consider:
-- Team's recent ATS performance
-- Home/Away splits
-- Head-to-head history
-- Key injuries/rest
-- Situational spots` : `For this prop bet, consider:
-- Player's recent performance trend
-- Matchup quality
-- Usage rate / opportunities
-- Historical hit rate on this line`}
-
-Respond with ONLY a JSON object (no markdown):
-{
-  "heaterScore": 8,
-  "confidence": 9,
-  "atsLast5": "4-1",
-  "atsLast10": "7-3",
-  "atsSeason": "42-28",
-  "homeAwayAts": "12-5 Home",
-  "writeup": "4-5 sentence detailed analysis explaining why this is or isn't a strong play. Include specific trends and matchup factors.",
-  "keyFactors": ["Factor 1", "Factor 2", "Factor 3"],
-  "whatCouldGoWrong": "2 sentence explanation of the main risks."
-}
-
-heaterScore: 1-10 (6+ for good edge, 8+ for elite)
-confidence: 1-10
-atsLast5: recent ATS record (W-L format)
-atsLast10: last 10 ATS record
-atsSeason: full season ATS
-homeAwayAts: home or away ATS split
-writeup: 4-5 sentence analysis
-keyFactors: 3 key reasons
-whatCouldGoWrong: main risks`;
-
-  try {
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      max_tokens: 500,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const text = completion.choices?.[0]?.message?.content?.trim();
-    if (!text) return null;
-
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
-
-    const parsed = JSON.parse(jsonMatch[0]);
-    return {
-      heaterScore: Math.min(10, Math.max(1, parseInt(parsed.heaterScore, 10) || 5)),
-      confidence: Math.min(10, Math.max(1, parseInt(parsed.confidence, 10) || 5)),
-      atsLast5: parsed.atsLast5 || "N/A",
-      atsLast10: parsed.atsLast10 || "N/A",
-      atsSeason: parsed.atsSeason || "N/A",
-      homeAwayAts: parsed.homeAwayAts || "N/A",
-      writeup: parsed.writeup || "",
-      keyFactors: parsed.keyFactors || [],
-      whatCouldGoWrong: parsed.whatCouldGoWrong || "",
-    };
-  } catch (err) {
-    console.warn(`[BestPlay] Groq scoring failed:`, err.message);
-    return null;
+  // Value scoring based on odds
+  if (odds >= 100 && odds <= 150) {
+    // Small underdog ML - good value zone
+    score += 2.5;
+    confidence += 2;
+    factors.push("Value underdog odds (+100 to +150)");
+  } else if (odds >= 151 && odds <= 250) {
+    // Medium underdog - higher variance
+    score += 2.0;
+    confidence += 1;
+    factors.push("Plus-money value (+150 to +250)");
+    risks.push("Higher variance play");
+  } else if (odds >= -150 && odds <= -110) {
+    // Standard favorite - consistent
+    score += 1.5;
+    confidence += 2;
+    factors.push("Favorable juice on standard line");
+  } else if (odds >= -200 && odds < -150) {
+    // Moderate favorite
+    score += 1.0;
+    confidence += 1;
+    factors.push("Moderate favorite pricing");
+  } else if (odds > 250) {
+    // Long shot - lower base but can hit
+    score += 1.0;
+    risks.push("Long shot - lower hit rate");
+  } else if (odds < -200) {
+    // Heavy favorite - low value
+    score += 0.5;
+    risks.push("Heavy chalk - limited upside");
   }
+
+  // Bet type scoring
+  if (bet.betType === "Spread") {
+    const line = Math.abs(bet.line || 0);
+    // Key numbers in football
+    if (bet.sport === "NFL" || bet.sport === "NCAAF") {
+      if (line === 3 || line === 7 || line === 6 || line === 10) {
+        score += 1.0;
+        factors.push(`Key number spread (${line})`);
+      }
+    }
+    // Small spreads = closer games = more predictable
+    if (line <= 3.5) {
+      score += 0.5;
+      factors.push("Tight spread - competitive matchup");
+    }
+  } else if (bet.betType === "Moneyline") {
+    // Underdogs on ML have value
+    if (odds > 0) {
+      score += 0.5;
+      factors.push("Moneyline underdog value");
+    }
+  } else if (bet.betType === "Total") {
+    // Totals at round numbers
+    const total = bet.line || 0;
+    if (total % 0.5 === 0 && total % 1 !== 0) {
+      score += 0.5;
+      factors.push("Half-point total hook");
+    }
+  }
+
+  // Add small variance for diversity (±0.3)
+  const variance = (Math.random() - 0.5) * 0.6;
+  score = Math.round((score + variance) * 10) / 10;
+
+  // Clamp score to 1-10 range
+  score = Math.min(10, Math.max(1, score));
+  confidence = Math.min(10, Math.max(1, confidence));
+
+  // Generate writeup based on factors
+  const writeup = factors.length > 0
+    ? `${bet.teamOrPlayer} presents value at ${odds > 0 ? "+" : ""}${odds}. ${factors.join(". ")}. Implied probability: ${Math.round(impliedProb * 100)}%.`
+    : `Standard betting opportunity on ${bet.teamOrPlayer} at ${odds > 0 ? "+" : ""}${odds}.`;
+
+  return {
+    heaterScore: score,
+    confidence,
+    atsLast5: "N/A",
+    atsLast10: "N/A",
+    atsSeason: "N/A",
+    homeAwayAts: "N/A",
+    writeup,
+    keyFactors: factors.length > 0 ? factors : ["Standard line value"],
+    whatCouldGoWrong: risks.length > 0 ? risks.join(". ") : "Normal betting variance applies.",
+  };
 }
 
 // Calculate implied probability and EV from American odds
@@ -397,7 +413,7 @@ function calculateEV(odds, estimatedWinProb) {
   };
 }
 
-async function findBestPlays(groq, apiKey) {
+async function findBestPlays(apiKey) {
   console.log("[BestPlay] Scanning all sports for Top Plays of the Day...");
 
   // Fetch games from all sports (parallel)
@@ -426,44 +442,25 @@ async function findBestPlays(groq, apiKey) {
     return { found: false, plays: [], reason: "No games or props available today" };
   }
 
-  // Sample more candidates to find elite plays (8+ score)
-  const sampleSize = Math.min(40, allCandidates.length);
-  const sampledCandidates = allCandidates
-    .sort(() => Math.random() - 0.5)
-    .slice(0, sampleSize);
+  // Score ALL candidates using deterministic odds-based scoring (fast, no API calls)
+  console.log(`[BestPlay] Scoring ${allCandidates.length} candidates from raw odds data...`);
 
-  console.log(`[BestPlay] Scoring ${sampledCandidates.length} candidates with Groq...`);
-
-  // Score all candidates and collect results
-  const scoredCandidates = [];
-  const batchSize = 5;
-
-  for (let i = 0; i < sampledCandidates.length; i += batchSize) {
-    const batch = sampledCandidates.slice(i, i + batchSize);
-    const results = await Promise.all(
-      batch.map(async (candidate) => {
-        const score = await scoreBetWithGroq(groq, candidate);
-        if (score) {
-          // Calculate EV based on confidence (confidence/10 = estimated win probability)
-          const estimatedWinProb = Math.min(0.75, Math.max(0.45, score.confidence / 10 + 0.1));
-          const evData = calculateEV(candidate.odds, estimatedWinProb);
-          return { ...candidate, ...score, ...evData };
-        }
-        return null;
-      })
-    );
-
-    scoredCandidates.push(...results.filter(Boolean));
-
-    // Small delay between batches
-    if (i + batchSize < sampledCandidates.length) {
-      await new Promise((r) => setTimeout(r, 200));
-    }
-  }
+  const scoredCandidates = allCandidates
+    .map((candidate) => {
+      const score = scoreBetFromOdds(candidate);
+      if (score) {
+        // Calculate EV based on confidence
+        const estimatedWinProb = Math.min(0.75, Math.max(0.45, score.confidence / 10 + 0.1));
+        const evData = calculateEV(candidate.odds, estimatedWinProb);
+        return { ...candidate, ...score, ...evData };
+      }
+      return null;
+    })
+    .filter(Boolean);
 
   // Filter to only elite plays (8+ score) and sort by score
   const elitePlays = scoredCandidates
-    .filter((c) => c.heaterScore >= 8)
+    .filter((c) => c.heaterScore >= 8.0)
     .sort((a, b) => b.heaterScore - a.heaterScore || b.confidence - a.confidence)
     .slice(0, 3); // Top 3 elite plays
 
@@ -472,22 +469,14 @@ async function findBestPlays(groq, apiKey) {
     return { found: true, plays: elitePlays };
   }
 
-  // If no 8+ plays, return top 3 with 6+ as backup
-  const goodPlays = scoredCandidates
-    .filter((c) => c.heaterScore >= 6)
+  // If no 8+ plays, return top 3 highest scoring as backup
+  const topPlays = scoredCandidates
     .sort((a, b) => b.heaterScore - a.heaterScore || b.confidence - a.confidence)
     .slice(0, 3);
 
-  if (goodPlays.length > 0) {
-    console.log(`[BestPlay] No elite plays found, returning ${goodPlays.length} good plays (6+)`);
-    return { found: true, plays: goodPlays, note: "No 8+ plays today - showing best available" };
-  }
-
-  // Last resort: return single best regardless of score
-  if (scoredCandidates.length > 0) {
-    const best = scoredCandidates.sort((a, b) => b.heaterScore - a.heaterScore)[0];
-    console.log(`[BestPlay] Returning best available: ${best.teamOrPlayer} - Score ${best.heaterScore}/10`);
-    return { found: true, plays: [best], note: "Limited high-value plays today" };
+  if (topPlays.length > 0) {
+    console.log(`[BestPlay] No 8+ plays, returning top ${topPlays.length} (scores: ${topPlays.map(p => p.heaterScore).join(", ")})`);
+    return { found: true, plays: topPlays, note: "Best value plays available today" };
   }
 
   console.log(`[BestPlay] No candidates could be scored`);
@@ -538,21 +527,15 @@ export async function GET(request) {
   }
 
   const apiKey = getOddsApiKey();
-  const groq = getGroq();
 
   if (!apiKey) {
     console.error("[BestPlay] No ODDS_API_KEY configured");
     return NextResponse.json({ found: false, error: "Odds API not configured" });
   }
 
-  if (!groq) {
-    console.error("[BestPlay] GROQ_API_KEY not configured");
-    return NextResponse.json({ found: false, error: "Groq not configured" });
-  }
-
-  // Find best plays (1-3 elite picks)
+  // Find best plays (1-3 elite picks) using deterministic odds scoring
   console.log("[BestPlay] Generating fresh Best Plays...");
-  const result = await findBestPlays(groq, apiKey);
+  const result = await findBestPlays(apiKey);
 
   // Update cache
   bestPlayCache.data = result;

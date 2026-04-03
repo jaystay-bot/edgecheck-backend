@@ -204,50 +204,66 @@ function generateBetsFromGames(allGames) {
   return bets;
 }
 
-async function scoreBetWithGroq(groq, bet) {
-  const prompt = `You are an expert sports betting analyst. Score this bet from 1-10 where 10 is the best edge.
+// Deterministic scoring based on raw odds data - no AI
+function scoreBetFromOdds(bet) {
+  const odds = bet.odds;
+  if (odds == null) return null;
 
-Sport: ${bet.sport}
-Game: ${bet.awayTeam} @ ${bet.homeTeam}
-Game Time: ${bet.commenceTime}
-Bet: ${bet.betType} - ${bet.betValue}
-Odds: ${bet.odds > 0 ? "+" : ""}${bet.odds}
+  // Base score starts at 5
+  let score = 5.0;
+  let reason = "";
 
-Respond with ONLY a JSON object in this exact format (no markdown, no explanation):
-{"score": 7, "reason": "Brief 10-15 word reason why this bet has value or not"}`;
-
-  try {
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      max_tokens: 100,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const text = completion.choices?.[0]?.message?.content?.trim();
-    if (!text) return null;
-
-    // Parse JSON response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
-
-    const parsed = JSON.parse(jsonMatch[0]);
-    return {
-      score: parseInt(parsed.score, 10) || 0,
-      reason: parsed.reason || "",
-    };
-  } catch (err) {
-    console.warn("[Heaters] Groq scoring failed:", err.message);
-    return null;
+  // Value scoring based on odds
+  if (odds >= 100 && odds <= 150) {
+    // Small underdog ML - good value zone
+    score += 2.5;
+    reason = "Value underdog in the +100 to +150 sweet spot";
+  } else if (odds >= 151 && odds <= 250) {
+    // Medium underdog
+    score += 2.0;
+    reason = "Plus-money value play with upside potential";
+  } else if (odds >= -150 && odds <= -110) {
+    // Standard favorite - consistent
+    score += 1.5;
+    reason = "Favorable juice on a standard betting line";
+  } else if (odds >= -200 && odds < -150) {
+    // Moderate favorite
+    score += 1.2;
+    reason = "Moderate favorite with reasonable pricing";
+  } else if (odds > 250) {
+    // Long shot
+    score += 0.8;
+    reason = "Long shot with high reward potential";
+  } else if (odds < -200) {
+    // Heavy favorite
+    score += 0.5;
+    reason = "Heavy favorite - limited value but safer";
+  } else {
+    reason = "Standard betting opportunity";
   }
+
+  // Bet type adjustments
+  if (bet.betType === "Spread") {
+    score += 0.3;
+    reason += " - spread bet";
+  } else if (bet.betType === "Moneyline" && odds > 0) {
+    score += 0.4;
+    reason += " - ML underdog";
+  } else if (bet.betType === "Total") {
+    score += 0.2;
+  }
+
+  // Add small variance for diversity (±0.4)
+  const variance = (Math.random() - 0.5) * 0.8;
+  score = Math.round((score + variance) * 10) / 10;
+
+  // Clamp score to 1-10 range
+  score = Math.min(10, Math.max(1, score));
+
+  return { score, reason };
 }
 
 async function generateHeaters() {
-  const groq = getGroq();
-  if (!groq) {
-    console.error("[Heaters] GROQ_API_KEY not configured");
-    return [];
-  }
-
   console.log("[Heaters] Fetching games from all sports...");
 
   // Fetch games from all sports in parallel
@@ -264,56 +280,47 @@ async function generateHeaters() {
   const allBets = generateBetsFromGames(allGames);
   console.log(`[Heaters] Generated ${allBets.length} potential bets`);
 
-  // Limit to avoid API rate limits - take a sample of bets
-  // Prioritize variety: spread across sports and bet types
-  const sampleSize = Math.min(30, allBets.length);
-  const sampledBets = allBets
-    .sort(() => Math.random() - 0.5)
-    .slice(0, sampleSize);
+  // Score ALL bets using deterministic odds-based scoring (fast, no API calls)
+  console.log(`[Heaters] Scoring ${allBets.length} bets from raw odds data...`);
 
-  console.log(`[Heaters] Scoring ${sampledBets.length} bets with Groq...`);
+  const scoredBets = allBets
+    .map((bet) => {
+      const result = scoreBetFromOdds(bet);
+      if (result) {
+        return { ...bet, heaterScore: result.score, reason: result.reason };
+      }
+      return null;
+    })
+    .filter(Boolean);
 
-  // Score bets in parallel batches of 5 to avoid rate limits
-  const scoredBets = [];
-  const batchSize = 5;
+  // HEATERS = scores 7.0 to 7.9 (good but not elite)
+  const heaters = scoredBets
+    .filter((bet) => bet.heaterScore >= 7.0 && bet.heaterScore < 8.0)
+    .sort((a, b) => b.heaterScore - a.heaterScore)
+    .slice(0, 15);
 
-  for (let i = 0; i < sampledBets.length; i += batchSize) {
-    const batch = sampledBets.slice(i, i + batchSize);
-    const results = await Promise.all(
-      batch.map(async (bet) => {
-        const result = await scoreBetWithGroq(groq, bet);
-        if (result && result.score >= 5) {
-          return { ...bet, heaterScore: result.score, reason: result.reason };
-        }
-        return null;
-      })
-    );
-    scoredBets.push(...results.filter(Boolean));
+  console.log(`[Heaters] Found ${heaters.length} heaters (score 7.0-7.9)`);
 
-    // Small delay between batches
-    if (i + batchSize < sampledBets.length) {
-      await new Promise((r) => setTimeout(r, 200));
-    }
+  if (heaters.length > 0) {
+    return heaters;
   }
 
-  console.log(`[Heaters] Found ${scoredBets.length} heaters (score >= 5)`);
+  // Fallback: if no 7.0-7.9 bets, return best bets in 6.5-7.9 range
+  const fallbackHeaters = scoredBets
+    .filter((bet) => bet.heaterScore >= 6.5 && bet.heaterScore < 8.0)
+    .sort((a, b) => b.heaterScore - a.heaterScore)
+    .slice(0, 10);
 
-  // Sort by score descending, limit to 15
-  if (scoredBets.length > 0) {
-    return scoredBets
-      .sort((a, b) => b.heaterScore - a.heaterScore)
-      .slice(0, 15);
+  if (fallbackHeaters.length > 0) {
+    console.log(`[Heaters] Using fallback: ${fallbackHeaters.length} bets (score 6.5-7.9)`);
+    return fallbackHeaters;
   }
 
-  // Fallback: if no bets scored >= 5, return top bets from sample with default scores
-  // This ensures we always show picks when games exist
-  console.log("[Heaters] No high-scoring bets, returning best available from sample");
-  const fallbackHeaters = sampledBets.slice(0, 10).map((bet, idx) => ({
-    ...bet,
-    heaterScore: 5 - Math.floor(idx / 3), // 5, 5, 5, 4, 4, 4, 3, 3, 3, 2
-    reason: "Today's betting opportunity - monitor line movement",
-  }));
-  return fallbackHeaters;
+  // Last resort: top 10 best scoring bets
+  console.log("[Heaters] No qualifying heaters, returning top available bets");
+  return scoredBets
+    .sort((a, b) => b.heaterScore - a.heaterScore)
+    .slice(0, 10);
 }
 
 export async function GET(request) {
