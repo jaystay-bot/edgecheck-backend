@@ -24,18 +24,42 @@ function findMarket(bookmakers, marketKey) {
   return { market: null, bookmaker: null };
 }
 
+// Fuzzy match team names - handles "Los Angeles Lakers" vs "LA Lakers" etc.
+function fuzzyMatchTeam(outcomes, targetTeam) {
+  if (!outcomes || !targetTeam) return null;
+  const target = targetTeam.toLowerCase().replace(/[^a-z]/g, "");
+
+  // Try exact match first
+  let match = outcomes.find((o) => o.name === targetTeam);
+  if (match) return match;
+
+  // Try fuzzy match - last word (team name) or contains
+  for (const o of outcomes) {
+    const name = (o.name || "").toLowerCase().replace(/[^a-z]/g, "");
+    if (name === target) return o;
+    if (name.length > 4 && target.length > 4) {
+      if (name.includes(target) || target.includes(name)) return o;
+    }
+    // Match last word (e.g., "Lakers", "Celtics")
+    const targetLast = target.match(/[a-z]+$/)?.[0];
+    const nameLast = name.match(/[a-z]+$/)?.[0];
+    if (targetLast && nameLast && targetLast.length > 3 && targetLast === nameLast) return o;
+  }
+  return null;
+}
+
 function parseGames(data) {
   return data.map((event) => {
     const bookmakers = event.bookmakers || [];
 
     // Search all bookmakers for each market type
     const { market: h2h } = findMarket(bookmakers, "h2h");
-    const homeML = h2h?.outcomes?.find((o) => o.name === event.home_team);
-    const awayML = h2h?.outcomes?.find((o) => o.name === event.away_team);
+    const homeML = fuzzyMatchTeam(h2h?.outcomes, event.home_team);
+    const awayML = fuzzyMatchTeam(h2h?.outcomes, event.away_team);
 
     const { market: spreads } = findMarket(bookmakers, "spreads");
-    const homeSpread = spreads?.outcomes?.find((o) => o.name === event.home_team);
-    const awaySpread = spreads?.outcomes?.find((o) => o.name === event.away_team);
+    const homeSpread = fuzzyMatchTeam(spreads?.outcomes, event.home_team);
+    const awaySpread = fuzzyMatchTeam(spreads?.outcomes, event.away_team);
 
     const { market: totals } = findMarket(bookmakers, "totals");
     const over = totals?.outcomes?.find((o) => o.name === "Over");

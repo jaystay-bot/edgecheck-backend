@@ -32,6 +32,8 @@ Always return the best result when data exists — Don't fail with "no results f
 
 Search all bookmakers for market data — The Odds API returns multiple bookmakers per game. Don't just use the first bookmaker — it may not have all markets (h2h, spreads, totals). Search through all bookmakers to find each market type.
 
+Use fuzzy matching for team names — The Odds API returns team names inconsistently (e.g., "Los Angeles Lakers" vs "LA Lakers", "NY Yankees" vs "New York Yankees"). Exact string matching fails silently. Use fuzzy matching: normalize to lowercase letters only, try substring matching, and match on last word (team nickname like "Lakers", "Celtics").
+
 Always display game date/time for betting features — Betting decisions depend on knowing when games occur. Always show game date and time prominently so users can identify which games to bet on and track line movements.
 
 Format date+time together in betting UIs — When displaying game times, include both the date (e.g., "Thu, Apr 3") and time (e.g., "7:00 PM") together. Users need the full context without having to look elsewhere.
