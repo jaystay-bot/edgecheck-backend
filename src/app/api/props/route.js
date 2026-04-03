@@ -4,8 +4,8 @@ import Stripe from "stripe";
 
 export const maxDuration = 60;
 
-// Minimum edge percentage required to show a prop
-const MIN_EDGE_PERCENT = 3.0;
+// Minimum edge percentage required to show a prop (0 = show all props, sort by edge)
+const MIN_EDGE_PERCENT = 0;
 
 // Sport and category configuration with STRICT limits per user requirements
 const SPORT_CONFIG = {
@@ -271,7 +271,7 @@ function organizeIntoCategories(allProps, sportKey) {
       name: category.name,
       sport: sportKey.toUpperCase(),
       props: categoryProps,
-      error: categoryProps.length === 0 ? `No ${category.name.toLowerCase()} with ${MIN_EDGE_PERCENT}%+ edge found` : null,
+      error: categoryProps.length === 0 ? `No ${category.name.toLowerCase()} available today` : null,
     });
   }
 

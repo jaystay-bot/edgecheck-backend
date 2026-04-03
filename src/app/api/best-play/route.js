@@ -520,6 +520,7 @@ export async function GET(request) {
 
     return NextResponse.json({
       ...bestPlayCache.data,
+      play: bestPlayCache.data.plays?.[0] || null,
       isPaidUser,
       cached: true,
       cacheAge: Math.round((now - bestPlayCache.timestamp) / 60000),
@@ -555,6 +556,7 @@ export async function GET(request) {
 
   return NextResponse.json({
     ...result,
+    play: result.plays?.[0] || null,
     isPaidUser,
     cached: false,
     cacheAge: 0,
