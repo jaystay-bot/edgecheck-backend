@@ -2,6 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { hasActiveSubscription } from "../../../lib/subscription";
 import { enrichMLBProps } from "../../../lib/mlbStats";
+import { enrichNBAProps } from "../../../lib/nbaStats";
 
 export const maxDuration = 60;
 
@@ -724,7 +725,10 @@ async function fetchNBAPropsFromUnderdog() {
     }
 
     console.log(`[Props] Parsed ${nbaProps.length} NBA points props from Underdog`);
-    return nbaProps;
+
+    // Enrich with ESPN game context (matchup, time)
+    const enrichedProps = await enrichNBAProps(nbaProps);
+    return enrichedProps;
   } catch (err) {
     console.error("[Props] Failed to fetch NBA from Underdog:", err.message);
     return [];
