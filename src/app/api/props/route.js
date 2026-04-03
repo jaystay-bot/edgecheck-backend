@@ -683,9 +683,9 @@ async function fetchNBAPropsFromUnderdog() {
       const appearance = appearancesById[appearanceId];
       const game = appearance ? gamesById[appearance.match_id] : null;
 
-      // Filter for NBA Points (exact match, not combos like Pts+Reb+Ast)
-      // "Points" as standalone stat is NBA-specific (NHL uses "Goals", MLB uses "Hits")
-      if (subheader === "Points") {
+      // Filter for NBA Points (ends with " Points", not combos like "Points + Rebounds")
+      // Format is "Higher 28.5 Points" - check ending and exclude combos
+      if (subheader.endsWith(" Points") && !subheader.includes("+")) {
         const overOdds = options[0]?.american_price;
         const pointsLine = parseFloat(line.stat_value) || 0;
 
@@ -993,17 +993,18 @@ export async function GET(request) {
   const isPaidUser = await hasActiveSubscription(email);
   const apiKey = getOddsApiKey();
 
-  if (!apiKey) {
-    console.error("[Props] No ODDS_API_KEY configured");
-    return NextResponse.json({ categories: [], error: "DATA MISSING: Odds API not configured" });
-  }
-
   // Get props for requested sport(s)
+  // MLB and NBA use Underdog (no API key needed), NHL needs Odds API
   const sportsToFetch = sport === "all" ? ["mlb", "nba", "nhl"] : [sport];
   const allCategories = [];
 
   for (const s of sportsToFetch) {
     if (!SPORT_CONFIG[s]) continue;
+    // Skip NHL if no API key (it requires Odds API)
+    if (s === "nhl" && !apiKey) {
+      console.warn("[Props] Skipping NHL - no ODDS_API_KEY configured");
+      continue;
+    }
     const categories = await getPropsForSport(s, apiKey);
     allCategories.push(...categories);
   }

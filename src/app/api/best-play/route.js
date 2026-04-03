@@ -202,8 +202,9 @@ async function fetchNBAPropsFromUnderdog() {
       const appearance = appearancesById[appearanceId];
       const game = appearance ? gamesById[appearance.match_id] : null;
 
-      // Filter for NBA Points only ("Points" is NBA-specific, NHL uses "Goals")
-      if (subheader === "Points") {
+      // Filter for NBA Points only (ends with " Points", not combos like "Points + Rebounds")
+      // Format is "Higher 28.5 Points"
+      if (subheader.endsWith(" Points") && !subheader.includes("+")) {
         const overOdds = options[0]?.american_price;
         const pointsLine = parseFloat(line.stat_value) || 0;
 
