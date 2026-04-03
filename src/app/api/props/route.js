@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
+import { hasActiveSubscription } from "../../../lib/subscription";
 
 export const maxDuration = 60;
 
@@ -64,11 +64,6 @@ const propsCache = {
   nhl: { data: null, timestamp: 0 },
 };
 
-function getStripe() {
-  if (!process.env.STRIPE_SECRET_KEY) return null;
-  return new Stripe(process.env.STRIPE_SECRET_KEY);
-}
-
 // Calculate implied probability from American odds
 function calculateImpliedProbability(odds) {
   if (odds > 0) {
@@ -109,33 +104,6 @@ function getOddsApiKey() {
     if (key) return key;
   }
   return process.env.ODDS_API_KEY || null;
-}
-
-async function hasActiveSubscription(email) {
-  const stripe = getStripe();
-  if (!stripe) return false;
-
-  try {
-    const customers = await stripe.customers.list({ email, limit: 1 });
-    if (customers.data.length === 0) return false;
-
-    const customerId = customers.data[0].id;
-    const subs = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-    if (subs.data.length > 0) return true;
-
-    const trialSubs = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "trialing",
-      limit: 1,
-    });
-    return trialSubs.data.length > 0;
-  } catch {
-    return false;
-  }
 }
 
 // Fetch MLB props from Underdog Fantasy API (free, no auth required)

@@ -1,7 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 import Groq from "groq-sdk";
+import { hasActiveSubscription } from "../../../lib/subscription";
 
 export const maxDuration = 60;
 
@@ -19,11 +19,6 @@ const SPORT_MAP = {
 const heatersCache = { data: null, timestamp: 0 };
 const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
-function getStripe() {
-  if (!process.env.STRIPE_SECRET_KEY) return null;
-  return new Stripe(process.env.STRIPE_SECRET_KEY);
-}
-
 function getGroq() {
   if (!process.env.GROQ_API_KEY) return null;
   return new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -35,36 +30,6 @@ function getOddsApiKey() {
     if (key) return key;
   }
   return process.env.ODDS_API_KEY || null;
-}
-
-async function hasActiveSubscription(email) {
-  const stripe = getStripe();
-  if (!stripe) return false;
-
-  try {
-    const customers = await stripe.customers.list({ email, limit: 1 });
-    if (customers.data.length === 0) return false;
-
-    const customerId = customers.data[0].id;
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-
-    if (subscriptions.data.length > 0) return true;
-
-    const trialingSubs = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "trialing",
-      limit: 1,
-    });
-
-    return trialingSubs.data.length > 0;
-  } catch (err) {
-    console.error("[Heaters] Stripe check error:", err.message);
-    return false;
-  }
 }
 
 async function fetchGamesForSport(sportKey) {

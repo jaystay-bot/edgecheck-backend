@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
+import { hasActiveSubscription } from "../../../lib/subscription";
 
 export const maxDuration = 60;
 
@@ -18,44 +18,12 @@ const SPORT_MAP = {
 const bestPlayCache = { data: null, timestamp: 0 };
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
-function getStripe() {
-  if (!process.env.STRIPE_SECRET_KEY) return null;
-  return new Stripe(process.env.STRIPE_SECRET_KEY);
-}
-
 function getOddsApiKey() {
   for (let i = 1; i <= 10; i++) {
     const key = process.env[`ODDS_API_KEY_${i}`];
     if (key) return key;
   }
   return process.env.ODDS_API_KEY || null;
-}
-
-async function hasActiveSubscription(email) {
-  const stripe = getStripe();
-  if (!stripe) return false;
-
-  try {
-    const customers = await stripe.customers.list({ email, limit: 1 });
-    if (customers.data.length === 0) return false;
-
-    const customerId = customers.data[0].id;
-    const subs = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-    if (subs.data.length > 0) return true;
-
-    const trialSubs = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "trialing",
-      limit: 1,
-    });
-    return trialSubs.data.length > 0;
-  } catch {
-    return false;
-  }
 }
 
 async function fetchGamesForSport(sportKey, apiKey) {
