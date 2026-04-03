@@ -369,6 +369,7 @@ async function fetchOddsAPI(sportKey) {
 }
 
 function mergeOddsData(games, oddsGames) {
+  console.log(`[Merge Debug] ESPN games: ${games.length}, Odds games: ${oddsGames.length}`);
   if (!oddsGames.length) return games;
 
   return games.map((game) => {
@@ -380,7 +381,12 @@ function mergeOddsData(games, oddsGames) {
          teamsMatch(game.awayTeam.name, og.homeTeam))
     );
 
-    if (!match) return game;
+    if (!match) {
+      console.log(`[Merge Debug] No match for: ${game.homeTeam.name} vs ${game.awayTeam.name}`);
+      return game;
+    }
+
+    console.log(`[Merge Debug] Matched: ${game.homeTeam.name} vs ${game.awayTeam.name} -> ML: ${match.moneyline?.home}/${match.moneyline?.away}`);
 
     const flipped = teamsMatch(game.homeTeam.name, match.awayTeam);
 
