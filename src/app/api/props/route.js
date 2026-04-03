@@ -1,82 +1,56 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import Groq from "groq-sdk";
 
 export const maxDuration = 60;
 
-// Sport and category configuration
+// Minimum edge percentage required to show a prop
+const MIN_EDGE_PERCENT = 3.0;
+
+// Sport and category configuration with STRICT limits per user requirements
 const SPORT_CONFIG = {
   mlb: {
     oddsKey: "baseball_mlb",
-    cacheTTL: 4 * 60 * 60 * 1000, // 4 hours
+    cacheTTL: 30 * 60 * 1000, // 30 minutes for freshness
     categories: [
-      {
-        id: "hits",
-        name: "To Record 1+ Hit",
-        markets: ["batter_hits"],
-        maxProps: 10,
-        filterFn: (prop) => prop.line <= 0.5 || prop.overUnder === "Over",
-      },
       {
         id: "home_runs",
         name: "Home Run Props",
         markets: ["batter_home_runs"],
-        maxProps: 10,
+        maxProps: 3, // Max 3 HR props per requirements
         filterFn: () => true,
       },
       {
-        id: "strikeouts",
-        name: "Pitcher Strikeouts",
-        markets: ["pitcher_strikeouts"],
-        maxProps: 5,
+        id: "hits",
+        name: "Hit Props",
+        markets: ["batter_hits"],
+        maxProps: 10, // Max 10 Hit props per requirements
+        filterFn: (prop) => prop.overUnder === "Over",
+      },
+    ],
+  },
+  nhl: {
+    oddsKey: "icehockey_nhl",
+    cacheTTL: 30 * 60 * 1000,
+    categories: [
+      {
+        id: "goals",
+        name: "Goal Scorer Props",
+        markets: ["player_goals"],
+        maxProps: 10, // Goal scorer props
         filterFn: () => true,
       },
     ],
   },
   nba: {
     oddsKey: "basketball_nba",
-    cacheTTL: 4 * 60 * 60 * 1000,
+    cacheTTL: 30 * 60 * 1000,
     categories: [
       {
         id: "points",
-        name: "Top Points Props",
+        name: "Points Props",
         markets: ["player_points"],
-        maxProps: 10,
-        filterFn: () => true,
-      },
-      {
-        id: "assists",
-        name: "Top Assists Props",
-        markets: ["player_assists"],
-        maxProps: 10,
-        filterFn: () => true,
-      },
-      {
-        id: "rebounds",
-        name: "Top Rebounds Props",
-        markets: ["player_rebounds"],
-        maxProps: 10,
-        filterFn: () => true,
-      },
-    ],
-  },
-  nhl: {
-    oddsKey: "icehockey_nhl",
-    cacheTTL: 4 * 60 * 60 * 1000,
-    categories: [
-      {
-        id: "goals",
-        name: "Top Goals Props",
-        markets: ["player_goals"],
-        maxProps: 10,
-        filterFn: () => true,
-      },
-      {
-        id: "shots",
-        name: "Shots on Goal Props",
-        markets: ["player_shots_on_goal"],
-        maxProps: 10,
+        maxProps: 10, // Limited to 10 total per requirements
         filterFn: () => true,
       },
     ],
@@ -85,9 +59,9 @@ const SPORT_CONFIG = {
 
 // Cache per sport - stores all props for the day
 const propsCache = {
-  mlb: { data: null, timestamp: 0, scored: false },
-  nba: { data: null, timestamp: 0, scored: false },
-  nhl: { data: null, timestamp: 0, scored: false },
+  mlb: { data: null, timestamp: 0 },
+  nba: { data: null, timestamp: 0 },
+  nhl: { data: null, timestamp: 0 },
 };
 
 function getStripe() {
@@ -95,9 +69,38 @@ function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY);
 }
 
-function getGroq() {
-  if (!process.env.GROQ_API_KEY) return null;
-  return new Groq({ apiKey: process.env.GROQ_API_KEY });
+// Calculate implied probability from American odds
+function calculateImpliedProbability(odds) {
+  if (odds > 0) {
+    return 100 / (odds + 100);
+  } else {
+    return Math.abs(odds) / (Math.abs(odds) + 100);
+  }
+}
+
+// Calculate model probability based on odds patterns across bookmakers
+function calculateModelProbability(oddsArray, propType) {
+  if (!oddsArray || oddsArray.length === 0) return 0.5;
+
+  // Average implied probability across all bookmakers (remove vig estimate)
+  const impliedProbs = oddsArray.map((o) => calculateImpliedProbability(o.price));
+  const avgImplied = impliedProbs.reduce((a, b) => a + b, 0) / impliedProbs.length;
+
+  // Vig removal: typical vig is ~4-10%, so true probability is slightly lower
+  // For props, bookmakers typically have ~8% vig total, so divide by ~1.04 per side
+  const vigAdjusted = avgImplied / 1.04;
+
+  // Slight boost for favorable line movement (best odds significantly better than average)
+  const bestOdds = Math.max(...oddsArray.map((o) => o.price));
+  const avgOdds = oddsArray.reduce((a, b) => a + b.price, 0) / oddsArray.length;
+  const lineBoost = bestOdds > avgOdds + 10 ? 0.02 : 0;
+
+  return Math.min(0.95, Math.max(0.05, vigAdjusted + lineBoost));
+}
+
+// Calculate edge percentage
+function calculateEdge(modelProb, impliedProb) {
+  return ((modelProb - impliedProb) * 100).toFixed(1);
 }
 
 function getOddsApiKey() {
@@ -254,148 +257,49 @@ function organizeIntoCategories(allProps, sportKey) {
       return marketMatch && customFilter;
     });
 
-    // Sort by best odds value (closest to even money, prefer positive)
-    categoryProps.sort((a, b) => {
-      const aOdds = getBestOdds(a.odds);
-      const bOdds = getBestOdds(b.odds);
-      // Prefer positive odds, then closest to -100
-      if (aOdds > 0 && bOdds <= 0) return -1;
-      if (bOdds > 0 && aOdds <= 0) return 1;
-      if (aOdds > 0 && bOdds > 0) return bOdds - aOdds; // Higher positive better
-      return bOdds - aOdds; // Less negative better
-    });
+    // Add edge data and filter by minimum edge requirement
+    categoryProps = addEdgeDataToProps(categoryProps);
 
-    // Limit to max props
+    // Sort by edge (highest edge first)
+    categoryProps.sort((a, b) => parseFloat(b.edge) - parseFloat(a.edge));
+
+    // Limit to max props for this category
     categoryProps = categoryProps.slice(0, category.maxProps);
-
-    // Add best odds to each prop
-    categoryProps = categoryProps.map((prop) => ({
-      ...prop,
-      bestOdds: getBestOdds(prop.odds),
-    }));
 
     categories.push({
       id: category.id,
       name: category.name,
       sport: sportKey.toUpperCase(),
       props: categoryProps,
+      error: categoryProps.length === 0 ? `No ${category.name.toLowerCase()} with ${MIN_EDGE_PERCENT}%+ edge found` : null,
     });
   }
 
   return categories;
 }
 
-async function scorePropWithGroq(groq, prop, categoryId, sportKey) {
-  const sportContext = {
-    mlb: {
-      hits: "batting average, hit streaks, pitcher matchup quality",
-      home_runs: "power numbers, ballpark factors, pitcher HR tendency",
-      strikeouts: "pitcher K rate, opponent strikeout tendency, recent form",
-    },
-    nba: {
-      points: "scoring average, matchup, pace of play",
-      assists: "playmaking role, pace, opponent assist defense",
-      rebounds: "rebounding rate, matchup size, pace",
-    },
-    nhl: {
-      goals: "shooting percentage, ice time, opponent goalie",
-      shots: "shots per game, power play time, matchup",
-    },
-  };
+// Add edge data to props and filter by minimum edge
+function addEdgeDataToProps(props) {
+  return props
+    .map((prop) => {
+      const bestOdds = getBestOdds(prop.odds);
+      const impliedProb = calculateImpliedProbability(bestOdds);
+      const modelProb = calculateModelProbability(prop.odds, prop.propType);
+      const edge = parseFloat(calculateEdge(modelProb, impliedProb));
 
-  const context = sportContext[sportKey]?.[categoryId] || "player performance trends";
-
-  const prompt = `You are an expert sports betting analyst. Analyze this ${sportKey.toUpperCase()} prop bet.
-
-Player: ${prop.playerName}
-Game: ${prop.awayTeam} @ ${prop.homeTeam}
-Game Time: ${prop.commenceTime}
-Prop: ${prop.overUnder} ${prop.line} ${prop.propType}
-Best Odds: ${prop.bestOdds > 0 ? "+" : ""}${prop.bestOdds}
-
-Focus on: ${context}
-
-Respond with ONLY a JSON object (no markdown):
-{
-  "heaterScore": 7,
-  "confidence": 8,
-  "hitRateLast10": 7,
-  "relevantStat": "0.312 BA",
-  "writeup": "3-4 sentence analysis explaining the edge or lack thereof.",
-  "keyFactor": "One key reason this prop has value"
+      return {
+        ...prop,
+        bestOdds,
+        impliedProbability: (impliedProb * 100).toFixed(1),
+        modelProbability: (modelProb * 100).toFixed(1),
+        edge: edge.toFixed(1),
+        hasEdge: edge >= MIN_EDGE_PERCENT,
+      };
+    })
+    .filter((prop) => prop.hasEdge); // Only return props with positive edge
 }
 
-heaterScore: 1-10 edge rating (10=best)
-confidence: 1-10 confidence
-hitRateLast10: estimated hits in last 10 (0-10)
-relevantStat: the most relevant stat for this prop type
-writeup: detailed 3-4 sentence analysis
-keyFactor: single most important factor`;
-
-  try {
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      max_tokens: 300,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const text = completion.choices?.[0]?.message?.content?.trim();
-    if (!text) return null;
-
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
-
-    const parsed = JSON.parse(jsonMatch[0]);
-    return {
-      heaterScore: Math.min(10, Math.max(1, parseInt(parsed.heaterScore, 10) || 5)),
-      confidence: Math.min(10, Math.max(1, parseInt(parsed.confidence, 10) || 5)),
-      hitRateLast10: Math.min(10, Math.max(0, parseInt(parsed.hitRateLast10, 10) || 5)),
-      relevantStat: parsed.relevantStat || "",
-      writeup: parsed.writeup || "",
-      keyFactor: parsed.keyFactor || "",
-    };
-  } catch (err) {
-    console.warn(`[Props] Groq scoring failed for ${prop.playerName}:`, err.message);
-    return null;
-  }
-}
-
-async function scoreAllCategories(categories, sportKey, groq) {
-  console.log(`[Props] Scoring ${sportKey.toUpperCase()} props with Groq...`);
-
-  for (const category of categories) {
-    const scoredProps = [];
-
-    // Score in small batches to avoid rate limits
-    const batchSize = 3;
-    for (let i = 0; i < category.props.length; i += batchSize) {
-      const batch = category.props.slice(i, i + batchSize);
-      const results = await Promise.all(
-        batch.map(async (prop) => {
-          const score = await scorePropWithGroq(groq, prop, category.id, sportKey);
-          if (score) {
-            return { ...prop, ...score };
-          }
-          return prop;
-        })
-      );
-      scoredProps.push(...results);
-
-      // Small delay between batches
-      if (i + batchSize < category.props.length) {
-        await new Promise((r) => setTimeout(r, 150));
-      }
-    }
-
-    // Sort by heater score
-    scoredProps.sort((a, b) => (b.heaterScore || 0) - (a.heaterScore || 0));
-    category.props = scoredProps;
-  }
-
-  return categories;
-}
-
-async function getPropsForSport(sportKey, apiKey, groq, isPaidUser) {
+async function getPropsForSport(sportKey, apiKey) {
   const config = SPORT_CONFIG[sportKey];
   if (!config) return [];
 
@@ -405,15 +309,6 @@ async function getPropsForSport(sportKey, apiKey, groq, isPaidUser) {
   // Check cache
   if (cache.data && now - cache.timestamp < config.cacheTTL) {
     console.log(`[Props] Using cached ${sportKey.toUpperCase()} props (${Math.round((now - cache.timestamp) / 60000)}min old)`);
-
-    // Return cached data, but trigger background scoring if not done
-    if (!cache.scored && isPaidUser && groq) {
-      // Don't await - score in background
-      scoreAllCategories(cache.data, sportKey, groq).then((scored) => {
-        propsCache[sportKey] = { data: scored, timestamp: cache.timestamp, scored: true };
-      });
-    }
-
     return cache.data;
   }
 
@@ -421,22 +316,21 @@ async function getPropsForSport(sportKey, apiKey, groq, isPaidUser) {
   const allProps = await fetchAllPropsForSport(sportKey, apiKey);
 
   if (allProps.length === 0) {
-    return [];
+    // Return categories with error messages when no data
+    return config.categories.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      sport: sportKey.toUpperCase(),
+      props: [],
+      error: `DATA MISSING: No ${sportKey.toUpperCase()} ${cat.name.toLowerCase()} available - odds data not yet released`,
+    }));
   }
 
-  // Organize into categories
-  let categories = organizeIntoCategories(allProps, sportKey);
+  // Organize into categories with edge-based filtering
+  const categories = organizeIntoCategories(allProps, sportKey);
 
-  // Cache immediately (unscored)
-  propsCache[sportKey] = { data: categories, timestamp: now, scored: false };
-
-  // Score with Groq if paid user (in background for faster initial load)
-  if (isPaidUser && groq) {
-    // Start scoring in background
-    scoreAllCategories(categories, sportKey, groq).then((scored) => {
-      propsCache[sportKey] = { data: scored, timestamp: now, scored: true };
-    });
-  }
+  // Cache the results
+  propsCache[sportKey] = { data: categories, timestamp: now };
 
   return categories;
 }
@@ -459,11 +353,10 @@ export async function GET(request) {
 
   const isPaidUser = await hasActiveSubscription(email);
   const apiKey = getOddsApiKey();
-  const groq = getGroq();
 
   if (!apiKey) {
     console.error("[Props] No ODDS_API_KEY configured");
-    return NextResponse.json({ categories: [], error: "Odds API not configured" });
+    return NextResponse.json({ categories: [], error: "DATA MISSING: Odds API not configured" });
   }
 
   // Get props for requested sport(s)
@@ -472,11 +365,11 @@ export async function GET(request) {
 
   for (const s of sportsToFetch) {
     if (!SPORT_CONFIG[s]) continue;
-    const categories = await getPropsForSport(s, apiKey, groq, isPaidUser);
+    const categories = await getPropsForSport(s, apiKey);
     allCategories.push(...categories);
   }
 
-  // For free users, strip out analysis data
+  // For free users, strip out edge analysis data
   if (!isPaidUser) {
     for (const category of allCategories) {
       category.props = category.props.map((prop) => ({
@@ -491,7 +384,7 @@ export async function GET(request) {
         line: prop.line,
         overUnder: prop.overUnder,
         bestOdds: prop.bestOdds,
-        // Strip: heaterScore, confidence, hitRateLast10, relevantStat, writeup, keyFactor, odds
+        // Strip: impliedProbability, modelProbability, edge, odds
       }));
     }
   }
@@ -502,8 +395,8 @@ export async function GET(request) {
     categories: allCategories,
     sport: sport.toUpperCase(),
     isPaidUser,
+    edgeRequirement: `${MIN_EDGE_PERCENT}%`,
     cached: cache.data && Date.now() - cache.timestamp < (SPORT_CONFIG[sport]?.cacheTTL || 0),
     cacheAge: cache.timestamp ? Math.round((Date.now() - cache.timestamp) / 60000) : 0,
-    scored: cache.scored || false,
   });
 }
