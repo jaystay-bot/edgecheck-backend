@@ -16,22 +16,28 @@ const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 export const dynamic = "force-dynamic";
 
+function findMarket(bookmakers, marketKey) {
+  for (const bm of bookmakers || []) {
+    const market = bm.markets?.find((m) => m.key === marketKey);
+    if (market) return { market, bookmaker: bm.title };
+  }
+  return { market: null, bookmaker: null };
+}
+
 function parseGames(data) {
   return data.map((event) => {
-    const bookmaker = event.bookmakers?.[0];
+    const bookmakers = event.bookmakers || [];
 
-    // Moneyline (h2h)
-    const h2h = bookmaker?.markets?.find((m) => m.key === "h2h");
+    // Search all bookmakers for each market type
+    const { market: h2h } = findMarket(bookmakers, "h2h");
     const homeML = h2h?.outcomes?.find((o) => o.name === event.home_team);
     const awayML = h2h?.outcomes?.find((o) => o.name === event.away_team);
 
-    // Spread (spreads / run line for MLB)
-    const spreads = bookmaker?.markets?.find((m) => m.key === "spreads");
+    const { market: spreads } = findMarket(bookmakers, "spreads");
     const homeSpread = spreads?.outcomes?.find((o) => o.name === event.home_team);
     const awaySpread = spreads?.outcomes?.find((o) => o.name === event.away_team);
 
-    // Totals (over/under)
-    const totals = bookmaker?.markets?.find((m) => m.key === "totals");
+    const { market: totals } = findMarket(bookmakers, "totals");
     const over = totals?.outcomes?.find((o) => o.name === "Over");
     const under = totals?.outcomes?.find((o) => o.name === "Under");
 
@@ -54,7 +60,7 @@ function parseGames(data) {
         overOdds: over?.price ?? null,
         underOdds: under?.price ?? null,
       },
-      bookmaker: bookmaker?.title ?? null,
+      bookmaker: bookmakers[0]?.title ?? null,
     };
   });
 }
