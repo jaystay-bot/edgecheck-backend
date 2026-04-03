@@ -57,10 +57,8 @@ function parseGames(data) {
     const homeML = fuzzyMatchTeam(h2h?.outcomes, event.home_team);
     const awayML = fuzzyMatchTeam(h2h?.outcomes, event.away_team);
 
-    // Debug: log when moneyline fails to match
-    if (!homeML || !awayML) {
-      console.log(`[Odds Debug] ${event.home_team} vs ${event.away_team} - h2h book: ${h2hBook}, outcomes:`, h2h?.outcomes?.map(o => o.name) ?? "none");
-    }
+    // Debug: log moneyline data for every game
+    console.log(`[Odds ML] ${event.home_team} vs ${event.away_team} - homeML: ${homeML?.price}, awayML: ${awayML?.price}, h2h outcomes:`, h2h?.outcomes?.length ?? 0);
 
     const { market: spreads } = findMarket(bookmakers, "spreads");
     const homeSpread = fuzzyMatchTeam(spreads?.outcomes, event.home_team);
