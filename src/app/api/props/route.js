@@ -682,14 +682,9 @@ async function fetchNBAPropsFromUnderdog() {
       const appearance = appearancesById[appearanceId];
       const game = appearance ? gamesById[appearance.match_id] : null;
 
-      // Check if this is an NBA game
-      const sportId = game?.sport_id;
-      const isNBA = sportId === "NBA" || game?.title?.includes("NBA") ||
-                    (game?.abbreviated_title && !game.abbreviated_title.includes("@") === false &&
-                     !["MLB", "NHL", "NFL"].some(s => game?.title?.includes(s)));
-
       // Filter for NBA Points (exact match, not combos like Pts+Reb+Ast)
-      if (subheader === "Points" && isNBA) {
+      // "Points" as standalone stat is NBA-specific (NHL uses "Goals", MLB uses "Hits")
+      if (subheader === "Points") {
         const overOdds = options[0]?.american_price;
         const pointsLine = parseFloat(line.stat_value) || 0;
 
