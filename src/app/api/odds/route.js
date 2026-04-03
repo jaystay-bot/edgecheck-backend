@@ -53,9 +53,14 @@ function parseGames(data) {
     const bookmakers = event.bookmakers || [];
 
     // Search all bookmakers for each market type
-    const { market: h2h } = findMarket(bookmakers, "h2h");
+    const { market: h2h, bookmaker: h2hBook } = findMarket(bookmakers, "h2h");
     const homeML = fuzzyMatchTeam(h2h?.outcomes, event.home_team);
     const awayML = fuzzyMatchTeam(h2h?.outcomes, event.away_team);
+
+    // Debug: log when moneyline fails to match
+    if (!homeML || !awayML) {
+      console.log(`[Odds Debug] ${event.home_team} vs ${event.away_team} - h2h book: ${h2hBook}, outcomes:`, h2h?.outcomes?.map(o => o.name) ?? "none");
+    }
 
     const { market: spreads } = findMarket(bookmakers, "spreads");
     const homeSpread = fuzzyMatchTeam(spreads?.outcomes, event.home_team);
