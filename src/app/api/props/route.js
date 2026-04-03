@@ -349,6 +349,169 @@ function scoreMLBProp(prop, bestOdds, edge) {
   };
 }
 
+// Score NBA points props using NBA-specific factors
+// Inputs: line difficulty, odds value, edge, position context, home/away
+function scoreNBAProp(prop, bestOdds, edge) {
+  const line = prop.line || 0.5;
+  const playerName = prop.playerName || "Player";
+  const propType = prop.propType || prop.marketKey || "";
+  const oddsArray = prop.odds || [];
+
+  // NBA context from Underdog
+  const position = prop.position;
+  const isHome = prop.isHome;
+  const matchup = prop.matchup;
+
+  // Score components
+  let lineValueScore = 0;
+  let oddsValueScore = 0;
+  let edgeScore = 0;
+  let contextScore = 0;
+  let riskPenalty = 0;
+
+  const factors = [];
+  const risks = [];
+
+  // === LINE VALUE SCORE (NBA-specific thresholds) ===
+  const isPoints = propType.includes("Points") || propType === "player_points";
+
+  if (isPoints) {
+    // Role player lines (under 16) are easier to hit
+    if (line <= 15.5) {
+      lineValueScore = 2.0;
+      factors.push(`Low line (${line}) - role player threshold`);
+    }
+    // Starter lines (16-22) are moderate
+    else if (line <= 22.5) {
+      lineValueScore = 1.5;
+      factors.push(`Starter line (${line})`);
+    }
+    // Star lines (23-29) are standard for top players
+    else if (line <= 29.5) {
+      lineValueScore = 1.0;
+      factors.push(`Star scorer line (${line})`);
+    }
+    // Superstar lines (30+) require elite performance
+    else {
+      lineValueScore = 0.5;
+      risks.push(`Elite line (${line}) - needs 30+ point game`);
+      riskPenalty = 0.5;
+    }
+  }
+
+  // === ODDS VALUE SCORE ===
+  if (bestOdds >= -115 && bestOdds <= -100) {
+    oddsValueScore = 2.0;
+    factors.push(`Strong odds value (${bestOdds > 0 ? "+" : ""}${bestOdds})`);
+  } else if (bestOdds > 0 && bestOdds <= 130) {
+    oddsValueScore = 1.5;
+    factors.push(`Plus-money odds (${bestOdds > 0 ? "+" : ""}${bestOdds})`);
+  } else if (bestOdds >= -140 && bestOdds < -115) {
+    oddsValueScore = 1.0;
+    factors.push("Standard juice");
+  } else if (bestOdds < -150) {
+    oddsValueScore = 0;
+    riskPenalty += 0.5;
+    risks.push(`Heavy juice (${bestOdds}) reduces value`);
+  } else if (bestOdds > 130) {
+    oddsValueScore = 0.5;
+    risks.push("Long odds - lower expected hit rate");
+  }
+
+  // === EDGE SCORE ===
+  const edgeNum = parseFloat(edge) || 0;
+  if (edgeNum >= 5) {
+    edgeScore = 1.5;
+    factors.push(`${edgeNum.toFixed(1)}% edge vs implied odds`);
+  } else if (edgeNum >= 2) {
+    edgeScore = 1.0;
+    factors.push(`${edgeNum.toFixed(1)}% edge`);
+  } else if (edgeNum >= 0) {
+    edgeScore = 0.5;
+  } else {
+    riskPenalty += 0.5;
+    risks.push("Negative edge vs market");
+  }
+
+  // === NBA CONTEXT SCORING ===
+  // Position bonus - guards and forwards typically score more consistently
+  if (position) {
+    const pos = position.toUpperCase();
+    if (pos === "PG" || pos === "SG" || pos === "G") {
+      contextScore += 0.5;
+      factors.push(`Guard (${pos}) - primary scoring option`);
+    } else if (pos === "SF" || pos === "F") {
+      contextScore += 0.3;
+      factors.push(`Forward (${pos}) - versatile scorer`);
+    } else if (pos === "PF" || pos === "C") {
+      // Centers have more variance in scoring
+      risks.push(`Big man (${pos}) - scoring can be matchup dependent`);
+      riskPenalty += 0.2;
+    }
+  }
+
+  // Home court advantage (NBA home teams average ~3 more PPG)
+  if (isHome === true) {
+    contextScore += 0.5;
+    factors.push("Home game - slight scoring boost");
+  } else if (isHome === false) {
+    risks.push("Road game");
+    riskPenalty += 0.2;
+  }
+
+  // === CALCULATE FINAL SCORE ===
+  const rawScore = 5.0 + lineValueScore + oddsValueScore + edgeScore + contextScore - riskPenalty;
+  const heaterScore = Math.min(10, Math.max(1, Math.round(rawScore * 10) / 10));
+
+  const confidence = Math.min(10, Math.max(1, Math.round(
+    5 + (factors.length * 0.8) - (risks.length * 0.5)
+  )));
+
+  // === GENERATE OUTPUT ===
+  const lineLabel = `${line}+`;
+  let writeup = `${playerName} ${lineLabel} points at ${bestOdds > 0 ? "+" : ""}${bestOdds}. `;
+  if (matchup) {
+    writeup += `${matchup}. `;
+  }
+  if (factors.length > 0) {
+    writeup += factors[0] + ".";
+  }
+
+  const keyFactor = factors.length > 0 ? factors[0] : "Standard line";
+  const riskReason = risks.length > 0 ? risks.join(". ") : "Normal variance";
+
+  // === TIER LABEL ===
+  let tier;
+  if (heaterScore >= 9.0) {
+    tier = "Top Pick";
+  } else if (heaterScore >= 8.0) {
+    tier = "Strong";
+  } else if (heaterScore >= 7.0) {
+    tier = "Value";
+  } else {
+    tier = "Risky";
+  }
+
+  return {
+    heaterScore,
+    confidence,
+    tier,
+    writeup,
+    keyFactor,
+    keyFactors: factors,
+    riskReason,
+    whatCouldGoWrong: riskReason,
+    scoreBreakdown: {
+      base: 5.0,
+      lineValue: lineValueScore,
+      oddsValue: oddsValueScore,
+      edge: edgeScore,
+      context: contextScore,
+      riskPenalty: -riskPenalty,
+    },
+  };
+}
+
 function getOddsApiKey() {
   for (let i = 1; i <= 10; i++) {
     const key = process.env[`ODDS_API_KEY_${i}`];
@@ -472,11 +635,115 @@ async function fetchMLBPropsFromUnderdog() {
   }
 }
 
+// Fetch NBA props from Underdog Fantasy API (same source as MLB for consistency)
+async function fetchNBAPropsFromUnderdog() {
+  try {
+    console.log("[Props] Fetching NBA props from Underdog Fantasy...");
+    const res = await fetch("https://api.underdogfantasy.com/beta/v5/over_under_lines", {
+      signal: AbortSignal.timeout(20000),
+      headers: { "User-Agent": "Mozilla/5.0" },
+    });
+
+    if (!res.ok) {
+      console.warn(`[Props] Underdog API returned ${res.status}`);
+      return [];
+    }
+
+    const data = await res.json();
+    const lines = data.over_under_lines || [];
+
+    // Build lookup tables for context data
+    const gamesById = {};
+    for (const game of data.games || []) {
+      gamesById[game.id] = game;
+    }
+
+    const appearancesById = {};
+    for (const app of data.appearances || []) {
+      appearancesById[app.id] = app;
+    }
+
+    const playersById = {};
+    for (const player of data.players || []) {
+      playersById[player.id] = player;
+    }
+
+    const nbaProps = [];
+
+    for (const line of lines) {
+      const options = line.options || [];
+      if (options.length < 1) continue;
+
+      const subheader = options[0].selection_subheader || "";
+      const playerName = options[0].selection_header || "";
+
+      // Get game context via appearance linking
+      const appearanceId = line.over_under?.appearance_stat?.appearance_id;
+      const appearance = appearancesById[appearanceId];
+      const game = appearance ? gamesById[appearance.match_id] : null;
+
+      // Check if this is an NBA game
+      const sportId = game?.sport_id;
+      const isNBA = sportId === "NBA" || game?.title?.includes("NBA") ||
+                    (game?.abbreviated_title && !game.abbreviated_title.includes("@") === false &&
+                     !["MLB", "NHL", "NFL"].some(s => game?.title?.includes(s)));
+
+      // Filter for NBA Points (exact match, not combos like Pts+Reb+Ast)
+      if (subheader === "Points" && isNBA) {
+        const overOdds = options[0]?.american_price;
+        const pointsLine = parseFloat(line.stat_value) || 0;
+
+        // Get player info for context
+        const playerId = appearance?.player_id;
+        const player = playerId ? playersById[playerId] : null;
+        const position = player?.position || null;
+
+        // Extract matchup info
+        const matchup = game?.abbreviated_title || null;
+        const gameTime = game?.match_progress || null;
+
+        // Determine if home or away based on appearance
+        const teamId = appearance?.team_id;
+        const isHome = game?.home_team_id === teamId;
+
+        nbaProps.push({
+          id: `underdog_pts_${line.id || playerName}`,
+          sport: "NBA",
+          eventId: line.id,
+          homeTeam: matchup?.split(" @ ")[1] || "NBA",
+          awayTeam: matchup?.split(" @ ")[0] || "Away",
+          commenceTime: new Date().toISOString(),
+          playerName,
+          propType: "Points",
+          marketKey: "player_points",
+          line: pointsLine,
+          overUnder: "Over",
+          odds: [{ bookmaker: "Underdog", price: parseInt(overOdds) || -110 }],
+          // Context fields (NBA-specific)
+          matchup,
+          gameTime,
+          position,
+          isHome,
+        });
+      }
+    }
+
+    console.log(`[Props] Parsed ${nbaProps.length} NBA points props from Underdog`);
+    return nbaProps;
+  } catch (err) {
+    console.error("[Props] Failed to fetch NBA from Underdog:", err.message);
+    return [];
+  }
+}
+
 // Fetch ALL props for a sport in ONE call
 async function fetchAllPropsForSport(sportKey, apiKey) {
-  // Use Underdog for MLB props (more reliable data)
+  // Use Underdog for MLB and NBA props (consistent data source)
   if (sportKey === "mlb") {
     return await fetchMLBPropsFromUnderdog();
+  }
+  if (sportKey === "nba") {
+    return await fetchNBAPropsFromUnderdog();
   }
 
   const config = SPORT_CONFIG[sportKey];
@@ -523,6 +790,11 @@ async function fetchAllPropsForSport(sportKey, apiKey) {
             const propKey = `${event.id}_${marketKey}_${playerName}_${outcome.name}`;
 
             if (!propsByPlayer[propKey]) {
+              // Format matchup string (e.g., "BOS @ LAL")
+              const awayAbbrev = awayTeam?.split(" ").pop()?.substring(0, 3).toUpperCase() || "AWY";
+              const homeAbbrev = homeTeam?.split(" ").pop()?.substring(0, 3).toUpperCase() || "HOM";
+              const matchup = `${awayAbbrev} @ ${homeAbbrev}`;
+
               propsByPlayer[propKey] = {
                 id: propKey,
                 sport: sportKey.toUpperCase(),
@@ -536,6 +808,7 @@ async function fetchAllPropsForSport(sportKey, apiKey) {
                 line: outcome.point || 0.5,
                 overUnder: outcome.name?.toLowerCase().includes("under") ? "Under" : "Over",
                 odds: [],
+                matchup,
               };
             }
 
@@ -599,8 +872,8 @@ function organizeIntoCategories(allProps, sportKey) {
     // Add edge data and filter by minimum edge requirement
     categoryProps = addEdgeDataToProps(categoryProps);
 
-    // Filter by minimum heater score for quality control (MLB only)
-    if (sportKey === "mlb") {
+    // Filter by minimum heater score for quality control (MLB and NBA)
+    if (sportKey === "mlb" || sportKey === "nba") {
       const beforeCount = categoryProps.length;
       categoryProps = categoryProps.filter((p) => p.heaterScore >= MIN_HEATER_SCORE);
       if (beforeCount > 0 && categoryProps.length < beforeCount) {
@@ -643,9 +916,15 @@ function addEdgeDataToProps(props) {
       // Single-source props (Underdog) can't have meaningful edge calculation
       const isSingleSource = prop.odds.length === 1;
 
-      // Score MLB props with context data
+      // Score props based on sport
       const isMLB = prop.sport === "MLB" || prop.marketKey?.includes("batter");
-      const scoring = isMLB ? scoreMLBProp(prop, bestOdds, edge) : {};
+      const isNBA = prop.sport === "NBA" || prop.marketKey === "player_points";
+      let scoring = {};
+      if (isMLB) {
+        scoring = scoreMLBProp(prop, bestOdds, edge);
+      } else if (isNBA) {
+        scoring = scoreNBAProp(prop, bestOdds, edge);
+      }
 
       return {
         ...prop,
