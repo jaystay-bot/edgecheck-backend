@@ -1,6 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { hasActiveSubscription } from "../../../lib/subscription";
+import { enrichMLBProps } from "../../../lib/mlbStats";
 
 export const maxDuration = 60;
 
@@ -26,7 +27,7 @@ function getOddsApiKey() {
   return process.env.ODDS_API_KEY || null;
 }
 
-// Fetch MLB props from Underdog Fantasy API (same as props/route.js)
+// Fetch MLB props from Underdog Fantasy API with REAL context data
 async function fetchMLBPropsFromUnderdog() {
   try {
     console.log("[BestPlay] Fetching MLB props from Underdog Fantasy...");
@@ -44,6 +45,17 @@ async function fetchMLBPropsFromUnderdog() {
     const lines = data.over_under_lines || [];
     console.log(`[BestPlay] Underdog returned ${lines.length} total prop lines`);
 
+    // Build lookup tables for REAL context data
+    const gamesById = {};
+    for (const game of data.games || []) {
+      gamesById[game.id] = game;
+    }
+
+    const appearancesById = {};
+    for (const app of data.appearances || []) {
+      appearancesById[app.id] = app;
+    }
+
     const mlbProps = [];
 
     for (const line of lines) {
@@ -53,6 +65,15 @@ async function fetchMLBPropsFromUnderdog() {
       const subheader = options[0].selection_subheader || "";
       const playerName = options[0].selection_header || "";
 
+      // Get REAL game context via appearance linking
+      const appearanceId = line.over_under?.appearance_stat?.appearance_id;
+      const appearance = appearancesById[appearanceId];
+      const game = appearance ? gamesById[appearance.match_id] : null;
+
+      // Extract real matchup info
+      const matchup = game?.abbreviated_title || null;
+      const gameTime = game?.match_progress || null;
+
       // Filter for MLB Home Runs (exact match, not combos)
       if (subheader.includes("Home Run") && !subheader.includes("+")) {
         const overOdds = options[0]?.american_price;
@@ -61,8 +82,8 @@ async function fetchMLBPropsFromUnderdog() {
           type: "prop",
           sportKey: "mlb",
           eventId: line.id,
-          homeTeam: "MLB",
-          awayTeam: "Game",
+          homeTeam: game?.abbreviated_title?.split(" @ ")[1] || "MLB",
+          awayTeam: game?.abbreviated_title?.split(" @ ")[0] || "Away",
           commenceTime: new Date().toISOString(),
           playerName,
           propType: "batter_home_runs",
@@ -70,6 +91,8 @@ async function fetchMLBPropsFromUnderdog() {
           overUnder: "Over",
           odds: parseInt(overOdds) || -110,
           bookmaker: "Underdog",
+          matchup,
+          gameTime,
         });
       }
 
@@ -84,8 +107,8 @@ async function fetchMLBPropsFromUnderdog() {
             type: "prop",
             sportKey: "mlb",
             eventId: line.id,
-            homeTeam: "MLB",
-            awayTeam: "Game",
+            homeTeam: game?.abbreviated_title?.split(" @ ")[1] || "MLB",
+            awayTeam: game?.abbreviated_title?.split(" @ ")[0] || "Away",
             commenceTime: new Date().toISOString(),
             playerName,
             propType: "batter_hits",
@@ -93,13 +116,19 @@ async function fetchMLBPropsFromUnderdog() {
             overUnder: "Over",
             odds: parseInt(overOdds) || -110,
             bookmaker: "Underdog",
+            matchup,
+            gameTime,
           });
         }
       }
     }
 
-    console.log(`[BestPlay] Parsed ${mlbProps.length} MLB props from Underdog`);
-    return mlbProps.slice(0, 20); // Limit to 20
+    const withContext = mlbProps.filter((p) => p.matchup).length;
+    console.log(`[BestPlay] Parsed ${mlbProps.length} MLB props (${withContext} with matchup)`);
+
+    // Enrich with MLB Stats API data (pitcher, lineup, handedness)
+    const enrichedProps = await enrichMLBProps(mlbProps.slice(0, 20));
+    return enrichedProps;
   } catch (err) {
     console.error("[BestPlay] Failed to fetch from Underdog:", err.message);
     return [];
@@ -333,6 +362,30 @@ function convertPropsToCandidate(props) {
     line: prop.line,
     odds: prop.odds,
     bookmaker: prop.bookmaker,
+    propType: prop.propType,
+    // MLB context from MLB Stats API
+    matchup: prop.matchup,
+    gameTime: prop.gameTime,
+    opposingPitcher: prop.opposingPitcher,
+    pitcherHand: prop.pitcherHand,
+    lineupSpot: prop.lineupSpot,
+    batSide: prop.batSide,
+    handednessMatchup: prop.handednessMatchup,
+    // Recent performance stats
+    hitsLast5: prop.hitsLast5,
+    hitsLast10: prop.hitsLast10,
+    avgLast5: prop.avgLast5,
+    avgLast10: prop.avgLast10,
+    batterTrend: prop.batterTrend,
+    isBatterHot: prop.isBatterHot,
+    isBatterCold: prop.isBatterCold,
+    // Pitcher quality stats
+    pitcherERA: prop.pitcherERA,
+    pitcherWHIP: prop.pitcherWHIP,
+    pitcherK9: prop.pitcherK9,
+    pitcherQuality: prop.pitcherQuality,
+    isPitcherElite: prop.isPitcherElite,
+    isPitcherStruggling: prop.isPitcherStruggling,
   }));
 }
 
@@ -350,105 +403,214 @@ function formatPropType(marketKey) {
   return mapping[marketKey] || marketKey;
 }
 
-// Deterministic scoring based on raw odds data - no AI
+// REAL data-driven scoring - NO simulated data
+// Inputs: line difficulty, odds value, bet type analysis, MLB context
 function scoreBetFromOdds(bet) {
   const odds = bet.odds;
   if (odds == null) return null;
 
-  // Calculate implied probability
+  // Calculate implied probability from odds
   const impliedProb = odds > 0 ? 100 / (odds + 100) : Math.abs(odds) / (Math.abs(odds) + 100);
 
-  // Base score starts at 5
-  let score = 5.0;
-  let confidence = 5;
+  // MLB context (from MLB Stats API enrichment)
+  const lineupSpot = bet.lineupSpot;
+  const handednessMatchup = bet.handednessMatchup;
+  const opposingPitcher = bet.opposingPitcher;
+  const pitcherHand = bet.pitcherHand;
+  const batSide = bet.batSide;
+
+  // Recent performance stats
+  const avgLast5 = bet.avgLast5 ? parseFloat(bet.avgLast5) : null;
+  const hitsLast5 = bet.hitsLast5;
+  const batterTrend = bet.batterTrend;
+  const isBatterHot = bet.isBatterHot;
+  const isBatterCold = bet.isBatterCold;
+
+  // Pitcher quality stats
+  const pitcherERA = bet.pitcherERA;
+  const pitcherQuality = bet.pitcherQuality;
+  const isPitcherElite = bet.isPitcherElite;
+  const isPitcherStruggling = bet.isPitcherStruggling;
+
+  // Score components (all real, measurable factors)
+  let lineValueScore = 0;
+  let oddsValueScore = 0;
+  let betTypeScore = 0;
+  let contextScore = 0;
+  let riskPenalty = 0;
+
   const factors = [];
   const risks = [];
 
-  // Value scoring based on odds
-  if (odds >= 100 && odds <= 150) {
-    // Small underdog ML - good value zone
-    score += 2.5;
-    confidence += 2;
-    factors.push("Value underdog odds (+100 to +150)");
-  } else if (odds >= 151 && odds <= 250) {
-    // Medium underdog - higher variance
-    score += 2.0;
-    confidence += 1;
-    factors.push("Plus-money value (+150 to +250)");
-    risks.push("Higher variance play");
-  } else if (odds >= -150 && odds <= -110) {
-    // Standard favorite - consistent
-    score += 1.5;
-    confidence += 2;
-    factors.push("Favorable juice on standard line");
-  } else if (odds >= -200 && odds < -150) {
-    // Moderate favorite
-    score += 1.0;
-    confidence += 1;
-    factors.push("Moderate favorite pricing");
-  } else if (odds > 250) {
-    // Long shot - lower base but can hit
-    score += 1.0;
-    risks.push("Long shot - lower hit rate");
-  } else if (odds < -200) {
-    // Heavy favorite - low value
-    score += 0.5;
-    risks.push("Heavy chalk - limited upside");
-  }
+  // Identify bet type
+  const isMLBProp = bet.type === "prop" && (bet.sport === "MLB" || bet.sportKey === "mlb");
+  const propType = bet.propType || bet.betType || "";
+  const line = bet.line || 0;
 
-  // Bet type scoring
-  if (bet.betType === "Spread") {
-    const line = Math.abs(bet.line || 0);
-    // Key numbers in football
-    if (bet.sport === "NFL" || bet.sport === "NCAAF") {
-      if (line === 3 || line === 7 || line === 6 || line === 10) {
-        score += 1.0;
-        factors.push(`Key number spread (${line})`);
+  // === MLB PROP SCORING ===
+  if (isMLBProp) {
+    const isHits = propType.includes("Hits") || propType === "batter_hits";
+    const isHR = propType.includes("Home Run") || propType === "batter_home_runs";
+
+    if (isHits) {
+      if (line === 0.5) {
+        lineValueScore = 2.5;
+        factors.push("0.5 line - only needs 1 hit");
+      } else if (line === 1.5) {
+        lineValueScore = 1.5;
+        factors.push("1.5 line - needs multi-hit game");
+        risks.push("Requires 2+ hits");
+      } else if (line >= 2.5) {
+        lineValueScore = 0.5;
+        risks.push("High line - difficult to cover");
+      }
+    } else if (isHR) {
+      lineValueScore = 1.0;
+      factors.push("Home run prop");
+      risks.push("HRs are low-frequency (~3% per AB)");
+      riskPenalty = 1.0;
+    }
+
+    // MLB context scoring (from MLB Stats API)
+    if (lineupSpot) {
+      if (lineupSpot <= 3) {
+        contextScore += 1.0;
+        factors.push(`Batting ${lineupSpot}${lineupSpot === 1 ? "st" : lineupSpot === 2 ? "nd" : "rd"} - top of order`);
+      } else if (lineupSpot <= 5) {
+        contextScore += 0.5;
+        factors.push(`Batting ${lineupSpot}th - middle of order`);
+      } else if (lineupSpot >= 8) {
+        riskPenalty += 0.3;
+        risks.push(`Batting ${lineupSpot}th - fewer ABs`);
       }
     }
-    // Small spreads = closer games = more predictable
-    if (line <= 3.5) {
-      score += 0.5;
-      factors.push("Tight spread - competitive matchup");
+
+    if (batSide && pitcherHand) {
+      const hasAdvantage =
+        (batSide === "L" && pitcherHand === "R") ||
+        (batSide === "R" && pitcherHand === "L") ||
+        batSide === "S";
+
+      if (hasAdvantage) {
+        contextScore += 0.5;
+        factors.push(handednessMatchup || "Platoon advantage");
+      } else {
+        riskPenalty += 0.3;
+        risks.push(handednessMatchup || "Same-side matchup");
+      }
     }
-  } else if (bet.betType === "Moneyline") {
-    // Underdogs on ML have value
-    if (odds > 0) {
-      score += 0.5;
-      factors.push("Moneyline underdog value");
+
+    // Recent performance scoring
+    if (avgLast5 !== null) {
+      if (isBatterHot) {
+        contextScore += 1.0;
+        factors.push(`Hot bat - .${(avgLast5 * 1000).toFixed(0)} last 5`);
+      } else if (isBatterCold) {
+        riskPenalty += 0.5;
+        risks.push(`Cold bat - .${(avgLast5 * 1000).toFixed(0)} last 5`);
+      } else if (avgLast5 >= 0.250) {
+        contextScore += 0.3;
+        factors.push(`Solid recent - .${(avgLast5 * 1000).toFixed(0)} last 5`);
+      }
+
+      if (batterTrend === "heating up") {
+        contextScore += 0.3;
+        factors.push("Trending up");
+      } else if (batterTrend === "cooling off") {
+        riskPenalty += 0.2;
+        risks.push("Trending down");
+      }
     }
-  } else if (bet.betType === "Total") {
-    // Totals at round numbers
-    const total = bet.line || 0;
-    if (total % 0.5 === 0 && total % 1 !== 0) {
-      score += 0.5;
-      factors.push("Half-point total hook");
+
+    // Pitcher quality scoring
+    if (pitcherQuality && pitcherQuality !== "unknown") {
+      if (isPitcherStruggling) {
+        contextScore += 0.8;
+        factors.push(`vs ${pitcherQuality} pitcher (${pitcherERA?.toFixed(2)} ERA)`);
+      } else if (isPitcherElite) {
+        riskPenalty += 0.6;
+        risks.push(`vs ${pitcherQuality} pitcher (${pitcherERA?.toFixed(2)} ERA)`);
+      }
+    }
+
+    // Add opposing pitcher to factors if available (and no quality info)
+    if (opposingPitcher && !pitcherQuality) {
+      factors.push(`vs ${opposingPitcher}${pitcherHand ? ` (${pitcherHand}HP)` : ""}`);
     }
   }
 
-  // Add small variance for diversity (±0.3)
-  const variance = (Math.random() - 0.5) * 0.6;
-  score = Math.round((score + variance) * 10) / 10;
+  // === ODDS VALUE SCORING ===
+  if (odds >= -115 && odds <= -100) {
+    oddsValueScore = 2.0;
+    factors.push(`Strong odds (${odds > 0 ? "+" : ""}${odds})`);
+  } else if (odds > 0 && odds <= 130) {
+    oddsValueScore = 1.5;
+    factors.push(`Plus-money (${odds > 0 ? "+" : ""}${odds})`);
+  } else if (odds >= 131 && odds <= 200) {
+    oddsValueScore = 1.0;
+    factors.push("Value underdog");
+    risks.push("Lower implied probability");
+  } else if (odds >= -150 && odds < -115) {
+    oddsValueScore = 1.0;
+    factors.push("Standard juice");
+  } else if (odds < -150) {
+    oddsValueScore = 0;
+    riskPenalty += 0.5;
+    risks.push("Heavy juice reduces value");
+  } else if (odds > 200) {
+    oddsValueScore = 0.5;
+    risks.push("Long shot odds");
+    riskPenalty += 0.5;
+  }
 
-  // Clamp score to 1-10 range
-  score = Math.min(10, Math.max(1, score));
-  confidence = Math.min(10, Math.max(1, confidence));
+  // === BET TYPE SCORING (non-MLB) ===
+  if (!isMLBProp) {
+    if (bet.betType === "Spread") {
+      const spreadLine = Math.abs(line);
+      if (bet.sport === "NFL" || bet.sport === "NCAAF") {
+        if ([3, 7, 6, 10].includes(spreadLine)) {
+          betTypeScore = 1.5;
+          factors.push(`Key number (${spreadLine})`);
+        }
+      }
+      if (spreadLine <= 3.5) {
+        betTypeScore += 0.5;
+        factors.push("Tight spread");
+      }
+    } else if (bet.betType === "Moneyline") {
+      if (odds > 0 && odds <= 200) {
+        betTypeScore = 1.0;
+        factors.push("Underdog ML value");
+      }
+    } else if (bet.betType === "Total") {
+      if (line % 0.5 === 0 && line % 1 !== 0) {
+        betTypeScore = 0.5;
+        factors.push("Half-point hook");
+      }
+    }
+  }
 
-  // Generate writeup based on factors
-  const writeup = factors.length > 0
-    ? `${bet.teamOrPlayer} presents value at ${odds > 0 ? "+" : ""}${odds}. ${factors.join(". ")}. Implied probability: ${Math.round(impliedProb * 100)}%.`
-    : `Standard betting opportunity on ${bet.teamOrPlayer} at ${odds > 0 ? "+" : ""}${odds}.`;
+  // === CALCULATE FINAL SCORE ===
+  const rawScore = 5.0 + lineValueScore + oddsValueScore + betTypeScore + contextScore - riskPenalty;
+  const heaterScore = Math.min(10, Math.max(1, Math.round(rawScore * 10) / 10));
+
+  // Confidence based on factor alignment
+  const confidence = Math.min(10, Math.max(1, Math.round(
+    5 + (factors.length * 0.8) - (risks.length * 0.4)
+  )));
+
+  // Generate writeup
+  const writeup = `${bet.teamOrPlayer} at ${odds > 0 ? "+" : ""}${odds}. ` +
+    `Implied: ${Math.round(impliedProb * 100)}%. ` +
+    (factors.length > 0 ? factors[0] + "." : "");
 
   return {
-    heaterScore: score,
+    heaterScore,
     confidence,
-    atsLast5: "N/A",
-    atsLast10: "N/A",
-    atsSeason: "N/A",
-    homeAwayAts: "N/A",
     writeup,
-    keyFactors: factors.length > 0 ? factors : ["Standard line value"],
-    whatCouldGoWrong: risks.length > 0 ? risks.join(". ") : "Normal betting variance applies.",
+    keyFactors: factors.length > 0 ? factors : ["Standard value"],
+    whatCouldGoWrong: risks.length > 0 ? risks.join(". ") : "Normal variance",
+    riskReason: risks.length > 0 ? risks[0] : null,
   };
 }
 

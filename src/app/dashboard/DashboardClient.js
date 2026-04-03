@@ -2262,13 +2262,15 @@ export default function DashboardClient({ userEmail }) {
                                     <span style={{ fontWeight: 700 }}>{prop.relevantStat}</span>
                                   </div>
                                 )}
-                                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                  <TargetIcon size={12} color="var(--green)" />
-                                  <span style={{ color: "var(--text-dim)" }}>Hit Rate:</span>
-                                  <span style={{ fontWeight: 700, color: prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--red)" }}>
-                                    {prop.hitRateLast10}/10
-                                  </span>
-                                </div>
+                                {prop.hitRateLast10 != null && (
+                                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                    <TargetIcon size={12} color="var(--green)" />
+                                    <span style={{ color: "var(--text-dim)" }}>Hit Rate:</span>
+                                    <span style={{ fontWeight: 700, color: prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--red)" }}>
+                                      {prop.hitRateLast10}/10
+                                    </span>
+                                  </div>
+                                )}
                                 <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" }}>
                                   <span style={{ color: "var(--text-dim)" }}>Confidence:</span>
                                   <span style={{ fontWeight: 700, color: prop.confidence >= 8 ? "var(--green)" : "var(--text-dim)" }}>
