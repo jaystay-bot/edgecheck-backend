@@ -31,3 +31,5 @@ AI scoring thresholds cause empty results — When using AI (Groq/LLM) to score 
 Always return the best result when data exists — Don't fail with "no results found" when candidates exist but don't meet an arbitrary threshold. If games are available, always show the highest-scoring option. Users expect to see something, not an empty state when data is present.
 
 Search all bookmakers for market data — The Odds API returns multiple bookmakers per game. Don't just use the first bookmaker — it may not have all markets (h2h, spreads, totals). Search through all bookmakers to find each market type.
+
+Always display game date/time for betting features — Betting decisions depend on knowing when games occur. Always show game date and time prominently so users can identify which games to bet on and track line movements.

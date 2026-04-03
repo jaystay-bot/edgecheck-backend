@@ -2530,22 +2530,31 @@ export default function DashboardClient({ userEmail }) {
                   )}
 
                   {/* Game Header */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                    <span
-                      style={{
-                        background: "var(--surface2)",
-                        padding: "2px 6px",
-                        borderRadius: 4,
-                        fontSize: 10,
-                        fontWeight: 700,
-                        color: "var(--text-dim)",
-                      }}
-                    >
-                      {game.sport}
-                    </span>
-                    <span style={{ fontWeight: 700, fontSize: 16 }}>
-                      {game.awayTeam} @ {game.homeTeam}
-                    </span>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span
+                        style={{
+                          background: "var(--surface2)",
+                          padding: "2px 6px",
+                          borderRadius: 4,
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: "var(--text-dim)",
+                        }}
+                      >
+                        {game.sport}
+                      </span>
+                      <span style={{ fontWeight: 700, fontSize: 16 }}>
+                        {game.awayTeam} @ {game.homeTeam}
+                      </span>
+                    </div>
+                    {game.commenceTime && (
+                      <span style={{ fontSize: 12, color: "var(--text-dim)", fontWeight: 500 }}>
+                        {new Date(game.commenceTime).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                        {" "}
+                        {new Date(game.commenceTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                      </span>
+                    )}
                   </div>
 
                   {/* Lines Comparison Grid */}
