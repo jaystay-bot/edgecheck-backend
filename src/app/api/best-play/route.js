@@ -380,8 +380,21 @@ whatCouldGoWrong: main risks`;
   }
 }
 
-async function findBestPlay(groq, apiKey) {
-  console.log("[BestPlay] Scanning all sports for Best Play of the Day...");
+// Calculate implied probability and EV from American odds
+function calculateEV(odds, estimatedWinProb) {
+  const impliedProb = odds > 0 ? 100 / (odds + 100) : Math.abs(odds) / (Math.abs(odds) + 100);
+  const edge = estimatedWinProb - impliedProb;
+  const ev = edge * 100; // EV as percentage
+  return {
+    impliedProb: Math.round(impliedProb * 100),
+    estimatedWinProb: Math.round(estimatedWinProb * 100),
+    edge: Math.round(edge * 1000) / 10, // e.g., 5.2%
+    ev: Math.round(ev * 10) / 10, // e.g., +5.2%
+  };
+}
+
+async function findBestPlays(groq, apiKey) {
+  console.log("[BestPlay] Scanning all sports for Top Plays of the Day...");
 
   // Fetch games from all sports
   const [nbaGames, mlbGames, nhlGames] = await Promise.all([
@@ -411,43 +424,37 @@ async function findBestPlay(groq, apiKey) {
   console.log(`[BestPlay] ${allCandidates.length} total candidates to evaluate`);
 
   if (allCandidates.length === 0) {
-    return { found: false, reason: "No games or props available today" };
+    return { found: false, plays: [], reason: "No games or props available today" };
   }
 
-  // Sample candidates to avoid rate limits (prioritize variety)
-  const sampleSize = Math.min(25, allCandidates.length);
+  // Sample more candidates to find elite plays (8+ score)
+  const sampleSize = Math.min(40, allCandidates.length);
   const sampledCandidates = allCandidates
     .sort(() => Math.random() - 0.5)
     .slice(0, sampleSize);
 
   console.log(`[BestPlay] Scoring ${sampledCandidates.length} candidates with Groq...`);
 
-  // Score candidates in batches
-  let bestCandidate = null;
-  let bestScore = 0;
-
+  // Score all candidates and collect results
+  const scoredCandidates = [];
   const batchSize = 5;
+
   for (let i = 0; i < sampledCandidates.length; i += batchSize) {
     const batch = sampledCandidates.slice(i, i + batchSize);
     const results = await Promise.all(
       batch.map(async (candidate) => {
         const score = await scoreBetWithGroq(groq, candidate);
         if (score) {
-          return { ...candidate, ...score };
+          // Calculate EV based on confidence (confidence/10 = estimated win probability)
+          const estimatedWinProb = Math.min(0.75, Math.max(0.45, score.confidence / 10 + 0.1));
+          const evData = calculateEV(candidate.odds, estimatedWinProb);
+          return { ...candidate, ...score, ...evData };
         }
         return null;
       })
     );
 
-    for (const result of results) {
-      if (result && result.heaterScore > bestScore) {
-        bestCandidate = result;
-        bestScore = result.heaterScore;
-      }
-    }
-
-    // Early exit if we found a 10
-    if (bestScore >= 10) break;
+    scoredCandidates.push(...results.filter(Boolean));
 
     // Small delay between batches
     if (i + batchSize < sampledCandidates.length) {
@@ -455,14 +462,37 @@ async function findBestPlay(groq, apiKey) {
     }
   }
 
-  // Always return the best candidate if we have one, regardless of score
-  if (!bestCandidate) {
-    console.log(`[BestPlay] No candidates could be scored`);
-    return { found: false, reason: "Unable to analyze games today" };
+  // Filter to only elite plays (8+ score) and sort by score
+  const elitePlays = scoredCandidates
+    .filter((c) => c.heaterScore >= 8)
+    .sort((a, b) => b.heaterScore - a.heaterScore || b.confidence - a.confidence)
+    .slice(0, 3); // Top 3 elite plays
+
+  if (elitePlays.length > 0) {
+    console.log(`[BestPlay] Found ${elitePlays.length} elite plays (8+ score)`);
+    return { found: true, plays: elitePlays };
   }
 
-  console.log(`[BestPlay] Best Play: ${bestCandidate.teamOrPlayer} - Score ${bestScore}/10`);
-  return { found: true, play: bestCandidate };
+  // If no 8+ plays, return top 3 with 6+ as backup
+  const goodPlays = scoredCandidates
+    .filter((c) => c.heaterScore >= 6)
+    .sort((a, b) => b.heaterScore - a.heaterScore || b.confidence - a.confidence)
+    .slice(0, 3);
+
+  if (goodPlays.length > 0) {
+    console.log(`[BestPlay] No elite plays found, returning ${goodPlays.length} good plays (6+)`);
+    return { found: true, plays: goodPlays, note: "No 8+ plays today - showing best available" };
+  }
+
+  // Last resort: return single best regardless of score
+  if (scoredCandidates.length > 0) {
+    const best = scoredCandidates.sort((a, b) => b.heaterScore - a.heaterScore)[0];
+    console.log(`[BestPlay] Returning best available: ${best.teamOrPlayer} - Score ${best.heaterScore}/10`);
+    return { found: true, plays: [best], note: "Limited high-value plays today" };
+  }
+
+  console.log(`[BestPlay] No candidates could be scored`);
+  return { found: false, plays: [], reason: "Unable to analyze games today" };
 }
 
 export async function GET(request) {
@@ -493,7 +523,8 @@ export async function GET(request) {
       return NextResponse.json({
         found: true,
         locked: true,
-        sport: bestPlayCache.data.play?.sport,
+        playCount: bestPlayCache.data.plays?.length || 0,
+        sports: [...new Set(bestPlayCache.data.plays?.map((p) => p.sport) || [])],
         cached: true,
         cacheAge: Math.round((now - bestPlayCache.timestamp) / 60000),
       });
@@ -520,9 +551,9 @@ export async function GET(request) {
     return NextResponse.json({ found: false, error: "Groq not configured" });
   }
 
-  // Find best play
-  console.log("[BestPlay] Generating fresh Best Play...");
-  const result = await findBestPlay(groq, apiKey);
+  // Find best plays (1-3 elite picks)
+  console.log("[BestPlay] Generating fresh Best Plays...");
+  const result = await findBestPlays(groq, apiKey);
 
   // Update cache
   bestPlayCache.data = result;
@@ -533,7 +564,8 @@ export async function GET(request) {
     return NextResponse.json({
       found: true,
       locked: true,
-      sport: result.play?.sport,
+      playCount: result.plays?.length || 0,
+      sports: [...new Set(result.plays?.map((p) => p.sport) || [])],
       cached: false,
       cacheAge: 0,
     });

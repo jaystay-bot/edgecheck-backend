@@ -37,3 +37,5 @@ Use fuzzy matching for team names — The Odds API returns team names inconsiste
 Always display game date/time for betting features — Betting decisions depend on knowing when games occur. Always show game date and time prominently so users can identify which games to bet on and track line movements.
 
 Format date+time together in betting UIs — When displaying game times, include both the date (e.g., "Thu, Apr 3") and time (e.g., "7:00 PM") together. Users need the full context without having to look elsewhere.
+
+Return multiple elite picks not just one — For "best play" features, users want 1-3 top picks with high scores (8+), not a single result. Sample more candidates (40+), filter to score 8+, and return up to 3 elite plays with EV/edge data. Fall back gracefully to 6+ plays if no 8+ found.
