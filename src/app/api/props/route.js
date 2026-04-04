@@ -1416,12 +1416,35 @@ export async function GET(request) {
 
   const cache = propsCache[sport] || {};
 
+  // Extract top 5 props across all categories (for paid users)
+  let top5 = [];
+  if (isPaidUser) {
+    // Flatten all props from all categories
+    const allProps = allCategories.flatMap((cat) => cat.props || []);
+
+    // Sort by heaterScore (desc), then edge (desc)
+    const sorted = allProps
+      .filter((p) => p.heaterScore != null)
+      .sort((a, b) => {
+        // Primary: heaterScore (higher is better)
+        const scoreDiff = (b.heaterScore || 0) - (a.heaterScore || 0);
+        if (scoreDiff !== 0) return scoreDiff;
+        // Secondary: edge (higher is better)
+        return parseFloat(b.edge || 0) - parseFloat(a.edge || 0);
+      });
+
+    top5 = sorted.slice(0, 5);
+    console.log(`[Props] Top 5: ${top5.map((p) => `${p.playerName} ${p.propType} (${p.heaterScore})`).join(", ")}`);
+  }
+
   return NextResponse.json({
+    top5,
     categories: allCategories,
     sport: sport.toUpperCase(),
     isPaidUser,
     edgeRequirement: `${MIN_EDGE_PERCENT}%`,
     cached: cache.data && Date.now() - cache.timestamp < (SPORT_CONFIG[sport]?.cacheTTL || 0),
     cacheAge: cache.timestamp ? Math.round((Date.now() - cache.timestamp) / 60000) : 0,
+    totalProps: allCategories.reduce((sum, cat) => sum + (cat.props?.length || 0), 0),
   });
 }
