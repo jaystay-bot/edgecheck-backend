@@ -2378,12 +2378,12 @@ export default function DashboardClient({ userEmail }) {
                           {/* Paid User Stats + Analysis */}
                           {isPaidUser && prop.heaterScore && (
                             <>
-                              {/* Stats Row */}
+                              {/* Stats Row - Edge & Probabilities */}
                               <div
                                 style={{
                                   display: "flex",
                                   gap: 12,
-                                  marginBottom: 10,
+                                  marginBottom: 8,
                                   padding: "8px 12px",
                                   background: "var(--surface2)",
                                   borderRadius: 6,
@@ -2391,24 +2391,40 @@ export default function DashboardClient({ userEmail }) {
                                   fontSize: 12,
                                 }}
                               >
-                                {prop.relevantStat && (
+                                {prop.edge && (
                                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                    <ChartIcon size={12} color="var(--accent)" />
-                                    <span style={{ color: "var(--text-dim)" }}>Stat:</span>
-                                    <span style={{ fontWeight: 700 }}>{prop.relevantStat}</span>
+                                    <TrendingUpIcon size={12} color={parseFloat(prop.edge) >= 3 ? "var(--green)" : "var(--text-dim)"} />
+                                    <span style={{ color: "var(--text-dim)" }}>Edge:</span>
+                                    <span style={{ fontWeight: 700, color: parseFloat(prop.edge) >= 5 ? "var(--green)" : parseFloat(prop.edge) >= 2 ? "var(--yellow)" : "var(--text-dim)" }}>
+                                      {prop.edge}%
+                                    </span>
+                                  </div>
+                                )}
+                                {prop.impliedProbability && (
+                                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                    <span style={{ color: "var(--text-dim)" }}>Book:</span>
+                                    <span style={{ fontWeight: 600 }}>{prop.impliedProbability}%</span>
+                                  </div>
+                                )}
+                                {prop.modelProbability && (
+                                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                    <span style={{ color: "var(--text-dim)" }}>True:</span>
+                                    <span style={{ fontWeight: 600, color: parseFloat(prop.modelProbability) > parseFloat(prop.impliedProbability || 0) ? "var(--green)" : "var(--text-dim)" }}>
+                                      {prop.modelProbability}%
+                                    </span>
                                   </div>
                                 )}
                                 {prop.hitRateLast10 != null && (
                                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                                     <TargetIcon size={12} color="var(--green)" />
-                                    <span style={{ color: "var(--text-dim)" }}>Hit Rate:</span>
+                                    <span style={{ color: "var(--text-dim)" }}>Hit:</span>
                                     <span style={{ fontWeight: 700, color: prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--red)" }}>
                                       {prop.hitRateLast10}/10
                                     </span>
                                   </div>
                                 )}
                                 <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" }}>
-                                  <span style={{ color: "var(--text-dim)" }}>Confidence:</span>
+                                  <span style={{ color: "var(--text-dim)" }}>Conf:</span>
                                   <span style={{ fontWeight: 700, color: prop.confidence >= 8 ? "var(--green)" : "var(--text-dim)" }}>
                                     {prop.confidence}/10
                                   </span>
@@ -2431,6 +2447,34 @@ export default function DashboardClient({ userEmail }) {
                                       <TrendingUpIcon size={12} color="var(--accent)" />
                                       <span style={{ color: "var(--accent)", fontWeight: 600 }}>Key:</span>
                                       <span style={{ color: "var(--text-dim)" }}>{prop.keyFactor}</span>
+                                    </div>
+                                  )}
+
+                                  {/* EV & Risk Summary */}
+                                  <div style={{ display: "flex", gap: 16, marginTop: 8, fontSize: 11, flexWrap: "wrap" }}>
+                                    {prop.edge && prop.bestOdds && (
+                                      <div>
+                                        <span style={{ color: "var(--text-dim)" }}>EV: </span>
+                                        <span style={{
+                                          fontWeight: 700,
+                                          color: parseFloat(prop.edge) >= 3 ? "var(--green)" : parseFloat(prop.edge) >= 0 ? "var(--yellow)" : "var(--red)"
+                                        }}>
+                                          {parseFloat(prop.edge) >= 0 ? "+" : ""}{prop.edge}%
+                                        </span>
+                                      </div>
+                                    )}
+                                    {prop.riskReason && (
+                                      <div>
+                                        <span style={{ color: "var(--orange)" }}>Risk: </span>
+                                        <span style={{ color: "var(--text-dim)" }}>{prop.riskReason}</span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Source */}
+                                  {prop.odds?.[0]?.bookmaker && (
+                                    <div style={{ marginTop: 6, fontSize: 10, color: "var(--text-dim)" }}>
+                                      Source: {prop.odds[0].bookmaker}
                                     </div>
                                   )}
 
