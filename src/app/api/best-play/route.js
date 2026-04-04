@@ -75,8 +75,8 @@ async function fetchMLBPropsFromUnderdog() {
       const matchup = game?.abbreviated_title || null;
       const gameTime = game?.match_progress || null;
 
-      // Filter for MLB Home Runs (exact match, not combos)
-      if (subheader.includes("Home Run") && !subheader.includes("+")) {
+      // Filter for MLB Home Runs (exact match, not combos, must be MLB game)
+      if (game?.sport_id === "MLB" && subheader.includes("Home Run") && !subheader.includes("+")) {
         const overOdds = options[0]?.american_price;
 
         mlbProps.push({
@@ -97,8 +97,8 @@ async function fetchMLBPropsFromUnderdog() {
         });
       }
 
-      // Filter for MLB Hits (not combos, only 0.5 or 1.5 lines)
-      if (subheader.includes("Hits") && !subheader.includes("+")) {
+      // Filter for MLB Hits (not combos, only 0.5 or 1.5 lines, must be MLB game)
+      if (game?.sport_id === "MLB" && subheader.includes("Hits") && !subheader.includes("+")) {
         const hitLine = parseFloat(line.stat_value) || 0.5;
 
         if (hitLine === 0.5 || hitLine === 1.5) {
@@ -203,8 +203,8 @@ async function fetchNBAPropsFromUnderdog() {
       const game = appearance ? gamesById[appearance.match_id] : null;
 
       // Filter for NBA Points only (ends with " Points", not combos like "Points + Rebounds")
-      // Format is "Higher 28.5 Points"
-      if (subheader.endsWith(" Points") && !subheader.includes("+")) {
+      // Format is "Higher 28.5 Points", must be NBA game
+      if (game?.sport_id === "NBA" && subheader.endsWith(" Points") && !subheader.includes("+")) {
         const overOdds = options[0]?.american_price;
         const pointsLine = parseFloat(line.stat_value) || 0;
 

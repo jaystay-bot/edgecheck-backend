@@ -545,7 +545,7 @@ async function fetchMLBPropsFromUnderdog() {
       gamesById[game.id] = game;
     }
 
-    const appearancesById = {};
+    const appearancesById = {}
     for (const app of data.appearances || []) {
       appearancesById[app.id] = app;
     }
@@ -569,8 +569,8 @@ async function fetchMLBPropsFromUnderdog() {
       const fullMatchup = game?.full_team_names_title || null;
       const gameTime = game?.match_progress || null; // e.g., "Fri 07:00pm"
 
-      // Filter for MLB Home Runs (exact match, not combos)
-      if (subheader.includes("Home Run") && !subheader.includes("+")) {
+      // Filter for MLB Home Runs (exact match, not combos, must be MLB game)
+      if (game?.sport_id === "MLB" && subheader.includes("Home Run") && !subheader.includes("+")) {
         const overOdds = options[0]?.american_price;
 
         mlbProps.push({
@@ -593,8 +593,8 @@ async function fetchMLBPropsFromUnderdog() {
         });
       }
 
-      // Filter for MLB Hits (not combos, only 0.5 or 1.5 lines)
-      if (subheader.includes("Hits") && !subheader.includes("+")) {
+      // Filter for MLB Hits (not combos, only 0.5 or 1.5 lines, must be MLB game)
+      if (game?.sport_id === "MLB" && subheader.includes("Hits") && !subheader.includes("+")) {
         const hitLine = parseFloat(line.stat_value) || 0.5;
 
         if (hitLine === 0.5 || hitLine === 1.5) {
@@ -684,8 +684,8 @@ async function fetchNBAPropsFromUnderdog() {
       const game = appearance ? gamesById[appearance.match_id] : null;
 
       // Filter for NBA Points (ends with " Points", not combos like "Points + Rebounds")
-      // Format is "Higher 28.5 Points" - check ending and exclude combos
-      if (subheader.endsWith(" Points") && !subheader.includes("+")) {
+      // Format is "Higher 28.5 Points" - check ending and exclude combos, must be NBA game
+      if (game?.sport_id === "NBA" && subheader.endsWith(" Points") && !subheader.includes("+")) {
         const overOdds = options[0]?.american_price;
         const pointsLine = parseFloat(line.stat_value) || 0;
 
