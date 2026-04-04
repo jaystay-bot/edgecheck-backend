@@ -40,9 +40,30 @@ const SPORT_CONFIG = {
     categories: [
       {
         id: "goals",
-        name: "Goal Scorer Props",
+        name: "Goals",
         markets: ["player_goals"],
-        maxProps: 10, // Goal scorer props
+        maxProps: 10,
+        filterFn: () => true,
+      },
+      {
+        id: "assists",
+        name: "Assists",
+        markets: ["player_assists"],
+        maxProps: 10,
+        filterFn: () => true,
+      },
+      {
+        id: "shots",
+        name: "Shots on Goal",
+        markets: ["player_shots_on_goal"],
+        maxProps: 10,
+        filterFn: () => true,
+      },
+      {
+        id: "blocked_shots",
+        name: "Blocked Shots",
+        markets: ["player_blocked_shots"],
+        maxProps: 10,
         filterFn: () => true,
       },
     ],
@@ -53,9 +74,44 @@ const SPORT_CONFIG = {
     categories: [
       {
         id: "points",
-        name: "Points Props",
+        name: "Points",
         markets: ["player_points"],
-        maxProps: 10, // Limited to 10 total per requirements
+        maxProps: 10,
+        filterFn: () => true,
+      },
+      {
+        id: "rebounds",
+        name: "Rebounds",
+        markets: ["player_rebounds"],
+        maxProps: 10,
+        filterFn: () => true,
+      },
+      {
+        id: "assists",
+        name: "Assists",
+        markets: ["player_assists"],
+        maxProps: 10,
+        filterFn: () => true,
+      },
+      {
+        id: "threes",
+        name: "3-Pointers",
+        markets: ["player_threes"],
+        maxProps: 10,
+        filterFn: () => true,
+      },
+      {
+        id: "blocks",
+        name: "Blocks",
+        markets: ["player_blocks"],
+        maxProps: 8,
+        filterFn: () => true,
+      },
+      {
+        id: "steals",
+        name: "Steals",
+        markets: ["player_steals"],
+        maxProps: 8,
         filterFn: () => true,
       },
     ],
@@ -671,6 +727,16 @@ async function fetchNBAPropsFromUnderdog() {
 
     const nbaProps = [];
 
+    // Map Underdog stat names to our market keys
+    const nbaStatMap = {
+      "Points": { marketKey: "player_points", propType: "Points", idPrefix: "pts" },
+      "Rebounds": { marketKey: "player_rebounds", propType: "Rebounds", idPrefix: "reb" },
+      "Assists": { marketKey: "player_assists", propType: "Assists", idPrefix: "ast" },
+      "3-Pointers Made": { marketKey: "player_threes", propType: "3-Pointers", idPrefix: "3pt" },
+      "Blocks": { marketKey: "player_blocks", propType: "Blocks", idPrefix: "blk" },
+      "Steals": { marketKey: "player_steals", propType: "Steals", idPrefix: "stl" },
+    };
+
     for (const line of lines) {
       const options = line.options || [];
       if (options.length < 1) continue;
@@ -683,48 +749,61 @@ async function fetchNBAPropsFromUnderdog() {
       const appearance = appearancesById[appearanceId];
       const game = appearance ? gamesById[appearance.match_id] : null;
 
-      // Filter for NBA Points (ends with " Points", not combos like "Points + Rebounds")
-      // Format is "Higher 28.5 Points" - check ending and exclude combos, must be NBA game
-      if (game?.sport_id === "NBA" && subheader.endsWith(" Points") && !subheader.includes("+")) {
-        const overOdds = options[0]?.american_price;
-        const pointsLine = parseFloat(line.stat_value) || 0;
+      // Must be NBA game and not a combo prop
+      if (game?.sport_id !== "NBA" || subheader.includes("+")) continue;
 
-        // Get player info for context
-        const playerId = appearance?.player_id;
-        const player = playerId ? playersById[playerId] : null;
-        const position = player?.position || null;
-
-        // Extract matchup info
-        const matchup = game?.abbreviated_title || null;
-        const gameTime = game?.match_progress || null;
-
-        // Determine if home or away based on appearance
-        const teamId = appearance?.team_id;
-        const isHome = game?.home_team_id === teamId;
-
-        nbaProps.push({
-          id: `underdog_pts_${line.id || playerName}`,
-          sport: "NBA",
-          eventId: line.id,
-          homeTeam: matchup?.split(" @ ")[1] || "NBA",
-          awayTeam: matchup?.split(" @ ")[0] || "Away",
-          commenceTime: new Date().toISOString(),
-          playerName,
-          propType: "Points",
-          marketKey: "player_points",
-          line: pointsLine,
-          overUnder: "Over",
-          odds: [{ bookmaker: "Underdog", price: parseInt(overOdds) || -110 }],
-          // Context fields (NBA-specific)
-          matchup,
-          gameTime,
-          position,
-          isHome,
-        });
+      // Match stat type from subheader (e.g., "Higher 28.5 Points" -> "Points")
+      let matchedStat = null;
+      for (const statName of Object.keys(nbaStatMap)) {
+        if (subheader.endsWith(` ${statName}`)) {
+          matchedStat = nbaStatMap[statName];
+          break;
+        }
       }
+      if (!matchedStat) continue;
+
+      const overOdds = options[0]?.american_price;
+      const statLine = parseFloat(line.stat_value) || 0;
+
+      // Get player info for context
+      const playerId = appearance?.player_id;
+      const player = playerId ? playersById[playerId] : null;
+      const position = player?.position || null;
+
+      // Extract matchup info
+      const matchup = game?.abbreviated_title || null;
+      const gameTime = game?.match_progress || null;
+
+      // Determine if home or away based on appearance
+      const teamId = appearance?.team_id;
+      const isHome = game?.home_team_id === teamId;
+
+      nbaProps.push({
+        id: `underdog_${matchedStat.idPrefix}_${line.id || playerName}`,
+        sport: "NBA",
+        eventId: line.id,
+        homeTeam: matchup?.split(" @ ")[1] || "NBA",
+        awayTeam: matchup?.split(" @ ")[0] || "Away",
+        commenceTime: new Date().toISOString(),
+        playerName,
+        propType: matchedStat.propType,
+        marketKey: matchedStat.marketKey,
+        line: statLine,
+        overUnder: "Over",
+        odds: [{ bookmaker: "Underdog", price: parseInt(overOdds) || -110 }],
+        // Context fields (NBA-specific)
+        matchup,
+        gameTime,
+        position,
+        isHome,
+      });
     }
 
-    console.log(`[Props] Parsed ${nbaProps.length} NBA points props from Underdog`);
+    const statCounts = {};
+    for (const p of nbaProps) {
+      statCounts[p.propType] = (statCounts[p.propType] || 0) + 1;
+    }
+    console.log(`[Props] Parsed ${nbaProps.length} NBA props from Underdog:`, statCounts);
 
     // Enrich with ESPN game context (matchup, time)
     const enrichedProps = await enrichNBAProps(nbaProps);
@@ -770,6 +849,15 @@ async function fetchNHLPropsFromUnderdog() {
 
     const nhlProps = [];
 
+    // Map Underdog stat names to our market keys
+    const nhlStatMap = {
+      "Goals": { marketKey: "player_goals", propType: "Goals", idPrefix: "goals" },
+      "Assists": { marketKey: "player_assists", propType: "Assists", idPrefix: "ast" },
+      "Shots on Goal": { marketKey: "player_shots_on_goal", propType: "Shots on Goal", idPrefix: "sog" },
+      "Shots on Target": { marketKey: "player_shots_on_goal", propType: "Shots on Goal", idPrefix: "sog" },
+      "Blocked Shots": { marketKey: "player_blocked_shots", propType: "Blocked Shots", idPrefix: "blk" },
+    };
+
     for (const line of lines) {
       const options = line.options || [];
       if (options.length < 1) continue;
@@ -782,42 +870,56 @@ async function fetchNHLPropsFromUnderdog() {
       const appearance = appearancesById[appearanceId];
       const game = appearance ? gamesById[appearance.match_id] : null;
 
-      // Filter for NHL Goals (ends with " Goals", not combos like "Goals + Assists")
-      if (game?.sport_id === "NHL" && subheader.endsWith(" Goals") && !subheader.includes("+")) {
-        const overOdds = options[0]?.american_price;
-        const goalsLine = parseFloat(line.stat_value) || 0.5;
+      // Must be NHL game and not a combo prop
+      if (game?.sport_id !== "NHL" || subheader.includes("+")) continue;
 
-        // Get player info for context
-        const playerId = appearance?.player_id;
-        const player = playerId ? playersById[playerId] : null;
-        const position = player?.position || null;
-
-        // Extract matchup info
-        const matchup = game?.abbreviated_title || null;
-        const gameTime = game?.match_progress || null;
-
-        nhlProps.push({
-          id: `underdog_goals_${line.id || playerName}`,
-          sport: "NHL",
-          eventId: line.id,
-          homeTeam: matchup?.split(" @ ")[1] || "NHL",
-          awayTeam: matchup?.split(" @ ")[0] || "Away",
-          commenceTime: new Date().toISOString(),
-          playerName,
-          propType: "Goals",
-          marketKey: "player_goals",
-          line: goalsLine,
-          overUnder: "Over",
-          odds: [{ bookmaker: "Underdog", price: parseInt(overOdds) || -110 }],
-          // Context fields
-          matchup,
-          gameTime,
-          position,
-        });
+      // Match stat type from subheader
+      let matchedStat = null;
+      for (const statName of Object.keys(nhlStatMap)) {
+        if (subheader.endsWith(` ${statName}`)) {
+          matchedStat = nhlStatMap[statName];
+          break;
+        }
       }
+      if (!matchedStat) continue;
+
+      const overOdds = options[0]?.american_price;
+      const statLine = parseFloat(line.stat_value) || 0.5;
+
+      // Get player info for context
+      const playerId = appearance?.player_id;
+      const player = playerId ? playersById[playerId] : null;
+      const position = player?.position || null;
+
+      // Extract matchup info
+      const matchup = game?.abbreviated_title || null;
+      const gameTime = game?.match_progress || null;
+
+      nhlProps.push({
+        id: `underdog_${matchedStat.idPrefix}_${line.id || playerName}`,
+        sport: "NHL",
+        eventId: line.id,
+        homeTeam: matchup?.split(" @ ")[1] || "NHL",
+        awayTeam: matchup?.split(" @ ")[0] || "Away",
+        commenceTime: new Date().toISOString(),
+        playerName,
+        propType: matchedStat.propType,
+        marketKey: matchedStat.marketKey,
+        line: statLine,
+        overUnder: "Over",
+        odds: [{ bookmaker: "Underdog", price: parseInt(overOdds) || -110 }],
+        // Context fields
+        matchup,
+        gameTime,
+        position,
+      });
     }
 
-    console.log(`[Props] Parsed ${nhlProps.length} NHL goals props from Underdog`);
+    const statCounts = {};
+    for (const p of nhlProps) {
+      statCounts[p.propType] = (statCounts[p.propType] || 0) + 1;
+    }
+    console.log(`[Props] Parsed ${nhlProps.length} NHL props from Underdog:`, statCounts);
     return nhlProps;
   } catch (err) {
     console.error("[Props] Failed to fetch NHL from Underdog:", err.message);
@@ -1194,11 +1296,13 @@ function addEdgeDataToProps(props) {
 
       // Score props based on sport
       const isMLB = prop.sport === "MLB" || prop.marketKey?.includes("batter");
-      const isNBA = prop.sport === "NBA" || prop.marketKey === "player_points";
+      const isNBA = prop.sport === "NBA" || prop.marketKey?.startsWith("player_");
+      const isNHL = prop.sport === "NHL";
       let scoring = {};
       if (isMLB) {
         scoring = scoreMLBProp(prop, bestOdds, edge);
-      } else if (isNBA) {
+      } else if (isNBA || isNHL) {
+        // Use NBA scoring for both NBA and NHL props (similar structure)
         scoring = scoreNBAProp(prop, bestOdds, edge);
       }
 
