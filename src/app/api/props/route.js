@@ -735,14 +735,197 @@ async function fetchNBAPropsFromUnderdog() {
   }
 }
 
+// Fetch MLB props from PrizePicks API (stub - graceful failure expected)
+// PrizePicks uses PerimeterX bot protection, so server-side requests will likely fail
+async function fetchMLBPropsFromPrizePicks() {
+  try {
+    console.log("[Props] Attempting PrizePicks MLB fetch (may be blocked)...");
+    const res = await fetch(
+      "https://api.prizepicks.com/projections?league_id=2&per_page=250&single_stat=true&game_mode=pickem",
+      {
+        signal: AbortSignal.timeout(10000),
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          "Accept": "application/json",
+        },
+      }
+    );
+
+    if (!res.ok) {
+      console.log(`[Props] PrizePicks blocked (${res.status}) - using Underdog only`);
+      return [];
+    }
+
+    const data = await res.json();
+    const projections = data.data || [];
+    const included = data.included || [];
+
+    // Build lookup for players and games
+    const playersById = {};
+    const gamesById = {};
+    for (const item of included) {
+      if (item.type === "new_player") playersById[item.id] = item;
+      if (item.type === "projection_game") gamesById[item.id] = item;
+    }
+
+    const mlbProps = [];
+    for (const proj of projections) {
+      const attrs = proj.attributes || {};
+      const statType = attrs.stat_type || "";
+      const line = parseFloat(attrs.line_score) || 0;
+
+      // Only process hits and home runs
+      if (!statType.includes("Hits") && !statType.includes("Home Run")) continue;
+
+      const playerId = proj.relationships?.new_player?.data?.id;
+      const player = playersById[playerId];
+      const playerName = player?.attributes?.name || "Unknown";
+      const team = player?.attributes?.team || "";
+
+      const gameId = proj.relationships?.projection_game?.data?.id;
+      const game = gamesById[gameId];
+      const opponent = game?.attributes?.away_team === team
+        ? game?.attributes?.home_team
+        : game?.attributes?.away_team || "";
+
+      const isHR = statType.includes("Home Run");
+      mlbProps.push({
+        id: `prizepicks_${proj.id}`,
+        sport: "MLB",
+        eventId: proj.id,
+        homeTeam: game?.attributes?.home_team || "MLB",
+        awayTeam: game?.attributes?.away_team || "Away",
+        commenceTime: game?.attributes?.start_time || new Date().toISOString(),
+        playerName,
+        propType: isHR ? "Home Runs" : "Hits",
+        marketKey: isHR ? "batter_home_runs" : "batter_hits",
+        line,
+        overUnder: "Over",
+        odds: [{ bookmaker: "PrizePicks", price: -110 }], // PrizePicks doesn't show odds
+        matchup: `${game?.attributes?.away_team || "AWY"} @ ${game?.attributes?.home_team || "HOM"}`,
+        source: "PrizePicks",
+      });
+    }
+
+    console.log(`[Props] PrizePicks returned ${mlbProps.length} MLB props`);
+    return mlbProps;
+  } catch (err) {
+    console.log(`[Props] PrizePicks fetch failed: ${err.message} - using Underdog only`);
+    return [];
+  }
+}
+
+// Fetch NBA props from PrizePicks API (stub - graceful failure expected)
+async function fetchNBAPropsFromPrizePicks() {
+  try {
+    console.log("[Props] Attempting PrizePicks NBA fetch (may be blocked)...");
+    const res = await fetch(
+      "https://api.prizepicks.com/projections?league_id=7&per_page=250&single_stat=true&game_mode=pickem",
+      {
+        signal: AbortSignal.timeout(10000),
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          "Accept": "application/json",
+        },
+      }
+    );
+
+    if (!res.ok) {
+      console.log(`[Props] PrizePicks NBA blocked (${res.status}) - using Underdog only`);
+      return [];
+    }
+
+    const data = await res.json();
+    const projections = data.data || [];
+    const included = data.included || [];
+
+    // Build lookup for players and games
+    const playersById = {};
+    const gamesById = {};
+    for (const item of included) {
+      if (item.type === "new_player") playersById[item.id] = item;
+      if (item.type === "projection_game") gamesById[item.id] = item;
+    }
+
+    const nbaProps = [];
+    for (const proj of projections) {
+      const attrs = proj.attributes || {};
+      const statType = attrs.stat_type || "";
+      const line = parseFloat(attrs.line_score) || 0;
+
+      // Only process points props
+      if (!statType.includes("Points") || statType.includes("+")) continue;
+
+      const playerId = proj.relationships?.new_player?.data?.id;
+      const player = playersById[playerId];
+      const playerName = player?.attributes?.name || "Unknown";
+      const team = player?.attributes?.team || "";
+
+      const gameId = proj.relationships?.projection_game?.data?.id;
+      const game = gamesById[gameId];
+
+      nbaProps.push({
+        id: `prizepicks_nba_${proj.id}`,
+        sport: "NBA",
+        eventId: proj.id,
+        homeTeam: game?.attributes?.home_team || "NBA",
+        awayTeam: game?.attributes?.away_team || "Away",
+        commenceTime: game?.attributes?.start_time || new Date().toISOString(),
+        playerName,
+        propType: "Points",
+        marketKey: "player_points",
+        line,
+        overUnder: "Over",
+        odds: [{ bookmaker: "PrizePicks", price: -110 }],
+        matchup: `${game?.attributes?.away_team || "AWY"} @ ${game?.attributes?.home_team || "HOM"}`,
+        source: "PrizePicks",
+      });
+    }
+
+    console.log(`[Props] PrizePicks returned ${nbaProps.length} NBA props`);
+    return nbaProps;
+  } catch (err) {
+    console.log(`[Props] PrizePicks NBA fetch failed: ${err.message} - using Underdog only`);
+    return [];
+  }
+}
+
 // Fetch ALL props for a sport in ONE call
 async function fetchAllPropsForSport(sportKey, apiKey) {
-  // Use Underdog for MLB and NBA props (consistent data source)
+  // Use Underdog + PrizePicks for MLB and NBA props (merge sources)
   if (sportKey === "mlb") {
-    return await fetchMLBPropsFromUnderdog();
+    const [underdogProps, prizePicksProps] = await Promise.all([
+      fetchMLBPropsFromUnderdog(),
+      fetchMLBPropsFromPrizePicks(),
+    ]);
+    // Merge: Underdog is primary, PrizePicks supplements
+    const merged = [...underdogProps];
+    // Add PrizePicks props that don't duplicate Underdog (by player + line)
+    const existingKeys = new Set(underdogProps.map(p => `${p.playerName}_${p.line}_${p.marketKey}`));
+    for (const prop of prizePicksProps) {
+      const key = `${prop.playerName}_${prop.line}_${prop.marketKey}`;
+      if (!existingKeys.has(key)) {
+        merged.push(prop);
+      }
+    }
+    console.log(`[Props] Merged ${underdogProps.length} Underdog + ${prizePicksProps.length} PrizePicks = ${merged.length} total MLB props`);
+    return merged;
   }
   if (sportKey === "nba") {
-    return await fetchNBAPropsFromUnderdog();
+    const [underdogProps, prizePicksProps] = await Promise.all([
+      fetchNBAPropsFromUnderdog(),
+      fetchNBAPropsFromPrizePicks(),
+    ]);
+    const merged = [...underdogProps];
+    const existingKeys = new Set(underdogProps.map(p => `${p.playerName}_${p.line}_${p.marketKey}`));
+    for (const prop of prizePicksProps) {
+      const key = `${prop.playerName}_${prop.line}_${prop.marketKey}`;
+      if (!existingKeys.has(key)) {
+        merged.push(prop);
+      }
+    }
+    console.log(`[Props] Merged ${underdogProps.length} Underdog + ${prizePicksProps.length} PrizePicks = ${merged.length} total NBA props`);
+    return merged;
   }
 
   const config = SPORT_CONFIG[sportKey];
