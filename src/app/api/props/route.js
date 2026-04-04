@@ -735,6 +735,96 @@ async function fetchNBAPropsFromUnderdog() {
   }
 }
 
+// Fetch NHL props from Underdog Fantasy API
+async function fetchNHLPropsFromUnderdog() {
+  try {
+    console.log("[Props] Fetching NHL props from Underdog Fantasy...");
+    const res = await fetch("https://api.underdogfantasy.com/beta/v5/over_under_lines", {
+      signal: AbortSignal.timeout(20000),
+      headers: { "User-Agent": "Mozilla/5.0" },
+    });
+
+    if (!res.ok) {
+      console.warn(`[Props] Underdog API returned ${res.status}`);
+      return [];
+    }
+
+    const data = await res.json();
+    const lines = data.over_under_lines || [];
+
+    // Build lookup tables for context data
+    const gamesById = {};
+    for (const game of data.games || []) {
+      gamesById[game.id] = game;
+    }
+
+    const appearancesById = {};
+    for (const app of data.appearances || []) {
+      appearancesById[app.id] = app;
+    }
+
+    const playersById = {};
+    for (const player of data.players || []) {
+      playersById[player.id] = player;
+    }
+
+    const nhlProps = [];
+
+    for (const line of lines) {
+      const options = line.options || [];
+      if (options.length < 1) continue;
+
+      const subheader = options[0].selection_subheader || "";
+      const playerName = options[0].selection_header || "";
+
+      // Get game context via appearance linking
+      const appearanceId = line.over_under?.appearance_stat?.appearance_id;
+      const appearance = appearancesById[appearanceId];
+      const game = appearance ? gamesById[appearance.match_id] : null;
+
+      // Filter for NHL Goals (ends with " Goals", not combos like "Goals + Assists")
+      if (game?.sport_id === "NHL" && subheader.endsWith(" Goals") && !subheader.includes("+")) {
+        const overOdds = options[0]?.american_price;
+        const goalsLine = parseFloat(line.stat_value) || 0.5;
+
+        // Get player info for context
+        const playerId = appearance?.player_id;
+        const player = playerId ? playersById[playerId] : null;
+        const position = player?.position || null;
+
+        // Extract matchup info
+        const matchup = game?.abbreviated_title || null;
+        const gameTime = game?.match_progress || null;
+
+        nhlProps.push({
+          id: `underdog_goals_${line.id || playerName}`,
+          sport: "NHL",
+          eventId: line.id,
+          homeTeam: matchup?.split(" @ ")[1] || "NHL",
+          awayTeam: matchup?.split(" @ ")[0] || "Away",
+          commenceTime: new Date().toISOString(),
+          playerName,
+          propType: "Goals",
+          marketKey: "player_goals",
+          line: goalsLine,
+          overUnder: "Over",
+          odds: [{ bookmaker: "Underdog", price: parseInt(overOdds) || -110 }],
+          // Context fields
+          matchup,
+          gameTime,
+          position,
+        });
+      }
+    }
+
+    console.log(`[Props] Parsed ${nhlProps.length} NHL goals props from Underdog`);
+    return nhlProps;
+  } catch (err) {
+    console.error("[Props] Failed to fetch NHL from Underdog:", err.message);
+    return [];
+  }
+}
+
 // Fetch MLB props from PrizePicks API (stub - graceful failure expected)
 // PrizePicks uses PerimeterX bot protection, so server-side requests will likely fail
 async function fetchMLBPropsFromPrizePicks() {
@@ -926,6 +1016,10 @@ async function fetchAllPropsForSport(sportKey, apiKey) {
     }
     console.log(`[Props] Merged ${underdogProps.length} Underdog + ${prizePicksProps.length} PrizePicks = ${merged.length} total NBA props`);
     return merged;
+  }
+  if (sportKey === "nhl") {
+    // Use Underdog for NHL props (goals)
+    return await fetchNHLPropsFromUnderdog();
   }
 
   const config = SPORT_CONFIG[sportKey];

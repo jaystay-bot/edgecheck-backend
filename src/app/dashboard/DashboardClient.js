@@ -343,6 +343,28 @@ function parseOdds(competition) {
   };
 }
 
+// Normalize enriched odds from /api/games (ESPN pickcenter) to client format
+function normalizeEnrichedOdds(enrichedOdds) {
+  if (!enrichedOdds) return null;
+  const spreadLine = enrichedOdds.spread?.line;
+  return {
+    spread: {
+      home: spreadLine ?? null,
+      away: spreadLine != null ? -spreadLine : null,
+      homeOdds: enrichedOdds.spread?.homeOdds ?? -110,
+      awayOdds: enrichedOdds.spread?.awayOdds ?? -110,
+    },
+    moneyline: {
+      home: enrichedOdds.moneyline?.home ?? null,
+      away: enrichedOdds.moneyline?.away ?? null,
+    },
+    overUnder: enrichedOdds.total?.line ?? null,
+    overOdds: enrichedOdds.total?.overOdds ?? -110,
+    underOdds: enrichedOdds.total?.underOdds ?? -110,
+    provider: enrichedOdds.provider ?? "ESPN",
+  };
+}
+
 function parseGame(event, sportKey) {
   const competition = event.competitions?.[0];
   if (!competition) return null;
@@ -351,6 +373,12 @@ function parseGame(event, sportKey) {
   if (!homeTeamData || !awayTeamData) return null;
   const homeTeam = homeTeamData.team;
   const awayTeam = awayTeamData.team;
+
+  // Use enriched odds from /api/games if available, otherwise parse from competition
+  const odds = event.odds
+    ? normalizeEnrichedOdds(event.odds)
+    : parseOdds(competition);
+
   return {
     id: event.id,
     sport: sportKey,
@@ -377,7 +405,7 @@ function parseGame(event, sportKey) {
       score: awayTeamData.score ?? "0",
       record: awayTeamData.records?.[0]?.summary ?? "",
     },
-    odds: parseOdds(competition),
+    odds,
   };
 }
 
@@ -467,8 +495,29 @@ function mergeOddsData(games, oddsGames) {
 
 async function fetchESPNGames(sportConfig) {
   const today = formatDateParam(new Date());
-  const baseUrl = "https://site.api.espn.com/apis/site/v2/sports";
 
+  // For NBA and NHL, use our /api/games which includes enriched pickcenter odds
+  if (sportConfig.key === "nba" || sportConfig.key === "nhl") {
+    try {
+      const res = await fetch(`/api/games?sport=${sportConfig.key}`, { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        const events = data.events ?? [];
+        if (events.length > 0) {
+          return {
+            games: events.map((e) => parseGame(e, sportConfig.key)).filter(Boolean),
+            date: today,
+            league: data.leagues?.[0]?.name ?? sportConfig.label,
+          };
+        }
+      }
+    } catch (err) {
+      console.warn(`/api/games fetch failed for ${sportConfig.key}:`, err.message);
+    }
+  }
+
+  // Fallback to direct ESPN fetch for other sports or if /api/games fails
+  const baseUrl = "https://site.api.espn.com/apis/site/v2/sports";
   const urls = [
     `${baseUrl}/${sportConfig.espn}/scoreboard?dates=${today}`,
     `${baseUrl}/${sportConfig.espn}/scoreboard`,
