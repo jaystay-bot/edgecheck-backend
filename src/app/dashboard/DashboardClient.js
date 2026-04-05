@@ -860,7 +860,10 @@ export default function DashboardClient({ userEmail }) {
           ...prev,
           [game.id]: {
             pending: true,
-            message: data.message || "Analysis loading — check back in a few minutes",
+            status: data.status || "no_data",
+            reason: data.reason || null,
+            rateLimited: data.rateLimited || false,
+            message: data.message || "No analysis available",
             fullText: "",
           },
         }));
