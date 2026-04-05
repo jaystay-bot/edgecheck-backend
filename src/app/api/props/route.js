@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { hasActiveSubscription } from "../../../lib/subscription";
 import { enrichMLBProps } from "../../../lib/mlbStats";
 import { enrichNBAProps } from "../../../lib/nbaStats";
+import { enrichNHLProps } from "../../../lib/nhlStats";
 
 export const maxDuration = 60;
 
@@ -452,20 +453,31 @@ function scoreNBAProp(prop, bestOdds, edge) {
   const matchup = prop.matchup;
 
   // Calculate hit/miss rate from last10Games (same structure as MLB)
+  // Supports both NBA (points, rebounds, assists) and NHL (goals, assists, shots)
   const last10Games = prop.last10Games || [];
   let last10HitRate = null;
   let last10Results = null;
   if (last10Games.length > 0) {
+    // NBA prop types
     const isPoints = propType.includes("Points") || propType === "player_points";
     const isRebounds = propType.includes("Rebounds") || propType === "player_rebounds";
     const isAssists = propType.includes("Assists") || propType === "player_assists";
+    // NHL prop types
+    const isGoals = propType.includes("Goals") || propType === "player_goals";
+    const isShots = propType.includes("Shots") || propType === "player_shots_on_goal";
 
     const results = last10Games.map((g) => {
       let statValue = 0;
+      // NBA stats
       if (isPoints) statValue = g.points || 0;
       else if (isRebounds) statValue = g.rebounds || 0;
+      // NHL stats (goals, assists also used for NHL)
+      else if (isGoals) statValue = g.goals || 0;
+      else if (isShots) statValue = g.shots || 0;
+      // Assists works for both NBA and NHL
       else if (isAssists) statValue = g.assists || 0;
-      else statValue = g.points || 0; // default to points
+      // Default fallback
+      else statValue = g.points || g.goals || 0;
       return statValue >= line ? "H" : "M";
     });
 
@@ -987,7 +999,10 @@ async function fetchNHLPropsFromUnderdog() {
       statCounts[p.propType] = (statCounts[p.propType] || 0) + 1;
     }
     console.log(`[Props] Parsed ${nhlProps.length} NHL props from Underdog:`, statCounts);
-    return nhlProps;
+
+    // Enrich with Last 10 game data
+    const enrichedProps = await enrichNHLProps(nhlProps);
+    return enrichedProps;
   } catch (err) {
     console.error("[Props] Failed to fetch NHL from Underdog:", err.message);
     return [];
