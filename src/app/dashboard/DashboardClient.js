@@ -589,6 +589,9 @@ export default function DashboardClient({ userEmail }) {
   // Expanded prop card state
   const [expandedPropId, setExpandedPropId] = useState(null);
 
+  // Betting splits state (DraftKings public betting data)
+  const [bettingSplits, setBettingSplits] = useState([]);
+
   const sportConfig = SPORTS.find((s) => s.key === sport);
 
   // Check for upgrade success on mount
@@ -795,6 +798,47 @@ export default function DashboardClient({ userEmail }) {
   useEffect(() => {
     fetchGames();
   }, [fetchGames]);
+
+  // Fetch DK betting splits on mount
+  useEffect(() => {
+    async function fetchSplits() {
+      try {
+        const res = await fetch("/api/splits");
+        if (res.ok) {
+          const data = await res.json();
+          setBettingSplits(data.splits || []);
+        }
+      } catch (err) {
+        console.warn("[Splits] Failed to load:", err.message);
+      }
+    }
+    fetchSplits();
+  }, []);
+
+  // Helper to find betting splits for a game
+  const getSplitsForGame = (game) => {
+    if (!bettingSplits.length || !game) return null;
+    const homeAbbrev = game.homeTeam?.abbreviation?.toUpperCase();
+    const awayAbbrev = game.awayTeam?.abbreviation?.toUpperCase();
+    const homeName = game.homeTeam?.name?.toLowerCase();
+    const awayName = game.awayTeam?.name?.toLowerCase();
+
+    for (const split of bettingSplits) {
+      const splitGame = (split.game || "").toLowerCase();
+      const splitTeam = (split.team || "").toLowerCase();
+      // Match if split contains both teams or team name matches
+      if (
+        (splitGame.includes(homeAbbrev?.toLowerCase()) || splitGame.includes(homeName)) &&
+        (splitGame.includes(awayAbbrev?.toLowerCase()) || splitGame.includes(awayName))
+      ) {
+        return split;
+      }
+      if (splitTeam.includes(homeName) || splitTeam.includes(awayName)) {
+        return split;
+      }
+    }
+    return null;
+  };
 
   const handleUpgrade = async () => {
     setUpgrading(true);
@@ -1956,6 +2000,32 @@ export default function DashboardClient({ userEmail }) {
                 )}
               </div>
             )}
+
+            {/* DK Betting Splits */}
+            {(() => {
+              const splits = getSplitsForGame(game);
+              if (!splits) return null;
+              return (
+                <div
+                  style={{
+                    background: "var(--surface2)",
+                    borderRadius: 8,
+                    padding: "8px 12px",
+                    marginBottom: 12,
+                    fontSize: 12,
+                  }}
+                >
+                  <div style={{ color: "var(--text-dim)", fontSize: 10, textTransform: "uppercase", marginBottom: 4 }}>
+                    Public Betting
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "center", gap: 16 }}>
+                    <span><strong>{splits.betPercent}%</strong> bets</span>
+                    <span style={{ color: "var(--text-dim)" }}>|</span>
+                    <span><strong>{splits.handlePercent}%</strong> handle</span>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* No Odds Notice */}
             {!game.odds && game.state === "pre" && (
