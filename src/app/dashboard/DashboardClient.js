@@ -1320,35 +1320,68 @@ export default function DashboardClient({ userEmail }) {
                 </div>
               </div>
 
-              {/* ATS Stats Grid */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
-                  gap: 12,
-                  marginBottom: 16,
-                  background: "var(--surface2)",
-                  padding: 16,
-                  borderRadius: 10,
-                }}
-              >
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>ATS L5</div>
-                  <div style={{ fontSize: 15, fontWeight: 700 }}>{bestPlay.play.atsLast5}</div>
+              {/* Stats Grid - Show prop stats for props, ATS stats for games */}
+              {bestPlay.play.type === "prop" ? (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: 12,
+                    marginBottom: 16,
+                    background: "var(--surface2)",
+                    padding: 16,
+                    borderRadius: 10,
+                  }}
+                >
+                  {bestPlay.play.last10HitRate && (
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>Hit Rate L10</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: "var(--green)" }}>{bestPlay.play.last10HitRate}</div>
+                    </div>
+                  )}
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>Edge</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: bestPlay.play.edge > 0 ? "var(--green)" : "var(--red)" }}>
+                      {bestPlay.play.edge > 0 ? "+" : ""}{bestPlay.play.edge}%
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>EV</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: bestPlay.play.ev > 0 ? "var(--green)" : "var(--red)" }}>
+                      {bestPlay.play.ev > 0 ? "+" : ""}{bestPlay.play.ev}%
+                    </div>
+                  </div>
                 </div>
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>ATS L10</div>
-                  <div style={{ fontSize: 15, fontWeight: 700 }}>{bestPlay.play.atsLast10}</div>
+              ) : (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(4, 1fr)",
+                    gap: 12,
+                    marginBottom: 16,
+                    background: "var(--surface2)",
+                    padding: 16,
+                    borderRadius: 10,
+                  }}
+                >
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>ATS L5</div>
+                    <div style={{ fontSize: 15, fontWeight: 700 }}>{bestPlay.play.atsLast5}</div>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>ATS L10</div>
+                    <div style={{ fontSize: 15, fontWeight: 700 }}>{bestPlay.play.atsLast10}</div>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>Season ATS</div>
+                    <div style={{ fontSize: 15, fontWeight: 700 }}>{bestPlay.play.atsSeason}</div>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>H/A ATS</div>
+                    <div style={{ fontSize: 15, fontWeight: 700 }}>{bestPlay.play.homeAwayAts}</div>
+                  </div>
                 </div>
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>Season ATS</div>
-                  <div style={{ fontSize: 15, fontWeight: 700 }}>{bestPlay.play.atsSeason}</div>
-                </div>
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>H/A ATS</div>
-                  <div style={{ fontSize: 15, fontWeight: 700 }}>{bestPlay.play.homeAwayAts}</div>
-                </div>
-              </div>
+              )}
 
               {/* Write-up */}
               {bestPlay.play.writeup && (
