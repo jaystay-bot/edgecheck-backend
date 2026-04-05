@@ -451,6 +451,30 @@ function scoreNBAProp(prop, bestOdds, edge) {
   const isHome = prop.isHome;
   const matchup = prop.matchup;
 
+  // Calculate hit/miss rate from last10Games (same structure as MLB)
+  const last10Games = prop.last10Games || [];
+  let last10HitRate = null;
+  let last10Results = null;
+  if (last10Games.length > 0) {
+    const isPoints = propType.includes("Points") || propType === "player_points";
+    const isRebounds = propType.includes("Rebounds") || propType === "player_rebounds";
+    const isAssists = propType.includes("Assists") || propType === "player_assists";
+
+    const results = last10Games.map((g) => {
+      let statValue = 0;
+      if (isPoints) statValue = g.points || 0;
+      else if (isRebounds) statValue = g.rebounds || 0;
+      else if (isAssists) statValue = g.assists || 0;
+      else statValue = g.points || 0; // default to points
+      return statValue >= line ? "H" : "M";
+    });
+
+    const hitCount = results.filter((r) => r === "H").length;
+    const totalGames = results.length;
+    last10HitRate = `${hitCount}/${totalGames}`;
+    last10Results = results.join("");
+  }
+
   // Score components
   let lineValueScore = 0;
   let oddsValueScore = 0;
@@ -585,6 +609,9 @@ function scoreNBAProp(prop, bestOdds, edge) {
     tier = "Risky";
   }
 
+  // Compute hitRateLast10 as numeric for UI (e.g., 7 from "7/10")
+  const hitRateLast10 = last10HitRate ? parseInt(last10HitRate.split("/")[0], 10) : null;
+
   return {
     heaterScore,
     confidence,
@@ -594,6 +621,10 @@ function scoreNBAProp(prop, bestOdds, edge) {
     keyFactors: factors,
     riskReason,
     whatCouldGoWrong: riskReason,
+    // Hit rate context (matches MLB structure)
+    last10HitRate, // e.g., "7/10"
+    last10Results, // e.g., "HHMHHMHHHM"
+    hitRateLast10, // numeric for UI (e.g., 7)
     scoreBreakdown: {
       base: 5.0,
       lineValue: lineValueScore,
