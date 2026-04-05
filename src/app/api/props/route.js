@@ -1441,18 +1441,25 @@ export async function GET(request) {
   const cache = propsCache[sport] || {};
 
   // Extract top 5 props across all categories (for paid users)
-  // Only promote strong candidates: heaterScore >= 7.5, edge > 0, NOT injured out
+  // STRICT CRITERIA (same as Best Play):
+  // - heaterScore >= 8.0
+  // - edge > 0
+  // - EV > 0
+  // - confidence >= 7
+  // - NOT injured out
   let top5 = [];
   if (isPaidUser) {
     // Flatten all props from all categories
     const allProps = allCategories.flatMap((cat) => cat.props || []);
 
-    // Filter for quality props only (exclude "out" players)
+    // Filter for quality props only (strict criteria, no negative EV)
     const qualityProps = allProps.filter((p) => {
       const score = p.heaterScore || 0;
       const edge = parseFloat(p.edge || 0);
+      const ev = parseFloat(p.ev || 0);
+      const conf = parseFloat(p.confidence || 0);
       const isOut = p.injuryStatus === "out";
-      return score >= 7.5 && edge > 0 && !isOut;
+      return score >= 8.0 && edge > 0 && ev > 0 && conf >= 7 && !isOut;
     });
 
     // Sort by heaterScore (desc), then edge (desc)
@@ -1466,7 +1473,7 @@ export async function GET(request) {
 
     top5 = sorted.slice(0, 5);
     const outCount = allProps.filter((p) => p.injuryStatus === "out").length;
-    console.log(`[Props] Top 5 (quality filtered): ${top5.length} props qualify (${outCount} excluded as OUT), showing: ${top5.map((p) => `${p.playerName} ${p.propType} (${p.heaterScore})`).join(", ") || "none"}`);
+    console.log(`[Props] Top 5 (strict criteria): ${top5.length}/${allProps.length} qualify (heater>=8, edge>0, EV>0, conf>=7), ${outCount} OUT excluded`);
   }
 
   return NextResponse.json({
