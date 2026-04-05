@@ -1,7 +1,6 @@
 // DraftKings Betting Splits Scraper
 // Scrapes public betting split data from DK Network
-
-import { chromium } from "playwright";
+// Note: Requires Playwright which only works locally, not on Vercel serverless
 
 const DK_SPLITS_URL = "https://dknetwork.draftkings.com/draftkings-sportsbook-betting-splits";
 
@@ -13,6 +12,16 @@ export async function getBettingSplits() {
   let browser = null;
 
   try {
+    // Dynamic import to avoid build-time errors on Vercel
+    let chromium;
+    try {
+      const pw = await import("playwright");
+      chromium = pw.chromium;
+    } catch (importErr) {
+      console.warn("[DKSplits] Playwright not available (serverless env):", importErr.message);
+      return [];
+    }
+
     console.log("[DKSplits] Launching browser...");
     browser = await chromium.launch({ headless: true });
     const context = await browser.newContext({
