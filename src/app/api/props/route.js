@@ -180,6 +180,25 @@ function scoreMLBProp(prop, bestOdds, edge) {
   const batterTrend = prop.batterTrend;
   const isBatterHot = prop.isBatterHot;
   const isBatterCold = prop.isBatterCold;
+  const last10Games = prop.last10Games || [];
+
+  // Calculate hit/miss rate based on prop type and line
+  let last10HitRate = null;
+  let last10Results = null;
+  if (last10Games.length > 0) {
+    const isHits = propType.includes("Hits") || propType === "batter_hits";
+    const isHR = propType.includes("Home Run") || propType === "batter_home_runs";
+
+    const results = last10Games.map((g) => {
+      const statValue = isHR ? g.homeRuns : g.hits;
+      return statValue >= line ? "H" : "M"; // Hit or Miss
+    });
+
+    const hitCount = results.filter((r) => r === "H").length;
+    const totalGames = results.length;
+    last10HitRate = `${hitCount}/${totalGames}`;
+    last10Results = results.join(""); // e.g., "HHMHHMHHHM"
+  }
 
   // Pitcher quality stats
   const pitcherERA = prop.pitcherERA;
@@ -353,8 +372,10 @@ function scoreMLBProp(prop, bestOdds, edge) {
   // Build writeup with real context
   let writeup = `${playerName} ${lineLabel} ${propLabel} at ${bestOdds > 0 ? "+" : ""}${bestOdds}. `;
 
-  // Add recent performance
-  if (avgLast5 !== null && hitsLast5 != null) {
+  // Add recent performance and hit rate
+  if (last10HitRate) {
+    writeup += `Hit rate L10: ${last10HitRate}. `;
+  } else if (avgLast5 !== null && hitsLast5 != null) {
     writeup += `${hitsLast5} hits in last 5 (.${(avgLast5 * 1000).toFixed(0)}). `;
   }
 
@@ -394,6 +415,9 @@ function scoreMLBProp(prop, bestOdds, edge) {
     keyFactors: factors,
     riskReason,
     whatCouldGoWrong: riskReason,
+    // Hit rate context
+    last10HitRate, // e.g., "7/10"
+    last10Results, // e.g., "HHMHHMHHHM"
     // Score breakdown for transparency
     scoreBreakdown: {
       base: 5.0,

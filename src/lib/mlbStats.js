@@ -219,11 +219,21 @@ async function fetchBatterStats(playerId) {
     // Calculate stats over last 5 and 10 games
     let last5 = { hits: 0, atBats: 0, games: 0 };
     let last10 = { hits: 0, atBats: 0, games: 0 };
+    const last10Games = []; // Raw game values for hit/miss calculation
 
     splits.slice(0, 10).forEach((game, i) => {
       const stat = game.stat || {};
       const hits = stat.hits || 0;
       const atBats = stat.atBats || 0;
+      const homeRuns = stat.homeRuns || 0;
+
+      // Store raw game data for hit/miss calculation
+      last10Games.push({
+        date: game.date,
+        hits,
+        homeRuns,
+        atBats,
+      });
 
       if (i < 5) {
         last5.hits += hits;
@@ -256,6 +266,7 @@ async function fetchBatterStats(playerId) {
       trend,
       isHot: avgLast5 && parseFloat(avgLast5) >= 0.300,
       isCold: avgLast5 && parseFloat(avgLast5) < 0.200,
+      last10Games, // Raw game data for hit/miss calculation
     };
 
     mlbStatsCache.playerStats[cacheKey] = { data: result, timestamp: Date.now() };
@@ -613,6 +624,7 @@ export async function enrichMLBProps(props) {
           enrichment.batterTrend = batterStats.trend;
           enrichment.isBatterHot = batterStats.isHot;
           enrichment.isBatterCold = batterStats.isCold;
+          enrichment.last10Games = batterStats.last10Games; // Raw game data
           statsCount++;
         }
       }
