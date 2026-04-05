@@ -205,6 +205,7 @@ export async function POST(request) {
   // Return cached if available
   if (cached?.betAnalyses?.[betKey]) {
     return NextResponse.json({
+      status: "ok",
       analysis: cached.betAnalyses[betKey],
       analyzedAt: cached.analyzedAt,
       analyzedAtFormatted: formatTimeAgo(cached.analyzedAt),
@@ -219,8 +220,10 @@ export async function POST(request) {
     return NextResponse.json({
       analysis: null,
       pending: true,
-      message: "Analysis loading — check back in a few minutes",
+      status: "error",
+      reason: "rate_limited",
       rateLimited: true,
+      message: "Rate limited — try again in a few minutes",
     });
   }
 
@@ -229,7 +232,9 @@ export async function POST(request) {
     return NextResponse.json({
       analysis: null,
       pending: true,
-      message: "Analysis unavailable — check back soon",
+      status: "error",
+      reason: "no_api_key",
+      message: "Analysis service unavailable",
     });
   }
 
@@ -240,7 +245,9 @@ export async function POST(request) {
     return NextResponse.json({
       analysis: null,
       pending: true,
-      message: "Analysis loading — check back in a few minutes",
+      status: "no_data",
+      reason: "generation_failed",
+      message: "Could not generate analysis",
     });
   }
 
@@ -253,6 +260,7 @@ export async function POST(request) {
   setAnalysis(gameId, game, betAnalyses);
 
   return NextResponse.json({
+    status: "ok",
     analysis,
     analyzedAt: Date.now(),
     analyzedAtFormatted: "just now",

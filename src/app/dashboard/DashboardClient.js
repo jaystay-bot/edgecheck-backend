@@ -296,10 +296,13 @@ function getBetOptions(game) {
     opts.push({ value: `spread_away`, label: `${away} Spread ${as}` });
   }
 
-  if (odds?.moneyline?.home != null && odds?.moneyline?.away != null) {
+  // Include ML options independently (don't require both)
+  if (odds?.moneyline?.home != null) {
     const hml = odds.moneyline.home > 0 ? `+${odds.moneyline.home}` : `${odds.moneyline.home}`;
-    const aml = odds.moneyline.away > 0 ? `+${odds.moneyline.away}` : `${odds.moneyline.away}`;
     opts.push({ value: `ml_home`, label: `${home} ML ${hml}` });
+  }
+  if (odds?.moneyline?.away != null) {
+    const aml = odds.moneyline.away > 0 ? `+${odds.moneyline.away}` : `${odds.moneyline.away}`;
     opts.push({ value: `ml_away`, label: `${away} ML ${aml}` });
   }
 
@@ -1994,11 +1997,15 @@ export default function DashboardClient({ userEmail }) {
                 {analyses[game.id].pending ? (
                   <div style={{ textAlign: "center", padding: "12px 0" }}>
                     <div style={{ fontSize: 14, color: "var(--text-dim)", marginBottom: 8 }}>
-                      {analyses[game.id].message || "Analysis loading — check back in a few minutes"}
+                      {analyses[game.id].rateLimited
+                        ? "Rate limited — try again in a few minutes"
+                        : analyses[game.id].message || "No analysis available"}
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
-                      Analyses are updated at 8 AM, 12 PM, 4 PM, and 6 PM
-                    </div>
+                    {analyses[game.id].rateLimited && (
+                      <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                        Analyses are updated at 8 AM, 12 PM, 4 PM, and 6 PM
+                      </div>
+                    )}
                   </div>
                 ) : analyses[game.id].error ? (
                   <div style={{ color: "var(--red)" }}>

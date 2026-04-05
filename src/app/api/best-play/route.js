@@ -834,42 +834,39 @@ async function findBestPlays(apiKey) {
   const sortedPlays = scoredCandidates
     .sort((a, b) => b.heaterScore - a.heaterScore || b.confidence - a.confidence);
 
-  // Prefer 8+ score plays, but always return best available
-  const elitePlays = sortedPlays.filter((c) => c.heaterScore >= 8.0).slice(0, 3);
+  // STRICT CRITERIA for Best Play of the Day (no fallback to weaker plays):
+  // - heaterScore >= 8.0
+  // - edge > 0 (positive expected value)
+  // - EV > 0
+  // - confidence >= 7
+  const elitePlays = sortedPlays.filter((c) => {
+    const edge = parseFloat(c.edge || 0);
+    const ev = parseFloat(c.ev || 0);
+    const heater = parseFloat(c.heaterScore || 0);
+    const conf = parseFloat(c.confidence || 0);
+    return heater >= 8.0 && edge > 0 && ev > 0 && conf >= 7;
+  }).slice(0, 3);
 
   if (elitePlays.length > 0) {
-    console.log(`[BestPlay] Found ${elitePlays.length} elite plays (8+ score)`);
-    return { found: true, plays: elitePlays };
+    console.log(`[BestPlay] Found ${elitePlays.length} elite plays (strict criteria met)`);
+    // Ensure all required fields are present
+    const plays = elitePlays.map((p) => ({
+      ...p,
+      edge: parseFloat(p.edge || 0),
+      ev: parseFloat(p.ev || 0),
+      hitRate: p.hitRate || null,
+    }));
+    return { found: true, status: "ok", plays };
   }
 
-  // Return top play (best available) - always show something
-  if (sortedPlays.length > 0) {
-    const topPlay = sortedPlays[0];
-    console.log(`[BestPlay] Returning best available play (score: ${topPlay.heaterScore})`);
-    return { found: true, plays: [topPlay], note: "Best value play available today" };
-  }
-
-  // Final fallback: return first raw candidate with default score
-  if (allCandidates.length > 0) {
-    const fallback = allCandidates[0];
-    const defaultScore = {
-      heaterScore: 6.0,
-      confidence: 5,
-      atsLast5: "N/A",
-      atsLast10: "N/A",
-      atsSeason: "N/A",
-      homeAwayAts: "N/A",
-      writeup: `${fallback.teamOrPlayer} - today's featured play.`,
-      keyFactors: ["Game available for betting"],
-      whatCouldGoWrong: "Normal betting variance applies.",
-    };
-    const fallbackPlay = { ...fallback, ...defaultScore };
-    console.log(`[BestPlay] Using fallback candidate: ${fallback.teamOrPlayer}`);
-    return { found: true, plays: [fallbackPlay] };
-  }
-
-  console.log(`[BestPlay] No candidates available`);
-  return { found: false, plays: [], reason: "No games available today" };
+  // No plays meet strict criteria - return null (no fallback)
+  console.log(`[BestPlay] No plays meet strict threshold (checked ${sortedPlays.length} candidates)`);
+  return {
+    found: false,
+    status: "no_data",
+    plays: [],
+    reason: "No qualifying plays today",
+  };
 }
 
 export async function GET(request) {
