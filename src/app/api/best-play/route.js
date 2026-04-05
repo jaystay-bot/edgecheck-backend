@@ -484,6 +484,9 @@ function convertPropsToCandidate(props) {
     pitcherQuality: prop.pitcherQuality,
     isPitcherElite: prop.isPitcherElite,
     isPitcherStruggling: prop.isPitcherStruggling,
+    // Injury status (from enrichment)
+    injuryStatus: prop.injuryStatus || "active",
+    injuryNote: prop.injuryNote || null,
   }));
 }
 
@@ -839,12 +842,14 @@ async function findBestPlays(apiKey) {
   // - edge > 0 (positive expected value)
   // - EV > 0
   // - confidence >= 7
+  // - NOT injured out
   const elitePlays = sortedPlays.filter((c) => {
     const edge = parseFloat(c.edge || 0);
     const ev = parseFloat(c.ev || 0);
     const heater = parseFloat(c.heaterScore || 0);
     const conf = parseFloat(c.confidence || 0);
-    return heater >= 8.0 && edge > 0 && ev > 0 && conf >= 7;
+    const isOut = c.injuryStatus === "out";
+    return heater >= 8.0 && edge > 0 && ev > 0 && conf >= 7 && !isOut;
   }).slice(0, 3);
 
   if (elitePlays.length > 0) {

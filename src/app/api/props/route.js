@@ -1417,24 +1417,32 @@ export async function GET(request) {
   const cache = propsCache[sport] || {};
 
   // Extract top 5 props across all categories (for paid users)
+  // Only promote strong candidates: heaterScore >= 7.5, edge > 0, NOT injured out
   let top5 = [];
   if (isPaidUser) {
     // Flatten all props from all categories
     const allProps = allCategories.flatMap((cat) => cat.props || []);
 
+    // Filter for quality props only (exclude "out" players)
+    const qualityProps = allProps.filter((p) => {
+      const score = p.heaterScore || 0;
+      const edge = parseFloat(p.edge || 0);
+      const isOut = p.injuryStatus === "out";
+      return score >= 7.5 && edge > 0 && !isOut;
+    });
+
     // Sort by heaterScore (desc), then edge (desc)
-    const sorted = allProps
-      .filter((p) => p.heaterScore != null)
-      .sort((a, b) => {
-        // Primary: heaterScore (higher is better)
-        const scoreDiff = (b.heaterScore || 0) - (a.heaterScore || 0);
-        if (scoreDiff !== 0) return scoreDiff;
-        // Secondary: edge (higher is better)
-        return parseFloat(b.edge || 0) - parseFloat(a.edge || 0);
-      });
+    const sorted = qualityProps.sort((a, b) => {
+      // Primary: heaterScore (higher is better)
+      const scoreDiff = (b.heaterScore || 0) - (a.heaterScore || 0);
+      if (scoreDiff !== 0) return scoreDiff;
+      // Secondary: edge (higher is better)
+      return parseFloat(b.edge || 0) - parseFloat(a.edge || 0);
+    });
 
     top5 = sorted.slice(0, 5);
-    console.log(`[Props] Top 5: ${top5.map((p) => `${p.playerName} ${p.propType} (${p.heaterScore})`).join(", ")}`);
+    const outCount = allProps.filter((p) => p.injuryStatus === "out").length;
+    console.log(`[Props] Top 5 (quality filtered): ${top5.length} props qualify (${outCount} excluded as OUT), showing: ${top5.map((p) => `${p.playerName} ${p.propType} (${p.heaterScore})`).join(", ") || "none"}`);
   }
 
   return NextResponse.json({

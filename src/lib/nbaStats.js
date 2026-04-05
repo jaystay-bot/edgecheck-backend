@@ -1,7 +1,8 @@
 // NBA Stats - ESPN API for game context (free, no auth required)
-// Provides matchup, game time, and team context for NBA props
+// Provides matchup, game time, team context, and injury status for NBA props
 
 const ESPN_NBA_SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard";
+const ESPN_NBA_INJURIES = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries";
 
 // Cache for NBA games (refreshes hourly)
 const nbaGamesCache = {
@@ -9,6 +10,13 @@ const nbaGamesCache = {
   timestamp: 0,
 };
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+// Cache for injuries (refreshes every 30 min)
+const nbaInjuriesCache = {
+  injuries: null, // Map of normalized player name -> status
+  timestamp: 0,
+};
+const INJURIES_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
 // Team abbreviation mapping (ESPN uses different abbrevs than Underdog)
 const TEAM_ABBREV_MAP = {
@@ -134,23 +142,94 @@ function findGameForTeam(games, teamAbbrev) {
   );
 }
 
+// Fetch NBA injuries from ESPN (cached)
+async function fetchNBAInjuries() {
+  const now = Date.now();
+  if (nbaInjuriesCache.injuries && now - nbaInjuriesCache.timestamp < INJURIES_CACHE_TTL) {
+    return nbaInjuriesCache.injuries;
+  }
+
+  try {
+    console.log("[NBAStats] Fetching NBA injuries from ESPN...");
+    const res = await fetch(ESPN_NBA_INJURIES, {
+      signal: AbortSignal.timeout(8000),
+      headers: { "User-Agent": "Mozilla/5.0" },
+    });
+
+    if (!res.ok) {
+      console.warn(`[NBAStats] Injuries API returned ${res.status}`);
+      return nbaInjuriesCache.injuries || new Map();
+    }
+
+    const data = await res.json();
+    const injuryMap = new Map();
+
+    // Parse injuries by team
+    for (const team of data.injuries || []) {
+      for (const player of team.injuries || []) {
+        const name = normalizeName(player.athlete?.displayName);
+        if (!name) continue;
+
+        // ESPN status: "Out", "Day-To-Day", "Questionable", "Doubtful", "Probable"
+        const espnStatus = player.status || "";
+        let status = "active";
+
+        if (espnStatus.toLowerCase().includes("out")) {
+          status = "out";
+        } else if (espnStatus.toLowerCase().includes("doubtful")) {
+          status = "doubtful";
+        } else if (espnStatus.toLowerCase().includes("questionable") || espnStatus.toLowerCase().includes("day-to-day")) {
+          status = "questionable";
+        }
+
+        injuryMap.set(name, {
+          status,
+          description: player.details?.type || espnStatus,
+        });
+      }
+    }
+
+    console.log(`[NBAStats] Loaded ${injuryMap.size} NBA player injuries`);
+    nbaInjuriesCache.injuries = injuryMap;
+    nbaInjuriesCache.timestamp = now;
+
+    return injuryMap;
+  } catch (err) {
+    console.error("[NBAStats] Failed to fetch injuries:", err.message);
+    return nbaInjuriesCache.injuries || new Map();
+  }
+}
+
 // Main enrichment function - adds ESPN game context to NBA props
 export async function enrichNBAProps(props) {
   if (!props || props.length === 0) return props;
 
   console.log(`[NBAStats] Enriching ${props.length} NBA props with ESPN context...`);
 
-  // Fetch today's games (cached)
-  const games = await fetchTodaysNBAGames();
-
-  if (games.length === 0) {
-    console.warn("[NBAStats] No NBA games found, returning props without enrichment");
-    return props;
-  }
+  // Fetch today's games and injuries in parallel (both cached)
+  const [games, injuries] = await Promise.all([
+    fetchTodaysNBAGames(),
+    fetchNBAInjuries(),
+  ]);
 
   let enrichedCount = 0;
+  let injuryCount = 0;
 
   const enrichedProps = props.map((prop) => {
+    // ALWAYS attach injury status first (regardless of game match)
+    const playerNameNorm = normalizeName(prop.playerName);
+    const injury = injuries.get(playerNameNorm);
+    const injuryEnrichment = {
+      injuryStatus: injury ? injury.status : "active",
+      injuryNote: injury ? injury.description : null,
+    };
+    if (injury) injuryCount++;
+
+    // If no games, return prop with just injury data
+    if (games.length === 0) {
+      return { ...prop, ...injuryEnrichment };
+    }
+
     // Try to match by existing matchup or team names
     let game = null;
 
@@ -174,10 +253,11 @@ export async function enrichNBAProps(props) {
       game = findGameForTeam(games, prop.awayTeam);
     }
 
-    if (!game) return prop;
+    // If no game match, return prop with just injury data
+    if (!game) return { ...prop, ...injuryEnrichment };
 
-    // Build enrichment
-    const enrichment = {};
+    // Build game enrichment
+    const enrichment = { ...injuryEnrichment };
 
     // Always update matchup and time from ESPN (more reliable)
     if (game.matchup) {
@@ -200,7 +280,7 @@ export async function enrichNBAProps(props) {
     return { ...prop, ...enrichment };
   });
 
-  console.log(`[NBAStats] Enriched ${enrichedCount}/${props.length} NBA props with game context`);
+  console.log(`[NBAStats] Enriched ${enrichedCount}/${props.length} NBA props (${injuryCount} with injury flags)`);
   return enrichedProps;
 }
 

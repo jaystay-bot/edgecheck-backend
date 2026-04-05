@@ -1,7 +1,8 @@
 // MLB Stats API - Free, no auth required
-// Provides pitcher, lineup, handedness, recent performance, and pitcher quality context
+// Provides pitcher, lineup, handedness, recent performance, pitcher quality context, and injury status
 
 const MLB_STATS_BASE = "https://statsapi.mlb.com/api/v1";
+const ESPN_MLB_INJURIES = "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/injuries";
 
 // Cache for MLB Stats data (refreshes hourly)
 const mlbStatsCache = {
@@ -13,6 +14,13 @@ const mlbStatsCache = {
 };
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 const PLAYER_STATS_TTL = 4 * 60 * 60 * 1000; // 4 hours for player stats
+
+// Cache for injuries (refreshes every 30 min)
+const mlbInjuriesCache = {
+  injuries: null, // Map of normalized player name -> status
+  timestamp: 0,
+};
+const INJURIES_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
 // Team abbreviation mapping for matching
 const TEAM_ABBREV = {
@@ -383,18 +391,92 @@ function findGameForMatchup(games, matchup) {
   );
 }
 
+// Fetch MLB injuries from ESPN (cached)
+async function fetchMLBInjuries() {
+  const now = Date.now();
+  if (mlbInjuriesCache.injuries && now - mlbInjuriesCache.timestamp < INJURIES_CACHE_TTL) {
+    return mlbInjuriesCache.injuries;
+  }
+
+  try {
+    console.log("[MLBStats] Fetching MLB injuries from ESPN...");
+    const res = await fetch(ESPN_MLB_INJURIES, {
+      signal: AbortSignal.timeout(8000),
+      headers: { "User-Agent": "Mozilla/5.0" },
+    });
+
+    if (!res.ok) {
+      console.warn(`[MLBStats] Injuries API returned ${res.status}`);
+      return mlbInjuriesCache.injuries || new Map();
+    }
+
+    const data = await res.json();
+    const injuryMap = new Map();
+
+    // Parse injuries by team
+    for (const team of data.injuries || []) {
+      for (const player of team.injuries || []) {
+        const name = normalizeName(player.athlete?.displayName);
+        if (!name) continue;
+
+        // ESPN status: "Out", "Day-To-Day", "10-Day IL", "60-Day IL", etc.
+        const espnStatus = player.status || "";
+        let status = "active";
+
+        if (espnStatus.toLowerCase().includes("out") || espnStatus.toLowerCase().includes("il")) {
+          status = "out";
+        } else if (espnStatus.toLowerCase().includes("doubtful")) {
+          status = "doubtful";
+        } else if (espnStatus.toLowerCase().includes("questionable") || espnStatus.toLowerCase().includes("day-to-day")) {
+          status = "questionable";
+        }
+
+        injuryMap.set(name, {
+          status,
+          description: player.details?.type || espnStatus,
+        });
+      }
+    }
+
+    console.log(`[MLBStats] Loaded ${injuryMap.size} MLB player injuries`);
+    mlbInjuriesCache.injuries = injuryMap;
+    mlbInjuriesCache.timestamp = now;
+
+    return injuryMap;
+  } catch (err) {
+    console.error("[MLBStats] Failed to fetch injuries:", err.message);
+    return mlbInjuriesCache.injuries || new Map();
+  }
+}
+
 // Main enrichment function - adds MLB context to props
 export async function enrichMLBProps(props) {
   if (!props || props.length === 0) return props;
 
   console.log(`[MLBStats] Enriching ${props.length} MLB props with context...`);
 
-  // Fetch today's games (cached)
-  const games = await fetchTodaysGames();
+  // Fetch today's games and injuries in parallel (both cached)
+  const [games, injuries] = await Promise.all([
+    fetchTodaysGames(),
+    fetchMLBInjuries(),
+  ]);
 
+  // If no games, still attach injury data to all props
   if (games.length === 0) {
-    console.warn("[MLBStats] No games found, returning props without enrichment");
-    return props;
+    console.warn("[MLBStats] No games found, attaching injury data only");
+    let injuryCount = 0;
+    const propsWithInjuries = props.map((prop) => {
+      const playerNameNorm = normalizeName(prop.playerName);
+      const injury = injuries.get(playerNameNorm);
+      if (injury) injuryCount++;
+      return {
+        ...prop,
+        injuryStatus: injury ? injury.status : "active",
+        injuryNote: injury ? injury.description : null,
+      };
+    });
+    console.log(`[MLBStats] Attached ${injuryCount} injury flags (no game context)`);
+    return propsWithInjuries;
   }
 
   // Group props by matchup to batch lineup fetches
@@ -455,12 +537,25 @@ export async function enrichMLBProps(props) {
   // Enrich each prop with context and stats
   let enrichedCount = 0;
   let statsCount = 0;
+  let injuryCount = 0;
 
   const enrichedProps = await Promise.all(props.map(async (prop) => {
     const matchup = prop.matchup;
     const group = matchupGroups[matchup];
 
-    if (!group?.game) return prop;
+    // Attach injury status regardless of game match
+    const playerNameNorm = normalizeName(prop.playerName);
+    const injury = injuries.get(playerNameNorm);
+    const injuryEnrichment = {};
+    if (injury) {
+      injuryEnrichment.injuryStatus = injury.status; // "out", "doubtful", "questionable"
+      injuryEnrichment.injuryNote = injury.description;
+      injuryCount++;
+    } else {
+      injuryEnrichment.injuryStatus = "active"; // Default to active if not on injury list
+    }
+
+    if (!group?.game) return { ...prop, ...injuryEnrichment };
 
     // Get probable pitcher for the player's opponent
     const awayTeam = matchup.split(" @ ")[0];
@@ -527,10 +622,10 @@ export async function enrichMLBProps(props) {
       enrichedCount++;
     }
 
-    return { ...prop, ...enrichment };
+    return { ...prop, ...enrichment, ...injuryEnrichment };
   }));
 
-  console.log(`[MLBStats] Enriched ${enrichedCount}/${props.length} props (${statsCount} with recent stats)`);
+  console.log(`[MLBStats] Enriched ${enrichedCount}/${props.length} props (${statsCount} stats, ${injuryCount} injuries)`);
   return enrichedProps;
 }
 
