@@ -1,14 +1,21 @@
 import { NextResponse } from "next/server";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 
-// Note: DK Splits scraper requires Playwright which doesn't work on Vercel serverless.
-// This endpoint returns empty data on Vercel. For local dev, run the scraper directly.
+// Reads pre-scraped splits from data/splits.json
+// Run `node scripts/runSplits.js` locally to update the data
 
 export async function GET() {
-  // Playwright can't run on Vercel serverless - return empty splits
-  // The UI gracefully hides the splits section when empty
-  console.log("[Splits API] Playwright not available on serverless - returning empty splits");
-  return NextResponse.json({ splits: [], note: "Playwright scraping not available on serverless" });
+  try {
+    const filePath = join(process.cwd(), "data", "splits.json");
+    const raw = readFileSync(filePath, "utf-8");
+    const data = JSON.parse(raw);
+    return NextResponse.json({ splits: data.splits || [], timestamp: data.timestamp });
+  } catch (err) {
+    // File missing or invalid - return empty array
+    return NextResponse.json({ splits: [] });
+  }
 }

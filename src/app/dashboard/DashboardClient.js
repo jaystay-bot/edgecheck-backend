@@ -815,25 +815,60 @@ export default function DashboardClient({ userEmail }) {
     fetchSplits();
   }, []);
 
+  // MLB team name → abbreviation mapping for splits matching
+  const MLB_TEAM_MAP = {
+    "dodgers": "LAD", "la dodgers": "LAD",
+    "nationals": "WSH", "was nationals": "WSH",
+    "yankees": "NYY", "ny yankees": "NYY",
+    "mets": "NYM", "ny mets": "NYM",
+    "phillies": "PHI", "phi phillies": "PHI",
+    "rockies": "COL", "col rockies": "COL",
+    "marlins": "MIA", "mia marlins": "MIA",
+    "astros": "HOU", "hou astros": "HOU",
+    "athletics": "OAK",
+    "giants": "SF", "sf giants": "SF",
+    "mariners": "SEA", "sea mariners": "SEA",
+    "angels": "LAA", "la angels": "LAA",
+    "braves": "ATL", "atl braves": "ATL",
+    "diamondbacks": "ARI", "ari diamondbacks": "ARI",
+    "cubs": "CHC", "chi cubs": "CHC",
+    "guardians": "CLE", "cle guardians": "CLE",
+    "cardinals": "STL", "stl cardinals": "STL",
+    "tigers": "DET", "det tigers": "DET",
+    "red sox": "BOS", "bos red sox": "BOS",
+    "rays": "TB", "tb rays": "TB",
+    "orioles": "BAL", "bal orioles": "BAL",
+    "blue jays": "TOR", "tor blue jays": "TOR",
+    "white sox": "CWS", "chi white sox": "CWS",
+    "twins": "MIN", "min twins": "MIN",
+    "royals": "KC", "kc royals": "KC",
+    "rangers": "TEX", "tex rangers": "TEX",
+    "padres": "SD", "sd padres": "SD",
+    "reds": "CIN", "cin reds": "CIN",
+    "brewers": "MIL", "mil brewers": "MIL",
+    "pirates": "PIT", "pit pirates": "PIT",
+  };
+
+  // Extract abbreviations from split game string
+  const extractTeamAbbrevs = (splitGame) => {
+    const lower = (splitGame || "").toLowerCase();
+    const abbrevs = [];
+    for (const [name, abbrev] of Object.entries(MLB_TEAM_MAP)) {
+      if (lower.includes(name)) abbrevs.push(abbrev);
+    }
+    return [...new Set(abbrevs)]; // dedupe
+  };
+
   // Helper to find betting splits for a game
   const getSplitsForGame = (game) => {
     if (!bettingSplits.length || !game) return null;
     const homeAbbrev = game.homeTeam?.abbreviation?.toUpperCase();
     const awayAbbrev = game.awayTeam?.abbreviation?.toUpperCase();
-    const homeName = game.homeTeam?.name?.toLowerCase();
-    const awayName = game.awayTeam?.name?.toLowerCase();
 
     for (const split of bettingSplits) {
-      const splitGame = (split.game || "").toLowerCase();
-      const splitTeam = (split.team || "").toLowerCase();
-      // Match if split contains both teams or team name matches
-      if (
-        (splitGame.includes(homeAbbrev?.toLowerCase()) || splitGame.includes(homeName)) &&
-        (splitGame.includes(awayAbbrev?.toLowerCase()) || splitGame.includes(awayName))
-      ) {
-        return split;
-      }
-      if (splitTeam.includes(homeName) || splitTeam.includes(awayName)) {
+      const splitAbbrevs = extractTeamAbbrevs(split.game);
+      // Match if split contains both home and away team abbreviations
+      if (splitAbbrevs.includes(homeAbbrev) && splitAbbrevs.includes(awayAbbrev)) {
         return split;
       }
     }

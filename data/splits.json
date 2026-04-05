@@ -1,0 +1,66 @@
+{
+  "timestamp": "2026-04-05T19:22:00.115Z",
+  "count": 10,
+  "splits": [
+    {
+      "game": "LA Dodgers @ WAS Nationals",
+      "team": "LA Dodgers",
+      "betPercent": 14,
+      "handlePercent": 9
+    },
+    {
+      "game": "PHI Phillies @ COL Rockies",
+      "team": "PHI Phillies",
+      "betPercent": 24,
+      "handlePercent": 11
+    },
+    {
+      "game": "MIA Marlins @ NY Yankees",
+      "team": "MIA Marlins",
+      "betPercent": 86,
+      "handlePercent": 93
+    },
+    {
+      "game": "HOU Astros @ Athletics",
+      "team": "HOU Astros",
+      "betPercent": 19,
+      "handlePercent": 18
+    },
+    {
+      "game": "NY Mets @ SF Giants",
+      "team": "NY Mets",
+      "betPercent": 41,
+      "handlePercent": 41
+    },
+    {
+      "game": "SEA Mariners @ LA Angels",
+      "team": "SEA Mariners",
+      "betPercent": 19,
+      "handlePercent": 11
+    },
+    {
+      "game": "ATL Braves @ ARI Diamondbacks",
+      "team": "ATL Braves",
+      "betPercent": 35,
+      "handlePercent": 33
+    },
+    {
+      "game": "ATL Braves",
+      "team": "ATL Bra",
+      "betPercent": 65,
+      "handlePercent": 67
+    },
+    {
+      "game": "CHI Cubs @ CLE Guardians",
+      "team": "CHI Cubs",
+      "betPercent": 35,
+      "handlePercent": 30
+    },
+    {
+      "game": "STL Cardinals @ DET Tigers",
+      "team": "STL Cardinals",
+      "betPercent": 69,
+      "handlePercent": 82
+    }
+  ]
+}
