@@ -264,7 +264,7 @@ function formatGameTime(gameTime, commenceTime) {
 // Get tier badge color
 function getTierColor(tier) {
   switch (tier) {
-    case "Top Pick": return { bg: "var(--green)", text: "#fff" };
+    case "Top Pick": return { bg: "rgba(34,197,94,0.15)", text: "var(--green)" };
     case "Strong": return { bg: "var(--yellow)", text: "#000" };
     case "Value": return { bg: "var(--orange)", text: "#fff" };
     default: return { bg: "var(--surface2)", text: "var(--text-dim)" };
@@ -1126,15 +1126,14 @@ export default function DashboardClient({ userEmail }) {
         </button>
       </div>
 
-      {/* Best Play of the Day - Games View Only */}
-      {activeView === "games" && (
-        <div style={{ marginBottom: 20 }}>
+      {/* Best Play of the Day - Primary Focus (All Views) */}
+      <div style={{ marginBottom: 24 }}>
           {/* Loading State */}
           {bestPlayLoading && (
             <div
               style={{
                 background: "linear-gradient(135deg, var(--surface) 0%, rgba(251,191,36,0.1) 100%)",
-                border: "2px solid var(--yellow)",
+                border: "3px solid var(--yellow)",
                 borderRadius: 16,
                 padding: 24,
               }}
@@ -1163,7 +1162,7 @@ export default function DashboardClient({ userEmail }) {
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12 }}>
                 <CrownIcon size={24} color="var(--text-dim)" />
-                <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text-dim)" }}>Best Play of the Day</span>
+                <span style={{ fontSize: 20, fontWeight: 800, color: "var(--text-dim)" }}>Best Play of the Day</span>
               </div>
               <p style={{ fontSize: 14, color: "var(--text-dim)", margin: 0 }}>
                 {bestPlay.reason || "No strong edges found today"}
@@ -1176,7 +1175,7 @@ export default function DashboardClient({ userEmail }) {
             <div
               style={{
                 background: "linear-gradient(135deg, var(--surface) 0%, rgba(251,191,36,0.15) 100%)",
-                border: "2px solid var(--yellow)",
+                border: "3px solid var(--yellow)",
                 borderRadius: 16,
                 padding: 24,
               }}
@@ -1184,7 +1183,7 @@ export default function DashboardClient({ userEmail }) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <CrownIcon size={24} color="var(--yellow)" />
-                  <span style={{ fontSize: 18, fontWeight: 700 }}>Best Play of the Day</span>
+                  <span style={{ fontSize: 20, fontWeight: 800 }}>Best Play of the Day</span>
                   <span style={{ background: "var(--surface2)", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 700, color: "var(--text-dim)" }}>
                     {bestPlay.sport}
                   </span>
@@ -1230,7 +1229,7 @@ export default function DashboardClient({ userEmail }) {
             <div
               style={{
                 background: "linear-gradient(135deg, var(--surface) 0%, rgba(251,191,36,0.15) 100%)",
-                border: "2px solid var(--yellow)",
+                border: "3px solid var(--yellow)",
                 borderRadius: 16,
                 padding: 24,
               }}
@@ -1239,7 +1238,7 @@ export default function DashboardClient({ userEmail }) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <CrownIcon size={24} color="var(--yellow)" />
-                  <span style={{ fontSize: 18, fontWeight: 700 }}>Best Play of the Day</span>
+                  <span style={{ fontSize: 20, fontWeight: 800 }}>Best Play of the Day</span>
                   <span style={{ background: "var(--surface2)", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 700, color: "var(--text-dim)" }}>
                     {bestPlay.play.sport}
                   </span>
@@ -1450,7 +1449,6 @@ export default function DashboardClient({ userEmail }) {
             </div>
           )}
         </div>
-      )}
 
       {/* Sport Tabs - Games View Only */}
       {activeView === "games" && (
@@ -2539,6 +2537,41 @@ export default function DashboardClient({ userEmail }) {
                                           {o.bookmaker}: {o.price > 0 ? "+" : ""}{o.price}
                                         </span>
                                       ))}
+                                    </div>
+                                  )}
+
+                                  {/* Last 10 Results */}
+                                  {prop.last10HitRate && (
+                                    <div style={{ marginTop: 10, padding: "8px 10px", background: "var(--surface2)", borderRadius: 6 }}>
+                                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                                        <span style={{ fontSize: 11, color: "var(--text-dim)" }}>Last 10 Games</span>
+                                        <span style={{ fontSize: 12, fontWeight: 700, color: prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--red)" }}>
+                                          {prop.last10HitRate}
+                                        </span>
+                                      </div>
+                                      {prop.last10Results && (
+                                        <div style={{ display: "flex", gap: 3 }}>
+                                          {prop.last10Results.split("").map((r, idx) => (
+                                            <span
+                                              key={idx}
+                                              style={{
+                                                width: 18,
+                                                height: 18,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                fontSize: 10,
+                                                fontWeight: 700,
+                                                borderRadius: 3,
+                                                background: r === "H" ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)",
+                                                color: r === "H" ? "var(--green)" : "var(--red)",
+                                              }}
+                                            >
+                                              {r}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                 </>
