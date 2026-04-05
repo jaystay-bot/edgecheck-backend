@@ -487,6 +487,8 @@ function convertPropsToCandidate(props) {
     // Injury status (from enrichment)
     injuryStatus: prop.injuryStatus || "active",
     injuryNote: prop.injuryNote || null,
+    // Last 10 games data for hit rate calculation
+    last10Games: prop.last10Games || null,
   }));
 }
 
@@ -854,13 +856,30 @@ async function findBestPlays(apiKey) {
 
   if (elitePlays.length > 0) {
     console.log(`[BestPlay] Found ${elitePlays.length} elite plays (strict criteria met)`);
-    // Ensure all required fields are present
-    const plays = elitePlays.map((p) => ({
-      ...p,
-      edge: parseFloat(p.edge || 0),
-      ev: parseFloat(p.ev || 0),
-      hitRate: p.hitRate || null,
-    }));
+    // Ensure all required fields are present, compute last10HitRate if data available
+    const plays = elitePlays.map((p) => {
+      // Compute last10HitRate from last10Games if available (same logic as props/route)
+      let last10HitRate = null;
+      let last10Results = null;
+      if (p.last10Games && p.last10Games.length > 0 && p.type === "prop") {
+        const isHits = (p.propType || "").includes("hits") || p.propType === "batter_hits";
+        const line = parseFloat(p.line || 0.5);
+        const results = p.last10Games.map((g) => {
+          return isHits ? (g.hits >= line ? "H" : "M") : (g.homeRuns >= line ? "H" : "M");
+        });
+        const hitCount = results.filter((r) => r === "H").length;
+        last10HitRate = `${hitCount}/${results.length}`;
+        last10Results = results.join("");
+      }
+      return {
+        ...p,
+        edge: parseFloat(p.edge || 0),
+        ev: parseFloat(p.ev || 0),
+        hitRate: p.hitRate || null,
+        last10HitRate,
+        last10Results,
+      };
+    });
     return { found: true, status: "ok", plays };
   }
 
