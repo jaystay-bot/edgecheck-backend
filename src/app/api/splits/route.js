@@ -3,32 +3,12 @@ import { NextResponse } from "next/server";
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 
-// Cache splits for 10 minutes
-let splitsCache = { data: null, timestamp: 0 };
-const CACHE_TTL = 10 * 60 * 1000;
+// Note: DK Splits scraper requires Playwright which doesn't work on Vercel serverless.
+// This endpoint returns empty data on Vercel. For local dev, run the scraper directly.
 
 export async function GET() {
-  try {
-    const now = Date.now();
-
-    // Return cached if fresh
-    if (splitsCache.data && now - splitsCache.timestamp < CACHE_TTL) {
-      return NextResponse.json({ splits: splitsCache.data, cached: true });
-    }
-
-    // Dynamic import to avoid Playwright at build time
-    const { getBettingSplits } = await import("../../../lib/dkSplits");
-
-    // Fetch fresh splits
-    console.log("[Splits API] Fetching fresh DK betting splits...");
-    const splits = await getBettingSplits();
-
-    // Cache result
-    splitsCache = { data: splits, timestamp: now };
-
-    return NextResponse.json({ splits, cached: false });
-  } catch (err) {
-    console.error("[Splits API] Error:", err.message);
-    return NextResponse.json({ splits: [], error: err.message }, { status: 500 });
-  }
+  // Playwright can't run on Vercel serverless - return empty splits
+  // The UI gracefully hides the splits section when empty
+  console.log("[Splits API] Playwright not available on serverless - returning empty splits");
+  return NextResponse.json({ splits: [], note: "Playwright scraping not available on serverless" });
 }
