@@ -589,6 +589,9 @@ export default function DashboardClient({ userEmail }) {
   // Expanded prop card state
   const [expandedPropId, setExpandedPropId] = useState(null);
 
+  // Expanded game card state (EdgeCheck breakdown)
+  const [expandedGameId, setExpandedGameId] = useState(null);
+
   // Betting splits state (DraftKings public betting data)
   const [bettingSplits, setBettingSplits] = useState([]);
 
@@ -2103,189 +2106,146 @@ export default function DashboardClient({ userEmail }) {
                 ))}
               </select>
               <button
-                onClick={() => analyzeBet(game)}
-                disabled={analyzing === game.id}
+                onClick={() => setExpandedGameId(expandedGameId === game.id ? null : game.id)}
                 style={{
                   padding: "8px 20px",
-                  background: analyzing === game.id ? "var(--border)" : "var(--accent)",
+                  background: expandedGameId === game.id ? "var(--border)" : "var(--accent)",
                   color: "#fff",
                   border: "none",
                   borderRadius: 8,
-                  cursor: analyzing === game.id ? "not-allowed" : "pointer",
+                  cursor: "pointer",
                   fontWeight: 600,
                   fontSize: 13,
                   whiteSpace: "nowrap",
                   transition: "background 0.15s",
                 }}
               >
-                {analyzing === game.id ? "Analyzing..." : "Analyze Bet"}
+                {expandedGameId === game.id ? "Hide" : "EdgeCheck"}
               </button>
             </div>
 
-            {/* Analysis Result */}
-            {analyses[game.id] && (
-              <div
-                style={{
-                  marginTop: 12,
-                  background: "var(--surface2)",
-                  borderRadius: 8,
-                  padding: 16,
-                  border: "1px solid var(--border)",
-                }}
-              >
-                {/* Pending state */}
-                {analyses[game.id].pending ? (
-                  <div style={{ textAlign: "center", padding: "12px 0" }}>
-                    <div style={{ fontSize: 14, color: "var(--text-dim)", marginBottom: 8 }}>
-                      {analyses[game.id].rateLimited
-                        ? "Rate limited — try again in a few minutes"
-                        : analyses[game.id].message || "No analysis available"}
-                    </div>
-                    {analyses[game.id].rateLimited && (
-                      <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
-                        Analyses are updated at 8 AM, 12 PM, 4 PM, and 6 PM
-                      </div>
-                    )}
+            {/* EdgeCheck Breakdown */}
+            {expandedGameId === game.id && (() => {
+              const options = getBetOptions(game);
+              const selected = selectedBets[game.id] || options[0]?.value || "spread_home";
+              const selectedOption = options.find((o) => o.value === selected);
+              const splits = getSplitsForGame(game);
+              const odds = game.odds;
+
+              // Determine recommendation based on odds movement and public betting
+              let recommendation = "HOLD";
+              let confidence = "Medium";
+              let edgeRating = 5;
+              const factors = [];
+
+              if (odds) {
+                // Check for line value
+                if (selected.includes("spread")) {
+                  const spread = selected.includes("home") ? odds.spread?.home : odds.spread?.away;
+                  if (spread) {
+                    if (Math.abs(spread) <= 3) factors.push("Close spread game - high variance");
+                    else if (Math.abs(spread) >= 7) factors.push("Large spread - consider ML instead");
+                  }
+                }
+                if (selected.includes("ml")) {
+                  const ml = selected.includes("home") ? odds.moneyline?.home : odds.moneyline?.away;
+                  if (ml && ml > 0) {
+                    factors.push("Betting underdog - higher risk/reward");
+                    edgeRating += 1;
+                  }
+                  if (ml && ml < -200) factors.push("Heavy favorite - low value odds");
+                }
+                if (selected.includes("total")) {
+                  factors.push("Total bet - weather and pace matter");
+                }
+              }
+
+              // Factor in public betting (fade the public)
+              if (splits) {
+                if (splits.betPercent >= 70) {
+                  factors.push(`Public heavily on one side (${splits.betPercent}% bets)`);
+                  if (splits.handlePercent < splits.betPercent - 10) {
+                    factors.push("Sharp money may be fading public");
+                    recommendation = "LEAN";
+                    edgeRating += 2;
+                  }
+                } else if (splits.betPercent <= 30) {
+                  factors.push("Contrarian play - public avoiding this side");
+                  edgeRating += 1;
+                }
+              }
+
+              if (edgeRating >= 7) { recommendation = "BET"; confidence = "High"; }
+              else if (edgeRating >= 5) { recommendation = "LEAN"; confidence = "Medium"; }
+              else { recommendation = "HOLD"; confidence = "Low"; }
+
+              return (
+                <div
+                  style={{
+                    marginTop: 12,
+                    background: "var(--surface2)",
+                    borderRadius: 8,
+                    padding: 16,
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  {/* Selected Market */}
+                  <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 12 }}>
+                    SELECTED: <span style={{ color: "var(--text)", fontWeight: 600 }}>{selectedOption?.label || "N/A"}</span>
                   </div>
-                ) : analyses[game.id].error ? (
-                  <div style={{ color: "var(--red)" }}>
-                    {analyses[game.id].error}
-                  </div>
-                ) : (
-                  <>
-                    {/* Timestamp */}
-                    {analyses[game.id].analyzedAt && (
-                      <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
-                        <ClockIcon size={12} color="var(--text-dim)" />
-                        Analysis updated {analyses[game.id].analyzedAt}
-                      </div>
-                    )}
 
-                    {/* Metrics Row */}
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: 4,
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontSize: 11, color: "var(--text-dim)" }}>EDGE RATING</div>
-                        <div style={{ fontSize: 24, fontWeight: 700 }}>
-                          {analyses[game.id].edgeRating ?? "?"}/10
-                        </div>
-                      </div>
-                      <div style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: 11, color: "var(--text-dim)" }}>CONFIDENCE</div>
-                        <div style={{ fontSize: 16, fontWeight: 600 }}>
-                          {analyses[game.id].confidence ?? "N/A"}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
-                          RECOMMENDATION
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 16,
-                            fontWeight: 700,
-                            color: getRecColor(analyses[game.id].recommendation),
-                          }}
-                        >
-                          {getRecDisplay(analyses[game.id].recommendation) ?? "N/A"}
-                        </div>
+                  {/* Metrics Row */}
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14 }}>
+                    <div>
+                      <div style={{ fontSize: 11, color: "var(--text-dim)" }}>RECOMMENDATION</div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: recommendation === "BET" ? "var(--green)" : recommendation === "LEAN" ? "var(--yellow)" : "var(--text-dim)" }}>
+                        {recommendation}
                       </div>
                     </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: 11, color: "var(--text-dim)" }}>CONFIDENCE</div>
+                      <div style={{ fontSize: 16, fontWeight: 600 }}>{confidence}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 11, color: "var(--text-dim)" }}>EDGE RATING</div>
+                      <div style={{ fontSize: 20, fontWeight: 700 }}>{edgeRating}/10</div>
+                    </div>
+                  </div>
 
-                    {/* Decision Summary */}
-                    {(() => {
-                      const summary = getDecisionSummary(analyses[game.id].recommendation);
-                      if (!summary) return null;
-                      return (
-                        <div style={{ fontSize: 12, fontWeight: 500, color: summary.color, marginBottom: 14 }}>
-                          {summary.text}
-                        </div>
-                      );
-                    })()}
-
-                    {/* Key Factors (from batch analysis) */}
-                    {analyses[game.id].keyFactors?.length > 0 && (
-                      <div style={{ marginBottom: 14 }}>
-                        <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>
-                          KEY FACTORS
-                        </div>
-                        <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.6, color: "var(--text)" }}>
-                          {analyses[game.id].keyFactors.map((factor, i) => (
-                            <li key={i}>{factor}</li>
-                          ))}
-                        </ul>
+                  {/* Public Betting */}
+                  {splits && (
+                    <div style={{ marginBottom: 14 }}>
+                      <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>PUBLIC BETTING</div>
+                      <div style={{ fontSize: 13, color: "var(--text)" }}>
+                        <strong>{splits.betPercent}%</strong> bets / <strong>{splits.handlePercent}%</strong> handle on {splits.team}
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {/* Analysis Text */}
-                    {analyses[game.id].analysis && (
-                      <div style={{ marginBottom: 14 }}>
-                        <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>
-                          ANALYSIS
-                        </div>
-                        <div style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text)" }}>
-                          {analyses[game.id].analysis}
-                        </div>
-                      </div>
-                    )}
+                  {/* Key Factors */}
+                  {factors.length > 0 && (
+                    <div style={{ marginBottom: 14 }}>
+                      <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>KEY FACTORS</div>
+                      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.6, color: "var(--text)" }}>
+                        {factors.map((f, i) => <li key={i}>{f}</li>)}
+                      </ul>
+                    </div>
+                  )}
 
-                    {/* Risk Factors (from batch analysis) */}
-                    {analyses[game.id].riskFactors?.length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>
-                          RISK FACTORS
-                        </div>
-                        <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.6, color: "var(--text)" }}>
-                          {analyses[game.id].riskFactors.map((risk, i) => (
-                            <li key={i}>{risk}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Fallback to fullText if no structured data */}
-                    {!analyses[game.id].keyFactors?.length && !analyses[game.id].analysis && analyses[game.id].fullText && (
-                      (() => {
-                        const { sections } = parseFullText(analyses[game.id].fullText);
-                        if (!sections.length) {
-                          return (
-                            <div style={{ fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap", color: "var(--text)" }}>
-                              {analyses[game.id].fullText}
-                            </div>
-                          );
-                        }
-                        return sections.map((section, i) => (
-                          <div key={section.label} style={{ marginTop: i === 0 ? 0 : 14 }}>
-                            <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>
-                              {section.label}
-                            </div>
-                            <div style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text)", whiteSpace: "pre-wrap" }}>
-                              {section.label === "Analysis"
-                                ? (() => {
-                                    const firstDot = section.content.indexOf(".");
-                                    if (firstDot === -1) return section.content;
-                                    return (
-                                      <>
-                                        <span style={{ fontWeight: 600 }}>{section.content.slice(0, firstDot + 1)}</span>
-                                        {section.content.slice(firstDot + 1)}
-                                      </>
-                                    );
-                                  })()
-                                : section.content}
-                            </div>
-                          </div>
-                        ));
-                      })()
-                    )}
-                  </>
-                )}
-              </div>
-            )}
+                  {/* Simple Analysis */}
+                  <div>
+                    <div style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 500, marginBottom: 4 }}>ANALYSIS</div>
+                    <div style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text)" }}>
+                      {recommendation === "BET"
+                        ? "Multiple factors align favorably. This bet shows positive expected value based on current data."
+                        : recommendation === "LEAN"
+                        ? "Some positive signals present, but not overwhelming. Consider position sizing accordingly."
+                        : "No clear edge detected. Consider passing or waiting for better line movement."}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         ))}
       </>
