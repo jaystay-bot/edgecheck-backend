@@ -497,10 +497,14 @@ function scoreNBAProp(prop, bestOdds, edge) {
   const factors = [];
   const risks = [];
 
-  // === LINE VALUE SCORE (NBA-specific thresholds) ===
+  // === LINE VALUE SCORE (NBA/NHL-specific thresholds) ===
   const isPoints = propType.includes("Points") || propType === "player_points";
   const isBlocks = propType.includes("Blocks") || propType === "player_blocks";
   const isSteals = propType.includes("Steals") || propType === "player_steals";
+  const isRebounds = propType.includes("Rebounds") || propType === "player_rebounds";
+  const isAssistsType = propType.includes("Assists") || propType === "player_assists";
+  const isGoals = propType.includes("Goals") || propType === "player_goals";
+  const isShots = propType.includes("Shots") || propType === "player_shots_on_goal";
 
   if (isPoints) {
     // Role player lines (under 16) are easier to hit
@@ -622,7 +626,15 @@ function scoreNBAProp(prop, bestOdds, edge) {
 
   // === GENERATE OUTPUT ===
   const lineLabel = `${line}+`;
-  let writeup = `${playerName} ${lineLabel} points at ${bestOdds > 0 ? "+" : ""}${bestOdds}. `;
+  // Use correct stat label based on prop type
+  let propLabel = "points";
+  if (isGoals) propLabel = "goals";
+  else if (isAssistsType) propLabel = "assists";
+  else if (isShots) propLabel = "shots on goal";
+  else if (isRebounds) propLabel = "rebounds";
+  else if (isBlocks) propLabel = "blocks";
+  else if (isSteals) propLabel = "steals";
+  let writeup = `${playerName} ${lineLabel} ${propLabel} at ${bestOdds > 0 ? "+" : ""}${bestOdds}. `;
   if (matchup) {
     writeup += `${matchup}. `;
   }
