@@ -395,8 +395,12 @@ function scoreMLBProp(prop, bestOdds, edge) {
   const riskReason = risks.length > 0 ? risks.join(". ") : "Normal variance";
 
   // === TIER LABEL based on final score ===
+  // Block Top Pick/Strong if negative edge (strict +EV requirement)
   let tier;
-  if (heaterScore >= 9.0) {
+  if (edgeNum <= 0) {
+    // Negative edge = cannot be Top Pick or Strong regardless of heaterScore
+    tier = heaterScore >= 7.0 ? "Value" : "Risky";
+  } else if (heaterScore >= 9.0) {
     tier = "Top Pick";
   } else if (heaterScore >= 8.0) {
     tier = "Strong";
@@ -406,10 +410,13 @@ function scoreMLBProp(prop, bestOdds, edge) {
     tier = "Risky";
   }
 
+  // Compute hitRateLast10 as numeric for UI (e.g., 7 from "7/10")
+  const hitRateLast10 = last10HitRate ? parseInt(last10HitRate.split("/")[0], 10) : null;
+
   return {
     heaterScore,
     confidence,
-    tier, // NEW: Easy label for quick identification
+    tier, // Easy label for quick identification (blocked for negative edge)
     writeup,
     keyFactor,
     keyFactors: factors,
@@ -418,6 +425,7 @@ function scoreMLBProp(prop, bestOdds, edge) {
     // Hit rate context
     last10HitRate, // e.g., "7/10"
     last10Results, // e.g., "HHMHHMHHHM"
+    hitRateLast10, // numeric for UI (e.g., 7)
     // Score breakdown for transparency
     scoreBreakdown: {
       base: 5.0,
@@ -562,8 +570,12 @@ function scoreNBAProp(prop, bestOdds, edge) {
   const riskReason = risks.length > 0 ? risks.join(". ") : "Normal variance";
 
   // === TIER LABEL ===
+  // Block Top Pick/Strong if negative edge (strict +EV requirement)
   let tier;
-  if (heaterScore >= 9.0) {
+  if (edgeNum <= 0) {
+    // Negative edge = cannot be Top Pick or Strong regardless of heaterScore
+    tier = heaterScore >= 7.0 ? "Value" : "Risky";
+  } else if (heaterScore >= 9.0) {
     tier = "Top Pick";
   } else if (heaterScore >= 8.0) {
     tier = "Strong";
@@ -576,7 +588,7 @@ function scoreNBAProp(prop, bestOdds, edge) {
   return {
     heaterScore,
     confidence,
-    tier,
+    tier, // Easy label for quick identification (blocked for negative edge)
     writeup,
     keyFactor,
     keyFactors: factors,
