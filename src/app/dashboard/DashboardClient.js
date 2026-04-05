@@ -660,9 +660,10 @@ export default function DashboardClient({ userEmail }) {
   // Fetch Best Play with localStorage caching
   const fetchBestPlay = useCallback(async (forceRefresh = false) => {
     // Check cache first (unless forcing refresh)
+    // Skip cache if it has locked:true - always verify subscription status fresh
     if (!forceRefresh) {
       const cached = getCachedData(CACHE_KEYS.BEST_PLAY);
-      if (cached) {
+      if (cached && !cached.data.locked) {
         setBestPlay(cached.data);
         setBestPlayTimestamp(cached.timestamp);
         if (cached.data.isPaidUser !== undefined) {
