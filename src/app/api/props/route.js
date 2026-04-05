@@ -499,6 +499,8 @@ function scoreNBAProp(prop, bestOdds, edge) {
 
   // === LINE VALUE SCORE (NBA-specific thresholds) ===
   const isPoints = propType.includes("Points") || propType === "player_points";
+  const isBlocks = propType.includes("Blocks") || propType === "player_blocks";
+  const isSteals = propType.includes("Steals") || propType === "player_steals";
 
   if (isPoints) {
     // Role player lines (under 16) are easier to hit
@@ -521,6 +523,32 @@ function scoreNBAProp(prop, bestOdds, edge) {
       lineValueScore = 0.5;
       risks.push(`Elite line (${line}) - needs 30+ point game`);
       riskPenalty = 0.5;
+    }
+  } else if (isBlocks) {
+    // Blocks scoring - lower lines are easier
+    if (line <= 1.5) {
+      lineValueScore = 2.0;
+      factors.push(`Attainable blocks line (${line})`);
+    } else if (line <= 2.5) {
+      lineValueScore = 1.5;
+      factors.push(`Moderate blocks line (${line})`);
+    } else {
+      lineValueScore = 1.0;
+      risks.push(`High blocks line (${line}) - needs elite shot blocker`);
+      riskPenalty = 0.3;
+    }
+  } else if (isSteals) {
+    // Steals scoring - lower lines are easier
+    if (line <= 1.5) {
+      lineValueScore = 2.0;
+      factors.push(`Attainable steals line (${line})`);
+    } else if (line <= 2.5) {
+      lineValueScore = 1.5;
+      factors.push(`Moderate steals line (${line})`);
+    } else {
+      lineValueScore = 1.0;
+      risks.push(`High steals line (${line}) - needs elite defender`);
+      riskPenalty = 0.3;
     }
   }
 
