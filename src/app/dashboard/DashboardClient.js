@@ -818,15 +818,60 @@ export default function DashboardClient({ userEmail }) {
     fetchSplits();
   }, []);
 
-  // Helper to find betting splits for a game (splits are pre-normalized with awayTeam/homeTeam abbreviations)
+  // MLB team name → abbreviation mapping for splits matching
+  const MLB_TEAM_MAP = {
+    "dodgers": "LAD", "la dodgers": "LAD",
+    "nationals": "WSH", "was nationals": "WSH",
+    "yankees": "NYY", "ny yankees": "NYY",
+    "mets": "NYM", "ny mets": "NYM",
+    "phillies": "PHI", "phi phillies": "PHI",
+    "rockies": "COL", "col rockies": "COL",
+    "marlins": "MIA", "mia marlins": "MIA",
+    "astros": "HOU", "hou astros": "HOU",
+    "athletics": "OAK",
+    "giants": "SF", "sf giants": "SF",
+    "mariners": "SEA", "sea mariners": "SEA",
+    "angels": "LAA", "la angels": "LAA",
+    "braves": "ATL", "atl braves": "ATL",
+    "diamondbacks": "ARI", "ari diamondbacks": "ARI",
+    "cubs": "CHC", "chi cubs": "CHC",
+    "guardians": "CLE", "cle guardians": "CLE",
+    "cardinals": "STL", "stl cardinals": "STL",
+    "tigers": "DET", "det tigers": "DET",
+    "red sox": "BOS", "bos red sox": "BOS",
+    "rays": "TB", "tb rays": "TB",
+    "orioles": "BAL", "bal orioles": "BAL",
+    "blue jays": "TOR", "tor blue jays": "TOR",
+    "white sox": "CWS", "chi white sox": "CWS",
+    "twins": "MIN", "min twins": "MIN",
+    "royals": "KC", "kc royals": "KC",
+    "rangers": "TEX", "tex rangers": "TEX",
+    "padres": "SD", "sd padres": "SD",
+    "reds": "CIN", "cin reds": "CIN",
+    "brewers": "MIL", "mil brewers": "MIL",
+    "pirates": "PIT", "pit pirates": "PIT",
+  };
+
+  // Extract abbreviations from split game string
+  const extractTeamAbbrevs = (splitGame) => {
+    const lower = (splitGame || "").toLowerCase();
+    const abbrevs = [];
+    for (const [name, abbrev] of Object.entries(MLB_TEAM_MAP)) {
+      if (lower.includes(name)) abbrevs.push(abbrev);
+    }
+    return [...new Set(abbrevs)]; // dedupe
+  };
+
+  // Helper to find betting splits for a game
   const getSplitsForGame = (game) => {
     if (!bettingSplits.length || !game) return null;
     const homeAbbrev = game.homeTeam?.abbreviation?.toUpperCase();
     const awayAbbrev = game.awayTeam?.abbreviation?.toUpperCase();
 
     for (const split of bettingSplits) {
-      // Direct match on normalized abbreviations
-      if (split.awayTeam === awayAbbrev && split.homeTeam === homeAbbrev) {
+      const splitAbbrevs = extractTeamAbbrevs(split.game);
+      // Match if split contains both home and away team abbreviations
+      if (splitAbbrevs.includes(homeAbbrev) && splitAbbrevs.includes(awayAbbrev)) {
         return split;
       }
     }
@@ -2300,25 +2345,19 @@ export default function DashboardClient({ userEmail }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
               {propsCategories.map((category) => (
                 <div key={category.id}>
-                  {/* Category/Game Header */}
+                  {/* Category Header */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                    {category.isGameGroup ? (
-                      <TargetIcon size={18} color="var(--accent)" />
-                    ) : (
-                      <FlameIcon size={18} color="var(--accent)" />
-                    )}
-                    <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>
-                      {category.isGameGroup ? `${category.name}` : category.name}
-                    </h3>
+                    <FlameIcon size={18} color="var(--accent)" />
+                    <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>{category.name}</h3>
                     <span style={{ fontSize: 12, color: "var(--text-dim)" }}>
-                      ({category.props.length}{category.isGameGroup ? " top props" : " props"})
+                      ({category.props.length} props)
                     </span>
                   </div>
 
-                  {/* Category/Game Props */}
+                  {/* Category Props */}
                   {category.props.length === 0 ? (
                     <div style={{ padding: 20, background: "var(--surface)", borderRadius: 10, color: "var(--text-dim)", fontSize: 13, textAlign: "center" }}>
-                      {category.isGameGroup ? "No props available for this game" : "No props in this category tonight"}
+                      No props in this category tonight
                     </div>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -2368,12 +2407,10 @@ export default function DashboardClient({ userEmail }) {
                                 )}
                               </div>
 
-                              {/* Matchup - hide for game-grouped props since it's in the header */}
-                              {!category.isGameGroup && (
-                                <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 4 }}>
-                                  {prop.matchup || `${prop.awayTeam} @ ${prop.homeTeam}`}
-                                </div>
-                              )}
+                              {/* Matchup */}
+                              <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 4 }}>
+                                {prop.matchup || `${prop.awayTeam} @ ${prop.homeTeam}`}
+                              </div>
 
                               {/* Player Name */}
                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
