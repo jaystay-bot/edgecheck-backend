@@ -15,7 +15,7 @@ const SPORT_CONFIG = {
 };
 
 // Sports that should fetch pickcenter odds from ESPN summary endpoint
-const SPORTS_WITH_ODDS = ["nba", "nhl"];
+const SPORTS_WITH_ODDS = ["nba", "nhl", "mlb"];
 
 function formatDate(date) {
   const y = date.getFullYear();

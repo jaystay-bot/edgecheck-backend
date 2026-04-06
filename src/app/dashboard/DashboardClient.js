@@ -869,9 +869,11 @@ export default function DashboardClient({ userEmail }) {
     const awayAbbrev = game.awayTeam?.abbreviation?.toUpperCase();
 
     for (const split of bettingSplits) {
-      const splitAbbrevs = extractTeamAbbrevs(split.game);
-      // Match if split contains both home and away team abbreviations
-      if (splitAbbrevs.includes(homeAbbrev) && splitAbbrevs.includes(awayAbbrev)) {
+      // Use stored abbreviations directly (awayTeam/homeTeam already normalized)
+      const splitHome = split.homeTeam?.toUpperCase();
+      const splitAway = split.awayTeam?.toUpperCase();
+      if ((splitHome === homeAbbrev && splitAway === awayAbbrev) ||
+          (splitHome === awayAbbrev && splitAway === homeAbbrev)) {
         return split;
       }
     }
