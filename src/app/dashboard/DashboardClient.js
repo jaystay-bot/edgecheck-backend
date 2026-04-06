@@ -592,6 +592,9 @@ export default function DashboardClient({ userEmail }) {
   // Expanded game card state (EdgeCheck breakdown)
   const [expandedGameId, setExpandedGameId] = useState(null);
 
+  // Expanded game props state (inline props per game)
+  const [expandedGamePropsId, setExpandedGamePropsId] = useState(null);
+
   // Betting splits state (DraftKings public betting data)
   const [bettingSplits, setBettingSplits] = useState([]);
 
@@ -2084,8 +2087,28 @@ export default function DashboardClient({ userEmail }) {
               </div>
             )}
 
-            {/* Bet Type Selector + Analyze Button */}
+            {/* Action Buttons: Props | Bet Selector | EdgeCheck */}
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              {/* Props Button - Left */}
+              <button
+                onClick={() => setExpandedGamePropsId(expandedGamePropsId === game.id ? null : game.id)}
+                style={{
+                  padding: "8px 16px",
+                  background: expandedGamePropsId === game.id ? "var(--border)" : "var(--surface2)",
+                  color: expandedGamePropsId === game.id ? "#fff" : "var(--text)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  whiteSpace: "nowrap",
+                  transition: "background 0.15s",
+                }}
+              >
+                Props
+              </button>
+
+              {/* Bet Type Selector - Center */}
               <select
                 value={selectedBets[game.id] || getBetOptions(game)[0]?.value || "spread_home"}
                 onChange={(e) =>
@@ -2107,6 +2130,8 @@ export default function DashboardClient({ userEmail }) {
                   </option>
                 ))}
               </select>
+
+              {/* EdgeCheck Button - Right */}
               <button
                 onClick={() => setExpandedGameId(expandedGameId === game.id ? null : game.id)}
                 style={{
@@ -2298,6 +2323,30 @@ export default function DashboardClient({ userEmail }) {
           {/* Props Loading Skeleton */}
           {propsLoading && (
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              {/* Loading Message */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 12,
+                padding: "20px 24px",
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 12,
+              }}>
+                <div style={{
+                  width: 20,
+                  height: 20,
+                  border: "2px solid var(--border)",
+                  borderTopColor: "var(--accent)",
+                  borderRadius: "50%",
+                  animation: "spin 0.8s linear infinite",
+                }} />
+                <span style={{ color: "var(--text)", fontSize: 15, fontWeight: 600 }}>
+                  Loading {propsSport.toUpperCase()} props...
+                </span>
+              </div>
+              {/* Skeleton Cards */}
               {[1, 2].map((i) => (
                 <div key={i}>
                   <div style={{ background: "var(--border)", height: 20, width: 180, borderRadius: 4, marginBottom: 12, animation: "pulse 1.5s ease-in-out infinite" }} />
@@ -2316,7 +2365,10 @@ export default function DashboardClient({ userEmail }) {
                   </div>
                 </div>
               ))}
-              <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
+              <style>{`
+                @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+                @keyframes spin { to { transform: rotate(360deg); } }
+              `}</style>
             </div>
           )}
 
@@ -2523,21 +2575,31 @@ export default function DashboardClient({ userEmail }) {
                                     </span>
                                   </div>
                                 )}
-                                {prop.hitRateLast10 != null && (
+                                {/* L10 for MLB/NBA/NHL when available, CONF as fallback */}
+                                {prop.sport === "MLB" && prop.seasonAvg && (
                                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                    <TargetIcon size={12} color="var(--green)" />
-                                    <span style={{ color: "var(--text-dim)" }}>Hit:</span>
-                                    <span style={{ fontWeight: 700, color: prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--red)" }}>
-                                      {prop.hitRateLast10}/10
+                                    <span style={{ color: "var(--text-dim)" }}>AVG:</span>
+                                    <span style={{ fontWeight: 700, color: parseFloat(prop.seasonAvg) >= 0.300 ? "var(--green)" : parseFloat(prop.seasonAvg) >= 0.250 ? "var(--text)" : "var(--text-dim)" }}>
+                                      {prop.seasonAvg}
                                     </span>
                                   </div>
                                 )}
-                                <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" }}>
-                                  <span style={{ color: "var(--text-dim)" }}>Conf:</span>
-                                  <span style={{ fontWeight: 700, color: prop.confidence >= 8 ? "var(--green)" : "var(--text-dim)" }}>
-                                    {prop.confidence}/10
-                                  </span>
-                                </div>
+                                {prop.last10HitRate ? (
+                                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: (prop.sport === "MLB" && prop.seasonAvg) ? 0 : "auto" }}>
+                                    <TargetIcon size={12} color="var(--green)" />
+                                    <span style={{ color: "var(--text-dim)" }}>L10:</span>
+                                    <span style={{ fontWeight: 700, color: prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--text-dim)" }}>
+                                      {prop.last10HitRate}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" }}>
+                                    <span style={{ color: "var(--text-dim)" }}>Conf:</span>
+                                    <span style={{ fontWeight: 700, color: prop.confidence >= 8 ? "var(--green)" : "var(--text-dim)" }}>
+                                      {prop.confidence}/10
+                                    </span>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Expanded Details */}

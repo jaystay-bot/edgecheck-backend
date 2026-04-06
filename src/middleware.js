@@ -1,67 +1,45 @@
 import { NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = [
-  "/",
-  "/sign-in",
-  "/sign-up",
-  "/verify-email",
-  "/api/webhooks",
-  "/api/batch-analyze",
-];
-
-function isPublicRoute(pathname) {
-  return PUBLIC_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
-  );
-}
-
-export default async function middleware(request) {
-  const { pathname } = request.nextUrl;
-
-  // If Clerk is not configured, only allow public routes
+export default async function middleware(req) {
+  // Skip Clerk entirely if not configured
   if (!process.env.CLERK_SECRET_KEY) {
-    if (isPublicRoute(pathname)) {
-      return NextResponse.next();
-    }
-    // Redirect to home if trying to access protected route without Clerk
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.next();
   }
 
-  // Clerk is configured — use Clerk middleware
-  const { clerkMiddleware, createRouteMatcher } = await import(
-    "@clerk/nextjs/server"
-  );
+  // Dynamically load Clerk only when key exists
+  const { clerkMiddleware, createRouteMatcher } = require("@clerk/nextjs/server");
 
-  const isPublicClerkRoute = createRouteMatcher([
+  // Routes that don't require authentication (Clerk still runs but won't redirect)
+  const isPublicRoute = createRouteMatcher([
     "/",
     "/sign-in(.*)",
     "/sign-up(.*)",
     "/verify-email",
     "/api/webhooks(.*)",
-    "/api/batch-analyze",
+    "/api/batch-analyze(.*)",
+    "/api/games(.*)",
+    "/api/props(.*)",
+    ...(process.env.NODE_ENV === "development" ? ["/dashboard(.*)"] : []),
   ]);
 
   return clerkMiddleware(async (auth, req) => {
-    const { pathname: path } = req.nextUrl;
+    const { pathname } = req.nextUrl;
 
-    // Allow public routes
-    if (isPublicClerkRoute(req)) {
+    // Public routes: Clerk runs (context available) but no auth required
+    if (isPublicRoute(req)) {
       return NextResponse.next();
     }
 
-    // Get auth state
+    // Protected routes: require authentication
     const { userId } = await auth();
-
-    // Not signed in → redirect to sign-in
     if (!userId) {
       const signInUrl = new URL("/sign-in", req.url);
-      signInUrl.searchParams.set("redirect_url", path);
+      signInUrl.searchParams.set("redirect_url", pathname);
       return NextResponse.redirect(signInUrl);
     }
 
-    // Stripe subscription check happens on API calls (analyze)
     return NextResponse.next();
-  })(request);
+  })(req);
 }
 
 export const config = {

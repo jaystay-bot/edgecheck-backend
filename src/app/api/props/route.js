@@ -1,4 +1,3 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { hasActiveSubscription } from "../../../lib/subscription";
 import { enrichMLBProps } from "../../../lib/mlbStats";
@@ -11,7 +10,7 @@ export const maxDuration = 60;
 const MIN_EDGE_PERCENT = 0;
 
 // Minimum heater score to display a prop (filters weak plays)
-const MIN_HEATER_SCORE = 7.0;
+const MIN_HEATER_SCORE = 5.0;
 
 // Sport and category configuration with STRICT limits per user requirements
 const SPORT_CONFIG = {
@@ -23,14 +22,14 @@ const SPORT_CONFIG = {
         id: "home_runs",
         name: "Home Run Props",
         markets: ["batter_home_runs"],
-        maxProps: 3, // Max 3 HR props per requirements
+        maxProps: 20,
         filterFn: () => true,
       },
       {
         id: "hits",
         name: "Hit Props",
         markets: ["batter_hits"],
-        maxProps: 5, // Reduced to show only top-quality plays
+        maxProps: 50,
         filterFn: (prop) => prop.overUnder === "Over",
       },
     ],
@@ -38,6 +37,11 @@ const SPORT_CONFIG = {
   nhl: {
     oddsKey: "icehockey_nhl",
     cacheTTL: 30 * 60 * 1000,
+    // NHL uses game-level grouping, not category-level
+    // Allowed prop types: goals, assists, shots, points (NO blocked shots)
+    allowedMarkets: ["player_goals", "player_assists", "player_shots_on_goal", "player_points"],
+    maxPropsPerGame: 15, // Show top 10-20 props per game
+    minHitRate: 5, // Prioritize props with >= 5/10 hit rate
     categories: [
       {
         id: "goals",
@@ -61,9 +65,9 @@ const SPORT_CONFIG = {
         filterFn: () => true,
       },
       {
-        id: "blocked_shots",
-        name: "Blocked Shots",
-        markets: ["player_blocked_shots"],
+        id: "points",
+        name: "Points",
+        markets: ["player_points"],
         maxProps: 10,
         filterFn: () => true,
       },
@@ -267,6 +271,7 @@ function scoreMLBProp(prop, bestOdds, edge) {
 
   // === EDGE SCORE ===
   const edgeNum = parseFloat(edge) || 0;
+  const isSingleSource = (prop.odds || []).length === 1;
   if (edgeNum >= 5) {
     edgeScore = 1.5;
     factors.push(`${edgeNum.toFixed(1)}% edge vs implied odds`);
@@ -275,11 +280,12 @@ function scoreMLBProp(prop, bestOdds, edge) {
     factors.push(`${edgeNum.toFixed(1)}% edge`);
   } else if (edgeNum >= 0) {
     edgeScore = 0.5;
-  } else {
-    // Negative edge
+  } else if (!isSingleSource) {
+    // Only penalize negative edge for multi-source props (meaningful comparison)
     riskPenalty += 0.5;
     risks.push("Negative edge vs market");
   }
+  // Single-source props: no edge penalty (edge calc not meaningful with one bookmaker)
 
   // === MLB CONTEXT SCORE (from MLB Stats API) ===
   // Lineup position bonus (top of order = more ABs) - AMPLIFIED for differentiation
@@ -458,22 +464,29 @@ function scoreNBAProp(prop, bestOdds, edge) {
   let last10HitRate = null;
   let last10Results = null;
   if (last10Games.length > 0) {
-    // NBA prop types
-    const isPoints = propType.includes("Points") || propType === "player_points";
+    // NBA prop types - check specific types first to avoid substring overlap
+    // "3-Pointers" contains "Points", "Shots on Goal" contains "Goals"
+    const isThrees = propType.includes("3-Pointer") || propType === "player_threes";
+    const isShots = propType.includes("Shots") || propType === "player_shots_on_goal";
+    const isPoints = !isThrees && (propType.includes("Points") || propType === "player_points");
+    const isGoals = !isShots && (propType.includes("Goals") || propType === "player_goals");
     const isRebounds = propType.includes("Rebounds") || propType === "player_rebounds";
     const isAssists = propType.includes("Assists") || propType === "player_assists";
-    // NHL prop types
-    const isGoals = propType.includes("Goals") || propType === "player_goals";
-    const isShots = propType.includes("Shots") || propType === "player_shots_on_goal";
+    const isBlocks = propType.includes("Blocks") || propType === "player_blocks";
+    const isSteals = propType.includes("Steals") || propType === "player_steals";
 
     const results = last10Games.map((g) => {
       let statValue = 0;
-      // NBA stats
-      if (isPoints) statValue = g.points || 0;
-      else if (isRebounds) statValue = g.rebounds || 0;
-      // NHL stats (goals, assists also used for NHL)
-      else if (isGoals) statValue = g.goals || 0;
+      // Check specific types first to avoid overlap
+      if (isThrees) statValue = g.threes || 0;
       else if (isShots) statValue = g.shots || 0;
+      // NBA stats
+      else if (isPoints) statValue = g.points || 0;
+      else if (isRebounds) statValue = g.rebounds || 0;
+      else if (isBlocks) statValue = g.blocks || 0;
+      else if (isSteals) statValue = g.steals || 0;
+      // NHL stats
+      else if (isGoals) statValue = g.goals || 0;
       // Assists works for both NBA and NHL
       else if (isAssists) statValue = g.assists || 0;
       // Default fallback
@@ -492,10 +505,37 @@ function scoreNBAProp(prop, bestOdds, edge) {
   let oddsValueScore = 0;
   let edgeScore = 0;
   let contextScore = 0;
+  let hitRateScore = 0;
   let riskPenalty = 0;
 
   const factors = [];
   const risks = [];
+
+  // === HIT RATE SCORE (primary factor - actual performance) ===
+  if (last10HitRate) {
+    const hitCount = parseInt(last10HitRate.split("/")[0], 10);
+    if (hitCount >= 8) {
+      hitRateScore = 3.0;
+      factors.push(`Elite L10 (${last10HitRate}) - consistent performer`);
+    } else if (hitCount >= 7) {
+      hitRateScore = 2.0;
+      factors.push(`Strong L10 (${last10HitRate})`);
+    } else if (hitCount >= 6) {
+      hitRateScore = 1.0;
+      factors.push(`Solid L10 (${last10HitRate})`);
+    } else if (hitCount >= 5) {
+      hitRateScore = 0.5;
+      factors.push(`Average L10 (${last10HitRate})`);
+    } else if (hitCount >= 4) {
+      hitRateScore = 0;
+      risks.push(`Below average L10 (${last10HitRate})`);
+      riskPenalty += 0.5;
+    } else {
+      hitRateScore = 0;
+      risks.push(`Weak L10 (${last10HitRate}) - frequently misses`);
+      riskPenalty += 1.5;
+    }
+  }
 
   // === LINE VALUE SCORE (NBA/NHL-specific thresholds) ===
   const isPoints = propType.includes("Points") || propType === "player_points";
@@ -617,7 +657,8 @@ function scoreNBAProp(prop, bestOdds, edge) {
   }
 
   // === CALCULATE FINAL SCORE ===
-  const rawScore = 5.0 + lineValueScore + oddsValueScore + edgeScore + contextScore - riskPenalty;
+  // hitRateScore is primary factor - actual L10 performance matters most
+  const rawScore = 5.0 + hitRateScore + lineValueScore + oddsValueScore + edgeScore + contextScore - riskPenalty;
   const heaterScore = Math.min(10, Math.max(1, Math.round(rawScore * 10) / 10));
 
   const confidence = Math.min(10, Math.max(1, Math.round(
@@ -679,6 +720,7 @@ function scoreNBAProp(prop, bestOdds, edge) {
     hitRateLast10, // numeric for UI (e.g., 7)
     scoreBreakdown: {
       base: 5.0,
+      hitRate: hitRateScore,
       lineValue: lineValueScore,
       oddsValue: oddsValueScore,
       edge: edgeScore,
@@ -871,7 +913,33 @@ async function fetchNBAPropsFromUnderdog() {
       // Must be NBA game and not a combo prop
       if (game?.sport_id !== "NBA" || subheader.includes("+")) continue;
 
+      // Skip non-full-game props (quarters, halves, alt lines, overtime)
+      const subheaderLower = subheader.toLowerCase();
+      if (
+        subheaderLower.includes("1q") ||
+        subheaderLower.includes("2q") ||
+        subheaderLower.includes("3q") ||
+        subheaderLower.includes("4q") ||
+        subheaderLower.includes("1h") ||
+        subheaderLower.includes("2h") ||
+        subheaderLower.includes("1st quarter") ||
+        subheaderLower.includes("2nd quarter") ||
+        subheaderLower.includes("3rd quarter") ||
+        subheaderLower.includes("4th quarter") ||
+        subheaderLower.includes("1st half") ||
+        subheaderLower.includes("2nd half") ||
+        subheaderLower.includes("first half") ||
+        subheaderLower.includes("second half") ||
+        subheaderLower.includes("alt ") ||
+        subheaderLower.includes("alternate") ||
+        subheaderLower.includes("overtime") ||
+        subheaderLower.includes(" ot")
+      ) {
+        continue;
+      }
+
       // Match stat type from subheader (e.g., "Higher 28.5 Points" -> "Points")
+      // Only match full-game stats - subheader must end exactly with stat name
       let matchedStat = null;
       for (const statName of Object.keys(nbaStatMap)) {
         if (subheader.endsWith(` ${statName}`)) {
@@ -924,7 +992,8 @@ async function fetchNBAPropsFromUnderdog() {
     }
     console.log(`[Props] Parsed ${nbaProps.length} NBA props from Underdog:`, statCounts);
 
-    // Enrich with ESPN game context (matchup, time)
+    // Enrich with ESPN game context and player stats (batched by unique player)
+    // Wait for full enrichment to get L10 data - batch optimization keeps this fast
     const enrichedProps = await enrichNBAProps(nbaProps);
     return enrichedProps;
   } catch (err) {
@@ -969,12 +1038,13 @@ async function fetchNHLPropsFromUnderdog() {
     const nhlProps = [];
 
     // Map Underdog stat names to our market keys
+    // NOTE: Blocked Shots excluded per user requirements (only shots/goals/assists/points)
     const nhlStatMap = {
       "Goals": { marketKey: "player_goals", propType: "Goals", idPrefix: "goals" },
       "Assists": { marketKey: "player_assists", propType: "Assists", idPrefix: "ast" },
+      "Points": { marketKey: "player_points", propType: "Points", idPrefix: "pts" },
       "Shots on Goal": { marketKey: "player_shots_on_goal", propType: "Shots on Goal", idPrefix: "sog" },
       "Shots on Target": { marketKey: "player_shots_on_goal", propType: "Shots on Goal", idPrefix: "sog" },
-      "Blocked Shots": { marketKey: "player_blocked_shots", propType: "Blocked Shots", idPrefix: "blk" },
     };
 
     for (const line of lines) {
@@ -1094,29 +1164,44 @@ async function fetchMLBPropsFromPrizePicks() {
       const playerId = proj.relationships?.new_player?.data?.id;
       const player = playersById[playerId];
       const playerName = player?.attributes?.name || "Unknown";
-      const team = player?.attributes?.team || "";
 
       const gameId = proj.relationships?.projection_game?.data?.id;
       const game = gamesById[gameId];
-      const opponent = game?.attributes?.away_team === team
-        ? game?.attributes?.home_team
-        : game?.attributes?.away_team || "";
+
+      // Skip props without valid game data (prevents "AWY @ HOM" fallback)
+      const homeTeam = game?.attributes?.home_team;
+      const awayTeam = game?.attributes?.away_team;
+      const startTime = game?.attributes?.start_time;
+      if (!homeTeam || !awayTeam) continue;
 
       const isHR = statType.includes("Home Run");
+      // Format gameTime to match Underdog format (e.g., "Fri 07:00pm")
+      let gameTime = null;
+      if (startTime) {
+        const dt = new Date(startTime);
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const day = days[dt.getDay()];
+        const hours = dt.getHours();
+        const mins = dt.getMinutes().toString().padStart(2, "0");
+        const ampm = hours >= 12 ? "pm" : "am";
+        const hour12 = hours % 12 || 12;
+        gameTime = `${day} ${hour12.toString().padStart(2, "0")}:${mins}${ampm}`;
+      }
       mlbProps.push({
         id: `prizepicks_${proj.id}`,
         sport: "MLB",
         eventId: proj.id,
-        homeTeam: game?.attributes?.home_team || "MLB",
-        awayTeam: game?.attributes?.away_team || "Away",
-        commenceTime: game?.attributes?.start_time || new Date().toISOString(),
+        homeTeam,
+        awayTeam,
+        commenceTime: startTime || new Date().toISOString(),
         playerName,
         propType: isHR ? "Home Runs" : "Hits",
         marketKey: isHR ? "batter_home_runs" : "batter_hits",
         line,
         overUnder: "Over",
         odds: [{ bookmaker: "PrizePicks", price: -110 }], // PrizePicks doesn't show odds
-        matchup: `${game?.attributes?.away_team || "AWY"} @ ${game?.attributes?.home_team || "HOM"}`,
+        matchup: `${awayTeam} @ ${homeTeam}`,
+        gameTime,
         source: "PrizePicks",
       });
     }
@@ -1208,21 +1293,22 @@ async function fetchNBAPropsFromPrizePicks() {
 async function fetchAllPropsForSport(sportKey, apiKey) {
   // Use Underdog + PrizePicks for MLB and NBA props (merge sources)
   if (sportKey === "mlb") {
-    const [underdogProps, prizePicksProps] = await Promise.all([
+    const [underdogProps, prizePicksPropsRaw] = await Promise.all([
       fetchMLBPropsFromUnderdog(),
       fetchMLBPropsFromPrizePicks(),
     ]);
-    // Merge: Underdog is primary, PrizePicks supplements
+    // Merge: Underdog is primary (already enriched), PrizePicks supplements
     const merged = [...underdogProps];
     // Add PrizePicks props that don't duplicate Underdog (by player + line)
     const existingKeys = new Set(underdogProps.map(p => `${p.playerName}_${p.line}_${p.marketKey}`));
-    for (const prop of prizePicksProps) {
+    const prizePicksToAdd = prizePicksPropsRaw.filter(prop => {
       const key = `${prop.playerName}_${prop.line}_${prop.marketKey}`;
-      if (!existingKeys.has(key)) {
-        merged.push(prop);
-      }
-    }
-    console.log(`[Props] Merged ${underdogProps.length} Underdog + ${prizePicksProps.length} PrizePicks = ${merged.length} total MLB props`);
+      return !existingKeys.has(key);
+    });
+    // Enrich PrizePicks props before adding (so they have L10 data)
+    const enrichedPrizePicks = prizePicksToAdd.length > 0 ? await enrichMLBProps(prizePicksToAdd) : [];
+    merged.push(...enrichedPrizePicks);
+    console.log(`[Props] Merged ${underdogProps.length} Underdog + ${enrichedPrizePicks.length} PrizePicks = ${merged.length} total MLB props`);
     return merged;
   }
   if (sportKey === "nba") {
@@ -1404,6 +1490,85 @@ function organizeIntoCategories(allProps, sportKey) {
   return categories;
 }
 
+// Organize NHL props by game with top 10-20 per game, ranked by hit rate then score
+function organizeNHLByGame(allProps) {
+  const config = SPORT_CONFIG.nhl;
+  const allowedMarkets = config.allowedMarkets || [];
+  const maxPerGame = config.maxPropsPerGame || 15;
+  const minHitRate = config.minHitRate || 5;
+
+  // Filter to allowed markets only (no blocked shots)
+  let filteredProps = allProps.filter((prop) => allowedMarkets.includes(prop.marketKey));
+
+  // Add edge data and scoring
+  filteredProps = addEdgeDataToProps(filteredProps);
+
+  // Group props by game (using matchup or homeTeam vs awayTeam)
+  const gameGroups = {};
+  for (const prop of filteredProps) {
+    const gameKey = prop.matchup || `${prop.awayTeam} @ ${prop.homeTeam}`;
+    if (!gameGroups[gameKey]) {
+      gameGroups[gameKey] = [];
+    }
+    gameGroups[gameKey].push(prop);
+  }
+
+  // Process each game's props
+  const gameCategories = [];
+  for (const [gameKey, props] of Object.entries(gameGroups)) {
+    // Parse hit rate from "X/10" format
+    const getHitCount = (prop) => {
+      if (!prop.hitRateLast10) return 0;
+      const match = prop.hitRateLast10.match(/^(\d+)\/\d+$/);
+      return match ? parseInt(match[1], 10) : 0;
+    };
+
+    // Sort by: hit rate >= 5 first, then by heaterScore, then by edge
+    const sorted = props.sort((a, b) => {
+      const aHits = getHitCount(a);
+      const bHits = getHitCount(b);
+      const aHasGoodHitRate = aHits >= minHitRate;
+      const bHasGoodHitRate = bHits >= minHitRate;
+
+      // Primary: good hit rate (>= 5/10) first
+      if (aHasGoodHitRate !== bHasGoodHitRate) {
+        return bHasGoodHitRate ? 1 : -1;
+      }
+
+      // Secondary: higher hit rate
+      if (aHits !== bHits) {
+        return bHits - aHits;
+      }
+
+      // Tertiary: heaterScore
+      const scoreDiff = (b.heaterScore || 0) - (a.heaterScore || 0);
+      if (scoreDiff !== 0) return scoreDiff;
+
+      // Quaternary: edge
+      return parseFloat(b.edge || 0) - parseFloat(a.edge || 0);
+    });
+
+    // Take top N props for this game
+    const topProps = sorted.slice(0, maxPerGame);
+
+    gameCategories.push({
+      id: `game_${gameKey.replace(/[^a-zA-Z0-9]/g, "_")}`,
+      name: gameKey,
+      sport: "NHL",
+      isGameGroup: true, // Flag for UI to know this is game-level grouping
+      props: topProps,
+      totalAvailable: props.length,
+      error: topProps.length === 0 ? `No props available for ${gameKey}` : null,
+    });
+  }
+
+  // Sort games by total props (most props first)
+  gameCategories.sort((a, b) => b.props.length - a.props.length);
+
+  console.log(`[Props] NHL: Organized ${filteredProps.length} props into ${gameCategories.length} games (max ${maxPerGame}/game)`);
+  return gameCategories;
+}
+
 // Add edge data to props and filter by minimum edge
 function addEdgeDataToProps(props) {
   return props
@@ -1468,8 +1633,13 @@ async function getPropsForSport(sportKey, apiKey) {
     }));
   }
 
-  // Organize into categories with edge-based filtering
-  const categories = organizeIntoCategories(allProps, sportKey);
+  // NHL uses game-level grouping; other sports use category-level
+  let categories;
+  if (sportKey === "nhl") {
+    categories = organizeNHLByGame(allProps);
+  } else {
+    categories = organizeIntoCategories(allProps, sportKey);
+  }
 
   // Cache the results
   propsCache[sportKey] = { data: categories, timestamp: now };
@@ -1481,19 +1651,26 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const sport = (searchParams.get("sport") || "mlb").toLowerCase();
 
-  // Check auth
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
-  }
+  let isPaidUser = true; // Default to paid for local dev without auth
 
-  const user = await currentUser();
-  const email = user?.primaryEmailAddress?.emailAddress;
-  if (!email) {
-    return NextResponse.json({ error: "No email found", code: "NO_EMAIL" }, { status: 400 });
-  }
+  // Check auth only if Clerk is configured
+  if (process.env.CLERK_SECRET_KEY) {
+    const { auth, currentUser } = require("@clerk/nextjs/server");
+    const { userId } = await auth();
 
-  const isPaidUser = await hasActiveSubscription(email);
+    // Public access allowed - unauthenticated users get free tier
+    if (!userId) {
+      isPaidUser = false;
+    } else {
+      const user = await currentUser();
+      const email = user?.primaryEmailAddress?.emailAddress;
+      if (email) {
+        isPaidUser = await hasActiveSubscription(email);
+      } else {
+        isPaidUser = false;
+      }
+    }
+  }
   const apiKey = getOddsApiKey();
 
   // Get props for requested sport(s)
@@ -1530,7 +1707,17 @@ export async function GET(request) {
           line: prop.line,
           overUnder: prop.overUnder,
           bestOdds: prop.bestOdds,
-          // Strip: impliedProbability, modelProbability, edge, odds
+          // Include event metadata for all users
+          matchup: prop.matchup,
+          gameTime: prop.gameTime,
+          fullMatchup: prop.fullMatchup,
+          // Include L10 stats for all users (visible in UI)
+          last10HitRate: prop.last10HitRate,
+          hitRateLast10: prop.hitRateLast10,
+          last10Results: prop.last10Results,
+          seasonAvg: prop.seasonAvg,
+          tier: prop.tier,
+          // Strip: impliedProbability, modelProbability, edge, odds, heaterScore, confidence
         })),
       };
     }
@@ -1550,14 +1737,12 @@ export async function GET(request) {
     // Flatten all props from all categories
     const allProps = allCategories.flatMap((cat) => cat.props || []);
 
-    // Filter for quality props only (strict criteria, no negative EV)
+    // Filter for quality props (relaxed criteria to show more plays)
     const qualityProps = allProps.filter((p) => {
       const score = p.heaterScore || 0;
-      const edge = parseFloat(p.edge || 0);
-      const ev = parseFloat(p.ev || 0);
       const conf = parseFloat(p.confidence || 0);
       const isOut = p.injuryStatus === "out";
-      return score >= 8.0 && edge > 0 && ev > 0 && conf >= 7 && !isOut;
+      return score >= 6.0 && conf >= 5 && !isOut;
     });
 
     // Sort by heaterScore (desc), then edge (desc)
@@ -1571,7 +1756,7 @@ export async function GET(request) {
 
     top5 = sorted.slice(0, 5);
     const outCount = allProps.filter((p) => p.injuryStatus === "out").length;
-    console.log(`[Props] Top 5 (strict criteria): ${top5.length}/${allProps.length} qualify (heater>=8, edge>0, EV>0, conf>=7), ${outCount} OUT excluded`);
+    console.log(`[Props] Top 5: ${top5.length}/${allProps.length} qualify (heater>=6, conf>=5), ${outCount} OUT excluded`);
   }
 
   return NextResponse.json({
