@@ -400,8 +400,8 @@ export async function enrichNBAProps(props) {
   if (!props || props.length === 0) return props;
 
   const startTime = Date.now();
-  const MAX_ENRICHMENT_TIME = 15000; // 15 seconds max for all enrichment
-  const MAX_PLAYERS_TO_FETCH = 30; // Limit player stats fetches (increased after disabling injuries)
+  const MAX_ENRICHMENT_TIME = 16500; // 16.5 seconds max (+1.5s for better L10 coverage)
+  const MAX_PLAYERS_TO_FETCH = 35; // Increased to use extra time budget
 
   console.log(`[NBAStats] Enriching ${props.length} NBA props (max ${MAX_ENRICHMENT_TIME}ms budget)...`);
 

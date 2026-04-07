@@ -1,0 +1,76 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]:
+      - heading "EdgeCheck" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Sports Betting Edge Analyzer
+    - generic [ref=e7]:
+      - button "Games" [ref=e8] [cursor=pointer]
+      - button "Props" [ref=e9] [cursor=pointer]:
+        - img [ref=e10]
+        - text: Props
+      - button "Line Watch" [ref=e12] [cursor=pointer]:
+        - img [ref=e13]
+        - text: Line Watch
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - img [ref=e20]
+          - generic [ref=e22]: Best Play of the Day
+          - generic [ref=e23]: NBA
+        - generic [ref=e24]:
+          - generic [ref=e25]: Updated 12 minutes ago
+          - button "Refresh" [ref=e26] [cursor=pointer]:
+            - img [ref=e27]
+            - text: Refresh
+      - generic [ref=e32]:
+        - generic [ref=e33]: MEM @ MIL
+        - generic [ref=e34]:
+          - generic [ref=e35]: Kyle Kuzma
+          - generic [ref=e37]:
+            - generic [ref=e38]:
+              - img [ref=e39]
+              - generic [ref=e41]: 9.5/10
+              - generic "Heater Score rates the strength of this bet 1-10 based on ATS records, line value, matchup data, and sharp money indicators. 8+ = strong edge." [ref=e42]:
+                - img [ref=e43]
+            - generic [ref=e45]: HEATER SCORE
+        - generic [ref=e46]: "Points: Over 4.5 Points-110"
+      - generic [ref=e47]:
+        - generic [ref=e48]:
+          - generic [ref=e49]: Edge
+          - generic [ref=e50]: +22.6%
+        - generic [ref=e51]:
+          - generic [ref=e52]: EV
+          - generic [ref=e53]: +22.6%
+      - generic [ref=e54]:
+        - generic [ref=e55]: Analysis
+        - paragraph [ref=e56]: "Kyle Kuzma at -110. Implied: 52%. Low line (4.5) - role player threshold."
+      - generic [ref=e57]:
+        - generic [ref=e58]: Key Factors
+        - list [ref=e59]:
+          - listitem [ref=e60]: Low line (4.5) - role player threshold
+          - listitem [ref=e61]: Home game - slight scoring boost
+          - listitem [ref=e62]: Strong odds (-110)
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - img [ref=e65]
+          - generic [ref=e67]: What Could Go Wrong
+        - paragraph [ref=e68]: Normal variance
+      - generic [ref=e70]:
+        - generic [ref=e71]: "Confidence:"
+        - generic [ref=e72]: 7/10
+    - generic [ref=e73]:
+      - button "NBA" [ref=e74] [cursor=pointer]
+      - button "NFL" [ref=e75] [cursor=pointer]
+      - button "MLB" [ref=e76] [cursor=pointer]
+      - button "NHL" [ref=e77] [cursor=pointer]
+      - button "NCAAF" [ref=e78] [cursor=pointer]
+      - button "NCAAB" [ref=e79] [cursor=pointer]
+      - button "MLS" [ref=e80] [cursor=pointer]
+    - generic [ref=e82]:
+      - generic [ref=e83]: 🔥
+      - heading "Today's Heaters" [level=2] [ref=e84]
+    - generic [ref=e101]: Loading NBA games from ESPN...
+    - generic [ref=e103]:
+      - text: EdgeCheck — Data from ESPN. Independent matchup analysis.
+      - text: For entertainment purposes only. Please bet responsibly.
+  - alert [ref=e104]

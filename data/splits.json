@@ -1,66 +1,89 @@
 {
-  "timestamp": "2026-04-05T19:22:00.115Z",
+  "timestamp": "2026-04-06T11:52:06.802Z",
   "count": 10,
+  "bySport": {
+    "MLB": 10
+  },
   "splits": [
     {
-      "game": "LA Dodgers @ WAS Nationals",
-      "team": "LA Dodgers",
-      "betPercent": 14,
-      "handlePercent": 9
-    },
-    {
-      "game": "PHI Phillies @ COL Rockies",
-      "team": "PHI Phillies",
-      "betPercent": 24,
-      "handlePercent": 11
-    },
-    {
-      "game": "MIA Marlins @ NY Yankees",
-      "team": "MIA Marlins",
-      "betPercent": 86,
-      "handlePercent": 93
-    },
-    {
-      "game": "HOU Astros @ Athletics",
-      "team": "HOU Astros",
-      "betPercent": 19,
-      "handlePercent": 18
-    },
-    {
-      "game": "NY Mets @ SF Giants",
-      "team": "NY Mets",
-      "betPercent": 41,
+      "sport": "MLB",
+      "game": "CHC @ TB",
+      "awayTeam": "CHC",
+      "homeTeam": "TB",
+      "betPercent": 57,
       "handlePercent": 41
     },
     {
-      "game": "SEA Mariners @ LA Angels",
-      "team": "SEA Mariners",
-      "betPercent": 19,
-      "handlePercent": 11
+      "sport": "MLB",
+      "game": "KC @ CLE",
+      "awayTeam": "KC",
+      "homeTeam": "CLE",
+      "betPercent": 71,
+      "handlePercent": 60
     },
     {
-      "game": "ATL Braves @ ARI Diamondbacks",
-      "team": "ATL Braves",
+      "sport": "MLB",
+      "game": "SD @ PIT",
+      "awayTeam": "SD",
+      "homeTeam": "PIT",
+      "betPercent": 72,
+      "handlePercent": 65
+    },
+    {
+      "sport": "MLB",
+      "game": "CIN @ MIA",
+      "awayTeam": "CIN",
+      "homeTeam": "MIA",
+      "betPercent": 55,
+      "handlePercent": 60
+    },
+    {
+      "sport": "MLB",
+      "game": "MIL @ BOS",
+      "awayTeam": "MIL",
+      "homeTeam": "BOS",
+      "betPercent": 31,
+      "handlePercent": 32
+    },
+    {
+      "sport": "MLB",
+      "game": "STL @ WSH",
+      "awayTeam": "STL",
+      "homeTeam": "WSH",
+      "betPercent": 55,
+      "handlePercent": 51
+    },
+    {
+      "sport": "MLB",
+      "game": "LAD @ TOR",
+      "awayTeam": "LAD",
+      "homeTeam": "TOR",
       "betPercent": 35,
-      "handlePercent": 33
+      "handlePercent": 27
     },
     {
-      "game": "ATL Braves",
-      "team": "ATL Bra",
-      "betPercent": 65,
-      "handlePercent": 67
+      "sport": "MLB",
+      "game": "DET @ MIN",
+      "awayTeam": "DET",
+      "homeTeam": "MIN",
+      "betPercent": 34,
+      "handlePercent": 39
     },
     {
-      "game": "CHI Cubs @ CLE Guardians",
-      "team": "CHI Cubs",
-      "betPercent": 35,
-      "handlePercent": 30
+      "sport": "MLB",
+      "game": "BAL @ CWS",
+      "awayTeam": "BAL",
+      "homeTeam": "CWS",
+      "betPercent": 27,
+      "handlePercent": 35
     },
     {
-      "game": "STL Cardinals @ DET Tigers",
-      "team": "STL Cardinals",
-      "betPercent": 69,
-      "handlePercent": 82
+      "sport": "MLB",
+      "game": "SEA @ TEX",
+      "awayTeam": "SEA",
+      "homeTeam": "TEX",
+      "betPercent": 50,
+      "handlePercent": 56
     }
   ]
 }

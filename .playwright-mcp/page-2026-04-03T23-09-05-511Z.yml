@@ -1,0 +1,262 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]:
+      - heading "EdgeCheck" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Sports Betting Edge Analyzer
+    - generic [ref=e7]:
+      - button "Games" [ref=e8] [cursor=pointer]
+      - button "Props" [ref=e9] [cursor=pointer]:
+        - img [ref=e10]
+        - text: Props
+      - button "Line Watch" [ref=e12] [cursor=pointer]:
+        - img [ref=e13]
+        - text: Line Watch
+    - generic [ref=e345]:
+      - generic [ref=e346]:
+        - img [ref=e347]
+        - heading "Smart Props" [level=2] [ref=e348]
+      - paragraph [ref=e349]: Top-ranked props by category. Cached 4 hours. One API call per sport.
+    - generic [ref=e350]:
+      - button "MLB" [ref=e351] [cursor=pointer]
+      - button "NBA" [active] [ref=e352] [cursor=pointer]
+      - button "NHL" [ref=e353] [cursor=pointer]
+    - generic [ref=e597]:
+      - generic [ref=e598]:
+        - img [ref=e599]
+        - heading "Points Props" [level=3] [ref=e601]
+        - generic [ref=e602]: (10 props)
+      - generic [ref=e603]:
+        - generic [ref=e604] [cursor=pointer]:
+          - generic [ref=e605]:
+            - generic [ref=e606]:
+              - generic [ref=e607]:
+                - generic [ref=e608]: Top Pick
+                - generic [ref=e609]:
+                  - img [ref=e610]
+                  - generic [ref=e613]: 7:00 PM
+              - generic [ref=e614]: MIN @ PHI
+              - generic [ref=e615]:
+                - img [ref=e616]
+                - generic [ref=e619]: Joel Embiid
+              - generic [ref=e620]: Over 14.5 Points-112
+              - generic [ref=e621]: "-112 means bet $112 to win $100"
+            - generic [ref=e622]:
+              - generic [ref=e623]:
+                - img [ref=e624]
+                - text: "9"
+              - generic [ref=e626]: HEATER
+              - generic [ref=e627]: tap for details
+          - generic [ref=e629]:
+            - generic [ref=e630]: "Confidence:"
+            - generic [ref=e631]: 7/10
+        - generic [ref=e632] [cursor=pointer]:
+          - generic [ref=e633]:
+            - generic [ref=e634]:
+              - generic [ref=e635]:
+                - generic [ref=e636]: Top Pick
+                - generic [ref=e637]:
+                  - img [ref=e638]
+                  - generic [ref=e641]: 7:00 PM
+              - generic [ref=e642]: MIN @ PHI
+              - generic [ref=e643]:
+                - img [ref=e644]
+                - generic [ref=e647]: Tyrese Maxey
+              - generic [ref=e648]: Over 13.5 Points-115
+              - generic [ref=e649]: "-115 means bet $115 to win $100"
+            - generic [ref=e650]:
+              - generic [ref=e651]:
+                - img [ref=e652]
+                - text: "9"
+              - generic [ref=e654]: HEATER
+              - generic [ref=e655]: tap for details
+          - generic [ref=e657]:
+            - generic [ref=e658]: "Confidence:"
+            - generic [ref=e659]: 7/10
+        - generic [ref=e660] [cursor=pointer]:
+          - generic [ref=e661]:
+            - generic [ref=e662]:
+              - generic [ref=e663]:
+                - generic [ref=e664]: Top Pick
+                - generic [ref=e665]:
+                  - img [ref=e666]
+                  - generic [ref=e669]: 7:00 PM
+              - generic [ref=e670]: MIN @ PHI
+              - generic [ref=e671]:
+                - img [ref=e672]
+                - generic [ref=e675]: Kelly Oubre
+              - generic [ref=e676]: Over 9.5 Points-112
+              - generic [ref=e677]: "-112 means bet $112 to win $100"
+            - generic [ref=e678]:
+              - generic [ref=e679]:
+                - img [ref=e680]
+                - text: "9"
+              - generic [ref=e682]: HEATER
+              - generic [ref=e683]: tap for details
+          - generic [ref=e685]:
+            - generic [ref=e686]: "Confidence:"
+            - generic [ref=e687]: 7/10
+        - generic [ref=e688] [cursor=pointer]:
+          - generic [ref=e689]:
+            - generic [ref=e690]:
+              - generic [ref=e691]:
+                - generic [ref=e692]: Top Pick
+                - generic [ref=e693]:
+                  - img [ref=e694]
+                  - generic [ref=e697]: 7:00 PM
+              - generic [ref=e698]: IND @ CHA
+              - generic [ref=e699]:
+                - img [ref=e700]
+                - generic [ref=e703]: Ryan Kalkbrenner
+              - generic [ref=e704]: Over 9.5 Points-115
+              - generic [ref=e705]: "-115 means bet $115 to win $100"
+            - generic [ref=e706]:
+              - generic [ref=e707]:
+                - img [ref=e708]
+                - text: "9"
+              - generic [ref=e710]: HEATER
+              - generic [ref=e711]: tap for details
+          - generic [ref=e713]:
+            - generic [ref=e714]: "Confidence:"
+            - generic [ref=e715]: 7/10
+        - generic [ref=e716] [cursor=pointer]:
+          - generic [ref=e717]:
+            - generic [ref=e718]:
+              - generic [ref=e719]:
+                - generic [ref=e720]: Top Pick
+                - generic [ref=e721]:
+                  - img [ref=e722]
+                  - generic [ref=e725]: 7:00 PM
+              - generic [ref=e726]: IND @ CHA
+              - generic [ref=e727]:
+                - img [ref=e728]
+                - generic [ref=e731]: Sion James
+              - generic [ref=e732]: Over 5.5 Points-109
+              - generic [ref=e733]: "-109 means bet $109 to win $100"
+            - generic [ref=e734]:
+              - generic [ref=e735]:
+                - img [ref=e736]
+                - text: "9"
+              - generic [ref=e738]: HEATER
+              - generic [ref=e739]: tap for details
+          - generic [ref=e741]:
+            - generic [ref=e742]: "Confidence:"
+            - generic [ref=e743]: 7/10
+        - generic [ref=e744] [cursor=pointer]:
+          - generic [ref=e745]:
+            - generic [ref=e746]:
+              - generic [ref=e747]:
+                - generic [ref=e748]: Top Pick
+                - generic [ref=e749]:
+                  - img [ref=e750]
+                  - generic [ref=e753]: 7:30 PM
+              - generic [ref=e754]: CHI @ NY
+              - generic [ref=e755]:
+                - img [ref=e756]
+                - generic [ref=e759]: Mikal Bridges
+              - generic [ref=e760]: Over 15.5 Points-106
+              - generic [ref=e761]: "-106 means bet $106 to win $100"
+            - generic [ref=e762]:
+              - generic [ref=e763]:
+                - img [ref=e764]
+                - text: "9"
+              - generic [ref=e766]: HEATER
+              - generic [ref=e767]: tap for details
+          - generic [ref=e769]:
+            - generic [ref=e770]: "Confidence:"
+            - generic [ref=e771]: 7/10
+        - generic [ref=e772] [cursor=pointer]:
+          - generic [ref=e773]:
+            - generic [ref=e774]:
+              - generic [ref=e775]:
+                - generic [ref=e776]: Top Pick
+                - generic [ref=e777]:
+                  - img [ref=e778]
+                  - generic [ref=e781]: 7:30 PM
+              - generic [ref=e782]: CHI @ NY
+              - generic [ref=e783]:
+                - img [ref=e784]
+                - generic [ref=e787]: Mitchell Robinson
+              - generic [ref=e788]: Over 7.5 Points-106
+              - generic [ref=e789]: "-106 means bet $106 to win $100"
+            - generic [ref=e790]:
+              - generic [ref=e791]:
+                - img [ref=e792]
+                - text: "9"
+              - generic [ref=e794]: HEATER
+              - generic [ref=e795]: tap for details
+          - generic [ref=e797]:
+            - generic [ref=e798]: "Confidence:"
+            - generic [ref=e799]: 7/10
+        - generic [ref=e800] [cursor=pointer]:
+          - generic [ref=e801]:
+            - generic [ref=e802]:
+              - generic [ref=e803]:
+                - generic [ref=e804]: Top Pick
+                - generic [ref=e805]:
+                  - img [ref=e806]
+                  - generic [ref=e809]: 7:30 PM
+              - generic [ref=e810]: CHI @ NY
+              - generic [ref=e811]:
+                - img [ref=e812]
+                - generic [ref=e815]: Landry Shamet
+              - generic [ref=e816]: Over 9.5 Points-106
+              - generic [ref=e817]: "-106 means bet $106 to win $100"
+            - generic [ref=e818]:
+              - generic [ref=e819]:
+                - img [ref=e820]
+                - text: "9"
+              - generic [ref=e822]: HEATER
+              - generic [ref=e823]: tap for details
+          - generic [ref=e825]:
+            - generic [ref=e826]: "Confidence:"
+            - generic [ref=e827]: 7/10
+        - generic [ref=e828] [cursor=pointer]:
+          - generic [ref=e829]:
+            - generic [ref=e830]:
+              - generic [ref=e831]:
+                - generic [ref=e832]: Top Pick
+                - generic [ref=e833]:
+                  - img [ref=e834]
+                  - generic [ref=e837]: 7:30 PM
+              - generic [ref=e838]: ATL @ BKN
+              - generic [ref=e839]:
+                - img [ref=e840]
+                - generic [ref=e843]: Terance Mann
+              - generic [ref=e844]: Over 6.5 Points-110
+              - generic [ref=e845]: "-110 means bet $110 to win $100"
+            - generic [ref=e846]:
+              - generic [ref=e847]:
+                - img [ref=e848]
+                - text: "9"
+              - generic [ref=e850]: HEATER
+              - generic [ref=e851]: tap for details
+          - generic [ref=e853]:
+            - generic [ref=e854]: "Confidence:"
+            - generic [ref=e855]: 7/10
+        - generic [ref=e856] [cursor=pointer]:
+          - generic [ref=e857]:
+            - generic [ref=e858]:
+              - generic [ref=e859]:
+                - generic [ref=e860]: Top Pick
+                - generic [ref=e861]:
+                  - img [ref=e862]
+                  - generic [ref=e865]: 7:30 PM
+              - generic [ref=e866]: ATL @ BKN
+              - generic [ref=e867]:
+                - img [ref=e868]
+                - generic [ref=e871]: Ziaire Williams
+              - generic [ref=e872]: Over 10.5 Points-112
+              - generic [ref=e873]: "-112 means bet $112 to win $100"
+            - generic [ref=e874]:
+              - generic [ref=e875]:
+                - img [ref=e876]
+                - text: "9"
+              - generic [ref=e878]: HEATER
+              - generic [ref=e879]: tap for details
+          - generic [ref=e881]:
+            - generic [ref=e882]: "Confidence:"
+            - generic [ref=e883]: 7/10
+    - generic [ref=e54]:
+      - text: EdgeCheck — Data from ESPN. Independent matchup analysis.
+      - text: For entertainment purposes only. Please bet responsibly.
+  - alert [ref=e344]

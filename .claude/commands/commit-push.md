@@ -1,11 +1,9 @@
-Commit and push all current changes.
+Stage only the files changed for this task, create a concise git commit message, and push to the current branch.
 
-1. Run git status — review all changed files
-2. Run git diff — understand what changed
-3. Stage relevant files — avoid committing secrets or generated files
-4. Write clear commit message — focus on why, not what
-5. Create commit with Co-Authored-By trailer
-6. Push to remote — git push origin HEAD
-7. Report commit hash and push status
+Return:
+- branch name
+- files committed
+- commit message
+- push result
 
-Do not commit .env files or credentials. Stop if nothing to commit.
+Do not deploy. Stop after push.

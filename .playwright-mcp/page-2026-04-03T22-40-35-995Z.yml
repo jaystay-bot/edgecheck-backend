@@ -1,0 +1,51 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - heading "EdgeCheck" [level=1] [ref=e4]
+      - paragraph [ref=e5]: Sign in to access your dashboard
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e10]:
+          - heading "Sign in to edgecheck" [level=1] [ref=e11]
+          - paragraph [ref=e12]: Welcome back! Please sign in to continue
+        - generic [ref=e13]:
+          - button "Sign in with Google Continue with Google" [ref=e16] [cursor=pointer]:
+            - generic [ref=e17]:
+              - img "Sign in with Google" [ref=e19]
+              - generic [ref=e20]: Continue with Google
+          - paragraph [ref=e23]: or
+          - generic [ref=e25]:
+            - generic [ref=e26]:
+              - generic [ref=e29]:
+                - generic [ref=e31]: Email address
+                - textbox "Email address" [ref=e32]:
+                  - /placeholder: Enter your email address
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic: Password
+                    - generic:
+                      - textbox "Password":
+                        - /placeholder: Enter your password
+                      - button "Show password":
+                        - img
+            - button "Continue" [ref=e35] [cursor=pointer]:
+              - generic [ref=e36]:
+                - text: Continue
+                - img [ref=e37]
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - generic [ref=e41]: Don’t have an account?
+          - link "Sign up" [ref=e42] [cursor=pointer]:
+            - /url: https://edgecheck.app/sign-up
+        - generic [ref=e44]:
+          - generic [ref=e46]:
+            - paragraph [ref=e47]: Secured by
+            - link "Clerk logo" [ref=e48] [cursor=pointer]:
+              - /url: https://go.clerk.com/components
+              - img [ref=e49]
+          - paragraph [ref=e54]: Development mode
+    - link "Back to home" [ref=e56] [cursor=pointer]:
+      - /url: /
+  - alert [ref=e57]

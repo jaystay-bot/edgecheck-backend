@@ -1,0 +1,154 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]:
+      - heading "EdgeCheck" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Sports Betting Edge Analyzer
+    - generic [ref=e7]:
+      - button "Games" [ref=e8] [cursor=pointer]
+      - button "Props" [active] [ref=e9] [cursor=pointer]:
+        - img [ref=e10]
+        - text: Props
+      - button "Line Watch" [ref=e12] [cursor=pointer]:
+        - img [ref=e13]
+        - text: Line Watch
+    - generic [ref=e297]:
+      - generic [ref=e298]:
+        - img [ref=e299]
+        - heading "Smart Props" [level=2] [ref=e300]
+      - paragraph [ref=e301]: Top-ranked props by category. Cached 4 hours. One API call per sport.
+    - generic [ref=e302]:
+      - button "MLB" [ref=e303] [cursor=pointer]
+      - button "NBA" [ref=e304] [cursor=pointer]
+      - button "NHL" [ref=e305] [cursor=pointer]
+    - generic [ref=e306]:
+      - generic [ref=e307]:
+        - generic [ref=e308]:
+          - img [ref=e309]
+          - heading "Home Run Props" [level=3] [ref=e311]
+          - generic [ref=e312]: (0 props)
+        - generic [ref=e313]: No props in this category tonight
+      - generic [ref=e314]:
+        - generic [ref=e315]:
+          - img [ref=e316]
+          - heading "Hit Props" [level=3] [ref=e318]
+          - generic [ref=e319]: (5 props)
+        - generic [ref=e320]:
+          - generic [ref=e321] [cursor=pointer]:
+            - generic [ref=e322]:
+              - generic [ref=e323]:
+                - generic [ref=e324]:
+                  - generic [ref=e325]: Top Pick
+                  - generic [ref=e326]:
+                    - img [ref=e327]
+                    - generic [ref=e330]: Fri 09:38pm
+                - generic [ref=e331]: SEA @ LAA
+                - generic [ref=e332]:
+                  - img [ref=e333]
+                  - generic [ref=e336]: Oswald Peraza
+                - generic [ref=e337]: Over 0.5 Hits-109
+                - generic [ref=e338]: "-109 means bet $109 to win $100"
+              - generic [ref=e339]:
+                - generic [ref=e340]:
+                  - img [ref=e341]
+                  - text: "9"
+                - generic [ref=e343]: HEATER
+                - generic [ref=e344]: tap for details
+            - generic [ref=e346]:
+              - generic [ref=e347]: "Confidence:"
+              - generic [ref=e348]: 6/10
+          - generic [ref=e349] [cursor=pointer]:
+            - generic [ref=e350]:
+              - generic [ref=e351]:
+                - generic [ref=e352]:
+                  - generic [ref=e353]: Top Pick
+                  - generic [ref=e354]:
+                    - img [ref=e355]
+                    - generic [ref=e358]: Fri 09:40pm
+                - generic [ref=e359]: HOU @ ATH
+                - generic [ref=e360]:
+                  - img [ref=e361]
+                  - generic [ref=e364]: Brice Matthews
+                - generic [ref=e365]: Over 0.5 Hits-106
+                - generic [ref=e366]: "-106 means bet $106 to win $100"
+              - generic [ref=e367]:
+                - generic [ref=e368]:
+                  - img [ref=e369]
+                  - text: "9"
+                - generic [ref=e371]: HEATER
+                - generic [ref=e372]: tap for details
+            - generic [ref=e374]:
+              - generic [ref=e375]: "Confidence:"
+              - generic [ref=e376]: 6/10
+          - generic [ref=e377] [cursor=pointer]:
+            - generic [ref=e378]:
+              - generic [ref=e379]:
+                - generic [ref=e380]:
+                  - generic [ref=e381]: Top Pick
+                  - generic [ref=e382]:
+                    - img [ref=e383]
+                    - generic [ref=e386]: Sat 07:05pm
+                - generic [ref=e387]: MIA @ NYY
+                - generic [ref=e388]:
+                  - img [ref=e389]
+                  - generic [ref=e392]: Ryan McMahon
+                - generic [ref=e393]: Over 0.5 Hits-110
+                - generic [ref=e394]: "-110 means bet $110 to win $100"
+              - generic [ref=e395]:
+                - generic [ref=e396]:
+                  - img [ref=e397]
+                  - text: "9"
+                - generic [ref=e399]: HEATER
+                - generic [ref=e400]: tap for details
+            - generic [ref=e402]:
+              - generic [ref=e403]: "Confidence:"
+              - generic [ref=e404]: 6/10
+          - generic [ref=e405] [cursor=pointer]:
+            - generic [ref=e406]:
+              - generic [ref=e407]:
+                - generic [ref=e408]:
+                  - generic [ref=e409]: Top Pick
+                  - generic [ref=e410]:
+                    - img [ref=e411]
+                    - generic [ref=e414]: Sat 04:10pm
+                - generic [ref=e415]: SD @ BOS
+                - generic [ref=e416]:
+                  - img [ref=e417]
+                  - generic [ref=e420]: Jake Cronenworth
+                - generic [ref=e421]: Over 0.5 Hits-110
+                - generic [ref=e422]: "-110 means bet $110 to win $100"
+              - generic [ref=e423]:
+                - generic [ref=e424]:
+                  - img [ref=e425]
+                  - text: "9"
+                - generic [ref=e427]: HEATER
+                - generic [ref=e428]: tap for details
+            - generic [ref=e430]:
+              - generic [ref=e431]: "Confidence:"
+              - generic [ref=e432]: 6/10
+          - generic [ref=e433] [cursor=pointer]:
+            - generic [ref=e434]:
+              - generic [ref=e435]:
+                - generic [ref=e436]:
+                  - generic [ref=e437]: Top Pick
+                  - generic [ref=e438]:
+                    - img [ref=e439]
+                    - generic [ref=e442]: Sat 04:05pm
+                - generic [ref=e443]: LAD @ WSH
+                - generic [ref=e444]:
+                  - img [ref=e445]
+                  - generic [ref=e448]: Alex Freeland
+                - generic [ref=e449]: Over 0.5 Hits-109
+                - generic [ref=e450]: "-109 means bet $109 to win $100"
+              - generic [ref=e451]:
+                - generic [ref=e452]:
+                  - img [ref=e453]
+                  - text: "9"
+                - generic [ref=e455]: HEATER
+                - generic [ref=e456]: tap for details
+            - generic [ref=e458]:
+              - generic [ref=e459]: "Confidence:"
+              - generic [ref=e460]: 6/10
+    - generic [ref=e54]:
+      - text: EdgeCheck — Data from ESPN. Independent matchup analysis.
+      - text: For entertainment purposes only. Please bet responsibly.
+  - alert [ref=e296]

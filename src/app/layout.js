@@ -1,3 +1,4 @@
+import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata = {
@@ -6,17 +7,13 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  // Only wrap with ClerkProvider if credentials are configured
-  const hasClerkCredentials = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  // Use publishable key check (available on both client and server)
+  const clerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   return (
     <html lang="en">
       <body>
-        {hasClerkCredentials ? (
-          <ClerkProvider>{children}</ClerkProvider>
-        ) : (
-          children
-        )}
+        {clerkEnabled ? <ClerkProvider>{children}</ClerkProvider> : children}
       </body>
     </html>
   );

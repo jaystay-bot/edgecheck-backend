@@ -1,105 +1,110 @@
 # EdgeCheck — CLAUDE.md
 
 ## Purpose
-Sports bet analyzer.
-User inputs bet → returns verdict in <2 seconds.
+Sports betting analyzer + props viewer.
 
-Core:
-Fast answer. No complexity.
+- Analyze user bets
+- Display ranked props (Top Picks / Best Plays)
+- Fast, accurate, no fluff
 
 ---
 
-## Rules (Strict)
+## Agent Workflow (STRICT)
+
+OPENDER
+- Find exact root cause (file + line)
+- No edits, no guessing
+
+CLAUDER
+- Apply smallest fix
+- Max 2 files
+- No refactor unless asked
+
+TRUTH
+- Verify via real UI/API
+- Must confirm result works
+
+Flow:
+1. OPENDER → root cause
+2. CLAUDER → fix
+3. TRUTH → verify
+4. STOP
+
+Rules:
+- One task only
+- No scope expansion
+- No retry if verify fails
+
+---
+
+## Core Rules
+
 - Do only the task requested
 - Do not add features
-- Do not expand scope
-- Stop when task is complete
+- Stop immediately when done
 
 ---
 
 ## Stack
-- Next.js App Router + TypeScript
+
+- Next.js (App Router, TS)
 - Tailwind
-- Next.js API routes
+- API routes
 - Vercel
-- Whop ($4.99/month)
-- The Odds API (server-side only)
-- No DB, no auth
+- Clerk (auth)
+- Stripe (subscriptions)
+- External odds/props APIs
 
 ---
 
-## Core Flow
-1. User inputs bet
-2. Fetch odds (API route)
-3. Run analyzer
-4. Return verdict card
-5. Show affiliate links
+## Auth & Payments
+
+- Clerk handles auth
+- Stripe = subscriptions only
+- Server-side only (no client secrets)
+- Do NOT modify unless asked
 
 ---
 
-## Core Logic (betAnalyzer.ts)
-- impliedProbability(odds)
-- calculateValueScore(userOdds, marketOdds)
-- detectSharpMoney()
-- generateVerdict()
+## App Flow
 
-Verdict:
-- GOOD → value > +3% AND sharp signal
-- COIN_FLIP → neutral/conflict
-- BAD → negative value
+1. Props Tab:
+   - Fetch props
+   - Score + filter (+EV only)
+   - Return Top Picks / Best Plays
 
----
-
-## Data Rules
-- Sharp money = simulated
-- Public lean = simulated
-- Never present as real data
+2. Bet Analyzer:
+   - User input → odds → verdict
 
 ---
 
-## Hard Constraints
-- No auth
-- No database
-- No bet tracking
-- No parlays
-- No AI chat
-- No complex stats
-- Mobile-first
-- Response < 2 seconds
-- Never expose API keys client-side
+## Critical Logic
 
----
-
-## Files
-- /app/page.tsx
-- /app/api/odds/route.ts
-- /lib/betAnalyzer.ts
-- /components/InputForm.tsx
-- /components/ResultCard.tsx
+- Props must be filtered BEFORE UI
+- NO negative EV in Top Pick / Strong
+- last10 data must pass through to UI
 
 ---
 
 ## Do NOT Touch
-- betAnalyzer core logic (unless explicitly asked)
-- API route security (key handling)
-- response speed requirement
+
+- Scoring engine logic
+- Auth / Stripe flow
+- API key handling
 
 ---
 
-## Current Focus
-Distribution > product
+## Focus
 
-Do NOT build new features.
-Fix bugs or improve speed only.
+- Fix bugs only
+- Ensure correct data → UI mapping
+- No new features
 
 ---
 
 ## Task Rule
-Before any change:
-- Identify task
-- Touch minimal files
-- Do not modify unrelated code
-- Verify result
-- Stop
 
-Do NOT touch betAnalyzer unless explicitly asked
+1. Find root cause
+2. Fix minimal (≤2 files)
+3. Verify
+4. STOP

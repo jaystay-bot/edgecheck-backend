@@ -1,0 +1,637 @@
+[     240ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[    1041ms] [LOG] [Fast Refresh] done in 801ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[    1072ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/dashboard:0
+[    1492ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:38559
+[    1726ms] Error: Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware() (or the deprecated authMiddleware()). Please ensure the following:
+-  clerkMiddleware() (or the deprecated authMiddleware()) is used in your Next.js Middleware.
+- Your Middleware matcher is configured to match this route or page.
+- If you are using the src directory, make sure the Middleware file is inside of it.
+
+For more details, see https://clerk.com/docs/quickstarts/nextjs
+
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/server/createGetAuth.js:34:13)
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/utils/debugLogger.js:44:19)
+    at auth (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/app-router/server/auth.js:30:5)
+    at DashboardPage (webpack-internal:///(rsc)/./src/app/dashboard/page.js:17:88)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265189)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275773)
+    at eR (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266017)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265059)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267040
+    at Array.toJSON (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267504)
+    at stringify (<anonymous>)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275872)
+    at eV (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:276390)
+    at Timeout._onTimeout (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266177)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[    1731ms] Error: Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware() (or the deprecated authMiddleware()). Please ensure the following:
+-  clerkMiddleware() (or the deprecated authMiddleware()) is used in your Next.js Middleware.
+- Your Middleware matcher is configured to match this route or page.
+- If you are using the src directory, make sure the Middleware file is inside of it.
+
+For more details, see https://clerk.com/docs/quickstarts/nextjs
+
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/server/createGetAuth.js:34:13)
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/utils/debugLogger.js:44:19)
+    at auth (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/app-router/server/auth.js:30:5)
+    at DashboardPage (webpack-internal:///(rsc)/./src/app/dashboard/page.js:17:88)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265189)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275773)
+    at eR (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266017)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265059)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267040
+    at Array.toJSON (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267504)
+    at stringify (<anonymous>)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275872)
+    at eV (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:276390)
+    at Timeout._onTimeout (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266177)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[    1733ms] Error: Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware() (or the deprecated authMiddleware()). Please ensure the following:
+-  clerkMiddleware() (or the deprecated authMiddleware()) is used in your Next.js Middleware.
+- Your Middleware matcher is configured to match this route or page.
+- If you are using the src directory, make sure the Middleware file is inside of it.
+
+For more details, see https://clerk.com/docs/quickstarts/nextjs
+
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/server/createGetAuth.js:34:13)
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/utils/debugLogger.js:44:19)
+    at auth (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/app-router/server/auth.js:30:5)
+    at DashboardPage (webpack-internal:///(rsc)/./src/app/dashboard/page.js:17:88)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265189)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275773)
+    at eR (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266017)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265059)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267040
+    at Array.toJSON (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267504)
+    at stringify (<anonymous>)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275872)
+    at eV (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:276390)
+    at Timeout._onTimeout (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266177)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[    1733ms] Error: Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware() (or the deprecated authMiddleware()). Please ensure the following:
+-  clerkMiddleware() (or the deprecated authMiddleware()) is used in your Next.js Middleware.
+- Your Middleware matcher is configured to match this route or page.
+- If you are using the src directory, make sure the Middleware file is inside of it.
+
+For more details, see https://clerk.com/docs/quickstarts/nextjs
+
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/server/createGetAuth.js:34:13)
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/utils/debugLogger.js:44:19)
+    at auth (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/app-router/server/auth.js:30:5)
+    at DashboardPage (webpack-internal:///(rsc)/./src/app/dashboard/page.js:17:88)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265189)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275773)
+    at eR (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266017)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265059)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267040
+    at Array.toJSON (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267504)
+    at stringify (<anonymous>)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275872)
+    at eV (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:276390)
+    at Timeout._onTimeout (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266177)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[    1734ms] Error: Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware() (or the deprecated authMiddleware()). Please ensure the following:
+-  clerkMiddleware() (or the deprecated authMiddleware()) is used in your Next.js Middleware.
+- Your Middleware matcher is configured to match this route or page.
+- If you are using the src directory, make sure the Middleware file is inside of it.
+
+For more details, see https://clerk.com/docs/quickstarts/nextjs
+
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/server/createGetAuth.js:34:13)
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/utils/debugLogger.js:44:19)
+    at auth (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/app-router/server/auth.js:30:5)
+    at DashboardPage (webpack-internal:///(rsc)/./src/app/dashboard/page.js:17:88)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265189)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275773)
+    at eR (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266017)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265059)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267040
+    at Array.toJSON (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267504)
+    at stringify (<anonymous>)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275872)
+    at eV (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:276390)
+    at Timeout._onTimeout (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266177)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[    1734ms] Error: Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware() (or the deprecated authMiddleware()). Please ensure the following:
+-  clerkMiddleware() (or the deprecated authMiddleware()) is used in your Next.js Middleware.
+- Your Middleware matcher is configured to match this route or page.
+- If you are using the src directory, make sure the Middleware file is inside of it.
+
+For more details, see https://clerk.com/docs/quickstarts/nextjs
+
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/server/createGetAuth.js:34:13)
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/utils/debugLogger.js:44:19)
+    at auth (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/app-router/server/auth.js:30:5)
+    at DashboardPage (webpack-internal:///(rsc)/./src/app/dashboard/page.js:17:88)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265189)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275773)
+    at eR (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266017)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265059)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267040
+    at Array.toJSON (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267504)
+    at stringify (<anonymous>)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275872)
+    at eV (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:276390)
+    at Timeout._onTimeout (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266177)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[    1748ms] Error: Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware() (or the deprecated authMiddleware()). Please ensure the following:
+-  clerkMiddleware() (or the deprecated authMiddleware()) is used in your Next.js Middleware.
+- Your Middleware matcher is configured to match this route or page.
+- If you are using the src directory, make sure the Middleware file is inside of it.
+
+For more details, see https://clerk.com/docs/quickstarts/nextjs
+
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/server/createGetAuth.js:34:13)
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/utils/debugLogger.js:44:19)
+    at auth (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/app-router/server/auth.js:30:5)
+    at DashboardPage (webpack-internal:///(rsc)/./src/app/dashboard/page.js:17:88)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265189)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275773)
+    at eR (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266017)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265059)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267040
+    at Array.toJSON (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267504)
+    at stringify (<anonymous>)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275872)
+    at eV (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:276390)
+    at Timeout._onTimeout (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266177)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[    1749ms] Error: Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware() (or the deprecated authMiddleware()). Please ensure the following:
+-  clerkMiddleware() (or the deprecated authMiddleware()) is used in your Next.js Middleware.
+- Your Middleware matcher is configured to match this route or page.
+- If you are using the src directory, make sure the Middleware file is inside of it.
+
+For more details, see https://clerk.com/docs/quickstarts/nextjs
+
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/server/createGetAuth.js:34:13)
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/utils/debugLogger.js:44:19)
+    at auth (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/app-router/server/auth.js:30:5)
+    at DashboardPage (webpack-internal:///(rsc)/./src/app/dashboard/page.js:17:88)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265189)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275773)
+    at eR (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266017)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265059)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267040
+    at Array.toJSON (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267504)
+    at stringify (<anonymous>)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275872)
+    at eV (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:276390)
+    at Timeout._onTimeout (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266177)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[    1750ms] Error: Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware() (or the deprecated authMiddleware()). Please ensure the following:
+-  clerkMiddleware() (or the deprecated authMiddleware()) is used in your Next.js Middleware.
+- Your Middleware matcher is configured to match this route or page.
+- If you are using the src directory, make sure the Middleware file is inside of it.
+
+For more details, see https://clerk.com/docs/quickstarts/nextjs
+
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/server/createGetAuth.js:34:13)
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/utils/debugLogger.js:44:19)
+    at auth (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/app-router/server/auth.js:30:5)
+    at DashboardPage (webpack-internal:///(rsc)/./src/app/dashboard/page.js:17:88)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265189)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275773)
+    at eR (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266017)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265059)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267040
+    at Array.toJSON (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267504)
+    at stringify (<anonymous>)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275872)
+    at eV (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:276390)
+    at Timeout._onTimeout (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266177)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[    1750ms] Error: Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware() (or the deprecated authMiddleware()). Please ensure the following:
+-  clerkMiddleware() (or the deprecated authMiddleware()) is used in your Next.js Middleware.
+- Your Middleware matcher is configured to match this route or page.
+- If you are using the src directory, make sure the Middleware file is inside of it.
+
+For more details, see https://clerk.com/docs/quickstarts/nextjs
+
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/server/createGetAuth.js:34:13)
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/utils/debugLogger.js:44:19)
+    at auth (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/app-router/server/auth.js:30:5)
+    at DashboardPage (webpack-internal:///(rsc)/./src/app/dashboard/page.js:17:88)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265189)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275773)
+    at eR (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266017)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265059)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267040
+    at Array.toJSON (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267504)
+    at stringify (<anonymous>)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275872)
+    at eV (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:276390)
+    at Timeout._onTimeout (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266177)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[    1751ms] Error: Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware() (or the deprecated authMiddleware()). Please ensure the following:
+-  clerkMiddleware() (or the deprecated authMiddleware()) is used in your Next.js Middleware.
+- Your Middleware matcher is configured to match this route or page.
+- If you are using the src directory, make sure the Middleware file is inside of it.
+
+For more details, see https://clerk.com/docs/quickstarts/nextjs
+
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/server/createGetAuth.js:34:13)
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/utils/debugLogger.js:44:19)
+    at auth (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/app-router/server/auth.js:30:5)
+    at DashboardPage (webpack-internal:///(rsc)/./src/app/dashboard/page.js:17:88)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265189)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275773)
+    at eR (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266017)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265059)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267040
+    at Array.toJSON (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267504)
+    at stringify (<anonymous>)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275872)
+    at eV (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:276390)
+    at Timeout._onTimeout (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266177)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[    1752ms] Error: Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware() (or the deprecated authMiddleware()). Please ensure the following:
+-  clerkMiddleware() (or the deprecated authMiddleware()) is used in your Next.js Middleware.
+- Your Middleware matcher is configured to match this route or page.
+- If you are using the src directory, make sure the Middleware file is inside of it.
+
+For more details, see https://clerk.com/docs/quickstarts/nextjs
+
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/server/createGetAuth.js:34:13)
+    at eval (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/utils/debugLogger.js:44:19)
+    at auth (webpack-internal:///(rsc)/./node_modules/@clerk/nextjs/dist/esm/app-router/server/auth.js:30:5)
+    at DashboardPage (webpack-internal:///(rsc)/./src/app/dashboard/page.js:17:88)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265189)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275773)
+    at eR (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266017)
+    at eC (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:265059)
+    at e (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269321)
+    at eL (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:269809)
+    at C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267040
+    at Array.toJSON (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:267504)
+    at stringify (<anonymous>)
+    at eJ (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:275872)
+    at eV (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:276390)
+    at Timeout._onTimeout (C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:266177)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[    1792ms] [ERROR] The above error occurred in the <NotFoundErrorBoundary> component:
+
+    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:243:11)
+    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)
+    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)
+    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)
+    at LoadingBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:349:11)
+    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)
+    at InnerScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:153:9)
+    at ScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:228:11)
+    at RenderFromTemplateContext (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/render-from-template-context.js:16:44)
+    at OuterLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:370:11)
+    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:243:11)
+    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)
+    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)
+    at NotFoundErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:76:9)
+    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)
+    at LoadingBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:349:11)
+    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)
+    at InnerScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:153:9)
+    at ScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:228:11)
+    at RenderFromTemplateContext (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/render-from-template-context.js:16:44)
+    at OuterLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:370:11)
+    at body
+    at html
+    at RootLayout (Server)
+    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)
+    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)
+    at NotFoundErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:76:9)
+    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)
+    at DevRootNotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/dev-root-not-found-boundary.js:33:11)
+    at ReactDevOverlay (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/ReactDevOverlay.js:87:9)
+    at HotReload (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:321:11)
+    at Router (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/app-router.js:207:11)
+    at ErrorBoundaryHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:113:9)
+    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)
+    at AppRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/app-router.js:585:13)
+    at ServerRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:112:27)
+    at Root (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:117:11)
+    at ReactDevOverlay (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/ReactDevOverlay.js:87:9)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ReactDevOverlay. @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[    5346ms] [WARNING] The resource http://localhost:3000/_next/static/css/app/dashboard/page.css?v=1775257686515 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3000/dashboard:0
+[   15880ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/dashboard:0
+[   16157ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:38559
+[   16321ms] Error: @clerk/clerk-react: UserButton can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at Object.throwMissingClerkProviderError (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/chunk-T4WHYQYX.mjs:185:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:101:18)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/react/index.mjs:109:7)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:100:87)
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)
+    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)
+    at HTMLUnknownElement.callCallback (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:20565:14)
+    at Object.invokeGuardedCallbackImpl (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:20614:16)
+    at invokeGuardedCallback (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:20689:29)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26949:7)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)
+    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24504:74)
+    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)
+    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)
+[   16340ms] Error: @clerk/clerk-react: UserButton can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at Object.throwMissingClerkProviderError (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/chunk-T4WHYQYX.mjs:185:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:101:18)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/react/index.mjs:109:7)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:100:87)
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)
+    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26927:14)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)
+    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24504:74)
+    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)
+    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)
+[   16341ms] Error: @clerk/clerk-react: UserButton can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at Object.throwMissingClerkProviderError (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/chunk-T4WHYQYX.mjs:185:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:101:18)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/react/index.mjs:109:7)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:100:87)
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)
+    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26927:14)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)
+    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24504:74)
+    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)
+    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)
+[   16342ms] Error: @clerk/clerk-react: UserButton can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at Object.throwMissingClerkProviderError (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/chunk-T4WHYQYX.mjs:185:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:101:18)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/react/index.mjs:109:7)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:100:87)
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)
+    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26927:14)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)
+    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24504:74)
+    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)
+    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)
+[   16342ms] Error: @clerk/clerk-react: UserButton can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at Object.throwMissingClerkProviderError (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/chunk-T4WHYQYX.mjs:185:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:101:18)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/react/index.mjs:109:7)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:100:87)
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)
+    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26927:14)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)
+    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24504:74)
+    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)
+    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)
+[   16342ms] Error: @clerk/clerk-react: UserButton can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at Object.throwMissingClerkProviderError (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/chunk-T4WHYQYX.mjs:185:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:101:18)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/react/index.mjs:109:7)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:100:87)
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)
+    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26927:14)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)
+    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24504:74)
+    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)
+    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)
+[   16354ms] Error: @clerk/clerk-react: UserButton can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at Object.throwMissingClerkProviderError (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/chunk-T4WHYQYX.mjs:185:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:101:18)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/react/index.mjs:109:7)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:100:87)
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)
+    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)
+    at HTMLUnknownElement.callCallback (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:20565:14)
+    at Object.invokeGuardedCallbackImpl (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:20614:16)
+    at invokeGuardedCallback (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:20689:29)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26949:7)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)
+    at recoverFromConcurrentError (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24597:20)
+    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24542:26)
+    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)
+    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)
+[   16355ms] Error: @clerk/clerk-react: UserButton can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at Object.throwMissingClerkProviderError (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/chunk-T4WHYQYX.mjs:185:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:101:18)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/react/index.mjs:109:7)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:100:87)
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)
+    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26927:14)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)
+    at recoverFromConcurrentError (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24597:20)
+    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24542:26)
+    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)
+    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)
+[   16358ms] Error: @clerk/clerk-react: UserButton can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at Object.throwMissingClerkProviderError (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/chunk-T4WHYQYX.mjs:185:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:101:18)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/react/index.mjs:109:7)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:100:87)
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)
+    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26927:14)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)
+    at recoverFromConcurrentError (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24597:20)
+    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24542:26)
+    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)
+    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)
+[   16359ms] Error: @clerk/clerk-react: UserButton can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at Object.throwMissingClerkProviderError (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/chunk-T4WHYQYX.mjs:185:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:101:18)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/react/index.mjs:109:7)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:100:87)
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)
+    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26927:14)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)
+    at recoverFromConcurrentError (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24597:20)
+    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24542:26)
+    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)
+    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)
+[   16359ms] Error: @clerk/clerk-react: UserButton can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at Object.throwMissingClerkProviderError (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/chunk-T4WHYQYX.mjs:185:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:101:18)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/react/index.mjs:109:7)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:100:87)
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)
+    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26927:14)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)
+    at recoverFromConcurrentError (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24597:20)
+    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24542:26)
+    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)
+    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)
+[   16360ms] Error: @clerk/clerk-react: UserButton can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at Object.throwMissingClerkProviderError (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/chunk-T4WHYQYX.mjs:185:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:101:18)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/shared/dist/react/index.mjs:109:7)
+    at useAssertWrappedByClerkProvider (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:100:87)
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)
+    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26927:14)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)
+    at recoverFromConcurrentError (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24597:20)
+    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24542:26)
+    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)
+    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)
+    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)
+[   16364ms] [ERROR] The above error occurred in the <NotFoundErrorBoundary> component:
+
+    at HOC (webpack-internal:///(app-pages-browser)/./node_modules/@clerk/clerk-react/dist/chunk-LVLBRUHJ.mjs:278:5)
+    at div
+    at div
+    at div
+    at DashboardClient (webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:943:11)
+    at DashboardPage (Server)
+    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:243:11)
+    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)
+    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)
+    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)
+    at LoadingBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:349:11)
+    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)
+    at InnerScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:153:9)
+    at ScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:228:11)
+    at RenderFromTemplateContext (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/render-from-template-context.js:16:44)
+    at OuterLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:370:11)
+    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:243:11)
+    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)
+    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)
+    at NotFoundErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:76:9)
+    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)
+    at LoadingBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:349:11)
+    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)
+    at InnerScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:153:9)
+    at ScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:228:11)
+    at RenderFromTemplateContext (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/render-from-template-context.js:16:44)
+    at OuterLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:370:11)
+    at body
+    at html
+    at RootLayout (Server)
+    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)
+    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)
+    at NotFoundErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:76:9)
+    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)
+    at DevRootNotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/dev-root-not-found-boundary.js:33:11)
+    at ReactDevOverlay (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/ReactDevOverlay.js:87:9)
+    at HotReload (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:321:11)
+    at Router (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/app-router.js:207:11)
+    at ErrorBoundaryHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:113:9)
+    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)
+    at AppRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/app-router.js:585:13)
+    at ServerRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:112:27)
+    at Root (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:117:11)
+    at ReactDevOverlay (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/ReactDevOverlay.js:87:9)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ReactDevOverlay. @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32

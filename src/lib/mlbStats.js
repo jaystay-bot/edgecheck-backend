@@ -10,10 +10,15 @@ const mlbStatsCache = {
   lineups: {},
   playerStats: {}, // Cache for batter recent stats
   pitcherStats: {}, // Cache for pitcher season stats
+  allPlayers: null, // Cache for all active players (name -> id map)
+  playersByInitialLast: null, // Cache for first initial + last name -> id
+  playersByLastName: null, // Cache for last name -> id (only if unique)
+  allPlayersTimestamp: 0,
   timestamp: 0,
 };
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 const PLAYER_STATS_TTL = 4 * 60 * 60 * 1000; // 4 hours for player stats
+const PLAYERS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours for player roster
 
 // Cache for injuries (refreshes every 30 min)
 const mlbInjuriesCache = {
@@ -196,7 +201,7 @@ function parseTeamLineup(teamData) {
   return { batters, pitcher: startingPitcher };
 }
 
-// Fetch recent batter stats (last 10 games)
+// Fetch recent batter stats (last 10 games) and season batting average
 async function fetchBatterStats(playerId) {
   const cacheKey = `batter_${playerId}`;
   const cached = mlbStatsCache.playerStats[cacheKey];
@@ -206,13 +211,29 @@ async function fetchBatterStats(playerId) {
 
   try {
     const season = new Date().getFullYear();
-    const url = `${MLB_STATS_BASE}/people/${playerId}/stats?stats=gameLog&group=hitting&season=${season}&limit=10`;
+    const gameLogUrl = `${MLB_STATS_BASE}/people/${playerId}/stats?stats=gameLog&group=hitting&season=${season}&limit=10`;
+    const seasonUrl = `${MLB_STATS_BASE}/people/${playerId}/stats?stats=season&group=hitting&season=${season}`;
 
-    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return null;
+    // Fetch game log and season stats in parallel
+    const [gameLogRes, seasonRes] = await Promise.all([
+      fetch(gameLogUrl, { signal: AbortSignal.timeout(5000) }),
+      fetch(seasonUrl, { signal: AbortSignal.timeout(5000) }),
+    ]);
 
-    const data = await res.json();
-    const splits = data.stats?.[0]?.splits || [];
+    if (!gameLogRes.ok) return null;
+
+    const gameLogData = await gameLogRes.json();
+    const splits = gameLogData.stats?.[0]?.splits || [];
+
+    // Parse season batting average
+    let seasonAvg = null;
+    if (seasonRes.ok) {
+      const seasonData = await seasonRes.json();
+      const seasonStat = seasonData.stats?.[0]?.splits?.[0]?.stat;
+      if (seasonStat?.avg) {
+        seasonAvg = seasonStat.avg;
+      }
+    }
 
     if (splits.length === 0) return null;
 
@@ -262,6 +283,7 @@ async function fetchBatterStats(playerId) {
       hitsLast10: last10.hits,
       avgLast5,
       avgLast10,
+      seasonAvg, // Season batting average
       gamesPlayed: last10.games,
       trend,
       isHot: avgLast5 && parseFloat(avgLast5) >= 0.300,
@@ -330,16 +352,142 @@ async function fetchPitcherStats(pitcherId) {
   }
 }
 
-// Normalize player name for matching (handles Jr., III, etc.)
+// Normalize player name for matching (handles Jr., III, accents, hyphens, etc.)
 function normalizeName(name) {
   if (!name) return "";
   return name
     .toLowerCase()
+    // Remove accents (José → jose, Ñ → n)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    // Remove suffixes
     .replace(/\s+jr\.?$/i, "")
     .replace(/\s+sr\.?$/i, "")
     .replace(/\s+(ii|iii|iv|v)$/i, "")
-    .replace(/[^a-z\s]/g, "")
+    // Keep hyphens initially for compound names, remove other punctuation
+    .replace(/[^a-z\s\-]/g, "")
+    // Normalize hyphens and spaces
+    .replace(/-/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
+}
+
+// Extract last name from normalized name
+function getLastName(normalizedName) {
+  if (!normalizedName) return "";
+  const parts = normalizedName.split(" ");
+  return parts[parts.length - 1] || "";
+}
+
+// Extract first initial + last name (e.g., "jose ramirez" → "j ramirez")
+function getInitialLastName(normalizedName) {
+  if (!normalizedName) return "";
+  const parts = normalizedName.split(" ");
+  if (parts.length < 2) return "";
+  const firstInitial = parts[0][0];
+  const lastName = parts[parts.length - 1];
+  return `${firstInitial} ${lastName}`;
+}
+
+// Fetch all active MLB players (for fallback ID lookup)
+// Builds three lookup maps: full name, first initial + last, and unique last names
+async function fetchAllPlayers() {
+  const now = Date.now();
+  if (mlbStatsCache.allPlayers && now - mlbStatsCache.allPlayersTimestamp < PLAYERS_CACHE_TTL) {
+    return mlbStatsCache.allPlayers;
+  }
+
+  try {
+    const season = new Date().getFullYear();
+    const url = `${MLB_STATS_BASE}/sports/1/players?season=${season}`;
+    console.log("[MLBStats] Fetching all active players...");
+
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    if (!res.ok) {
+      console.warn(`[MLBStats] Players API returned ${res.status}`);
+      return mlbStatsCache.allPlayers || new Map();
+    }
+
+    const data = await res.json();
+    const players = data.people || [];
+    const playerMap = new Map(); // Full name → id
+    const initialLastMap = new Map(); // "j ramirez" → id
+    const lastNameCounts = new Map(); // Track duplicates for last name
+    const lastNameMap = new Map(); // Last name → id (only if unique)
+
+    for (const player of players) {
+      const name = normalizeName(player.fullName);
+      if (!name || !player.id) continue;
+
+      // Full name lookup
+      playerMap.set(name, player.id);
+
+      // First initial + last name lookup
+      const initialLast = getInitialLastName(name);
+      if (initialLast) {
+        // Only keep if unique (first match wins for common patterns)
+        if (!initialLastMap.has(initialLast)) {
+          initialLastMap.set(initialLast, player.id);
+        }
+      }
+
+      // Track last name occurrences
+      const lastName = getLastName(name);
+      if (lastName) {
+        const count = lastNameCounts.get(lastName) || 0;
+        lastNameCounts.set(lastName, count + 1);
+        if (count === 0) {
+          lastNameMap.set(lastName, player.id);
+        } else {
+          // Not unique, remove from map
+          lastNameMap.delete(lastName);
+        }
+      }
+    }
+
+    console.log(`[MLBStats] Cached ${playerMap.size} players (${initialLastMap.size} initial+last, ${lastNameMap.size} unique last names)`);
+    mlbStatsCache.allPlayers = playerMap;
+    mlbStatsCache.playersByInitialLast = initialLastMap;
+    mlbStatsCache.playersByLastName = lastNameMap;
+    mlbStatsCache.allPlayersTimestamp = now;
+
+    return playerMap;
+  } catch (err) {
+    console.warn("[MLBStats] Failed to fetch all players:", err.message);
+    return mlbStatsCache.allPlayers || new Map();
+  }
+}
+
+// Find player ID using fallback matching strategies
+// Priority: 1) exact match, 2) first initial + last name, 3) unique last name
+function findPlayerId(playerName, allPlayersMap, lineupPlayerIdMap = {}) {
+  if (!playerName) return null;
+
+  const normalizedName = normalizeName(playerName);
+
+  // 1. Check lineup context first (if in today's lineup)
+  if (lineupPlayerIdMap[normalizedName]) {
+    return lineupPlayerIdMap[normalizedName];
+  }
+
+  // 2. Exact match in full players map
+  if (allPlayersMap?.get(normalizedName)) {
+    return allPlayersMap.get(normalizedName);
+  }
+
+  // 3. First initial + last name fallback
+  const initialLast = getInitialLastName(normalizedName);
+  if (initialLast && mlbStatsCache.playersByInitialLast?.get(initialLast)) {
+    return mlbStatsCache.playersByInitialLast.get(initialLast);
+  }
+
+  // 4. Unique last name fallback (only if unambiguous)
+  const lastName = getLastName(normalizedName);
+  if (lastName && mlbStatsCache.playersByLastName?.get(lastName)) {
+    return mlbStatsCache.playersByLastName.get(lastName);
+  }
+
+  return null;
 }
 
 // Match player name to lineup data
@@ -359,6 +507,7 @@ function findPlayerInLineup(playerName, lineupData) {
         const opposingPitcher = lineupData[opposingSide]?.pitcher;
 
         return {
+          playerId: batter.id,
           battingOrder: batter.battingOrder,
           position: batter.position,
           batSide: batter.batSide,
@@ -466,10 +615,11 @@ export async function enrichMLBProps(props) {
 
   console.log(`[MLBStats] Enriching ${props.length} MLB props with context...`);
 
-  // Fetch today's games and injuries in parallel (both cached)
-  const [games, injuries] = await Promise.all([
+  // Fetch today's games, injuries, and all players in parallel (all cached)
+  const [games, injuries, allPlayersMap] = await Promise.all([
     fetchTodaysGames(),
     fetchMLBInjuries(),
+    fetchAllPlayers(),
   ]);
 
   // If no games, still attach injury data to all props
@@ -566,67 +716,70 @@ export async function enrichMLBProps(props) {
       injuryEnrichment.injuryStatus = "active"; // Default to active if not on injury list
     }
 
-    if (!group?.game) return { ...prop, ...injuryEnrichment };
-
-    // Get probable pitcher for the player's opponent
-    const awayTeam = matchup.split(" @ ")[0];
-    const isAwayBatter = prop.awayTeam === awayTeam;
-    const opposingPitcher = isAwayBatter ? group.game.homePitcher : group.game.awayPitcher;
-
-    // Try to find player in lineup for detailed context
-    const lineupContext = group.lineup
-      ? findPlayerInLineup(prop.playerName, group.lineup)
-      : null;
-
     // Build enrichment object
     const enrichment = {};
 
-    // Opposing pitcher from schedule
-    if (opposingPitcher?.name) {
-      enrichment.opposingPitcher = opposingPitcher.name;
-      enrichment.pitcherHand = opposingPitcher.hand;
+    // Game-specific context (if game found)
+    let lineupContext = null;
+    if (group?.game) {
+      // Get probable pitcher for the player's opponent
+      const awayTeam = matchup.split(" @ ")[0];
+      const isAwayBatter = prop.awayTeam === awayTeam;
+      const opposingPitcher = isAwayBatter ? group.game.homePitcher : group.game.awayPitcher;
 
-      // Add pitcher stats
-      const pitcherStats = pitcherStatsMap[opposingPitcher.id];
-      if (pitcherStats) {
-        enrichment.pitcherERA = pitcherStats.era;
-        enrichment.pitcherWHIP = pitcherStats.whip;
-        enrichment.pitcherK9 = pitcherStats.k9;
-        enrichment.pitcherQuality = pitcherStats.quality;
-        enrichment.isPitcherElite = pitcherStats.isElite;
-        enrichment.isPitcherStruggling = pitcherStats.isStruggling;
+      // Try to find player in lineup for detailed context
+      lineupContext = group.lineup
+        ? findPlayerInLineup(prop.playerName, group.lineup)
+        : null;
+
+      // Opposing pitcher from schedule
+      if (opposingPitcher?.name) {
+        enrichment.opposingPitcher = opposingPitcher.name;
+        enrichment.pitcherHand = opposingPitcher.hand;
+
+        // Add pitcher stats
+        const pitcherStats = pitcherStatsMap[opposingPitcher.id];
+        if (pitcherStats) {
+          enrichment.pitcherERA = pitcherStats.era;
+          enrichment.pitcherWHIP = pitcherStats.whip;
+          enrichment.pitcherK9 = pitcherStats.k9;
+          enrichment.pitcherQuality = pitcherStats.quality;
+          enrichment.isPitcherElite = pitcherStats.isElite;
+          enrichment.isPitcherStruggling = pitcherStats.isStruggling;
+        }
+      }
+
+      // Lineup context (only if lineup posted)
+      if (lineupContext) {
+        if (lineupContext.battingOrder) enrichment.lineupSpot = lineupContext.battingOrder;
+        if (lineupContext.batSide) enrichment.batSide = lineupContext.batSide;
+        if (lineupContext.matchup) enrichment.handednessMatchup = lineupContext.matchup;
+
+        // Override pitcher info with lineup data if available
+        if (lineupContext.opposingPitcher) {
+          enrichment.opposingPitcher = lineupContext.opposingPitcher;
+        }
+        if (lineupContext.pitcherHand) {
+          enrichment.pitcherHand = lineupContext.pitcherHand;
+        }
       }
     }
 
-    // Lineup context (only if lineup posted)
-    if (lineupContext) {
-      if (lineupContext.battingOrder) enrichment.lineupSpot = lineupContext.battingOrder;
-      if (lineupContext.batSide) enrichment.batSide = lineupContext.batSide;
-      if (lineupContext.matchup) enrichment.handednessMatchup = lineupContext.matchup;
-
-      // Override pitcher info with lineup data if available
-      if (lineupContext.opposingPitcher) {
-        enrichment.opposingPitcher = lineupContext.opposingPitcher;
-      }
-      if (lineupContext.pitcherHand) {
-        enrichment.pitcherHand = lineupContext.pitcherHand;
-      }
-
-      // Fetch batter recent stats
-      const batterId = playerIdMap[normalizeName(prop.playerName)];
-      if (batterId) {
-        const batterStats = await fetchBatterStats(batterId);
-        if (batterStats) {
-          enrichment.hitsLast5 = batterStats.hitsLast5;
-          enrichment.hitsLast10 = batterStats.hitsLast10;
-          enrichment.avgLast5 = batterStats.avgLast5;
-          enrichment.avgLast10 = batterStats.avgLast10;
-          enrichment.batterTrend = batterStats.trend;
-          enrichment.isBatterHot = batterStats.isHot;
-          enrichment.isBatterCold = batterStats.isCold;
-          enrichment.last10Games = batterStats.last10Games; // Raw game data
-          statsCount++;
-        }
+    // Fetch batter stats regardless of game match (uses fallback matching)
+    const batterId = lineupContext?.playerId || findPlayerId(prop.playerName, allPlayersMap, playerIdMap);
+    if (batterId) {
+      const batterStats = await fetchBatterStats(batterId);
+      if (batterStats) {
+        enrichment.hitsLast5 = batterStats.hitsLast5;
+        enrichment.hitsLast10 = batterStats.hitsLast10;
+        enrichment.avgLast5 = batterStats.avgLast5;
+        enrichment.avgLast10 = batterStats.avgLast10;
+        enrichment.seasonAvg = batterStats.seasonAvg; // Season batting average
+        enrichment.batterTrend = batterStats.trend;
+        enrichment.isBatterHot = batterStats.isHot;
+        enrichment.isBatterCold = batterStats.isCold;
+        enrichment.last10Games = batterStats.last10Games; // Raw game data
+        statsCount++;
       }
     }
 
@@ -642,4 +795,4 @@ export async function enrichMLBProps(props) {
 }
 
 // Export for testing
-export { fetchTodaysGames, fetchGameLineup, findPlayerInLineup, normalizeName };
+export { fetchTodaysGames, fetchGameLineup, findPlayerInLineup, normalizeName, fetchAllPlayers };

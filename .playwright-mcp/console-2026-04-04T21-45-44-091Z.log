@@ -1,0 +1,12 @@
+[15102725ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://edgecheck-backend.vercel.app/sign-up:0
+[15102957ms] [ERROR] Error: useSession can only be used within the <ClerkProvider /> component. Learn more: https://clerk.com/docs/components/clerk-provider
+    at eZ (https://edgecheck-backend.vercel.app/_next/static/chunks/770-14eef9b6ffaf2842.js:1:67435)
+    at e6 (https://edgecheck-backend.vercel.app/_next/static/chunks/770-14eef9b6ffaf2842.js:1:73818)
+    at s (https://edgecheck-backend.vercel.app/_next/static/chunks/645-8b64cdcd877e6a9c.js:1:7217)
+    at d (https://edgecheck-backend.vercel.app/_next/static/chunks/645-8b64cdcd877e6a9c.js:9:756)
+    at h (https://edgecheck-backend.vercel.app/_next/static/chunks/645-8b64cdcd877e6a9c.js:9:1076)
+    at rE (https://edgecheck-backend.vercel.app/_next/static/chunks/fd9d1056-2084b62c680baf80.js:1:40341)
+    at l$ (https://edgecheck-backend.vercel.app/_next/static/chunks/fd9d1056-2084b62c680baf80.js:1:59316)
+    at iZ (https://edgecheck-backend.vercel.app/_next/static/chunks/fd9d1056-2084b62c680baf80.js:1:117679)
+    at ia (https://edgecheck-backend.vercel.app/_next/static/chunks/fd9d1056-2084b62c680baf80.js:1:95162)
+    at https://edgecheck-backend.vercel.app/_next/static/chunks/fd9d1056-2084b62c680baf80.js:1:94984 @ https://edgecheck-backend.vercel.app/_next/static/chunks/117-a45d7ec72ba41ba6.js:0

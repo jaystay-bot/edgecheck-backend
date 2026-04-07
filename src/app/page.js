@@ -1,17 +1,14 @@
-import "./globals.css";
-
 export default async function LandingPage() {
   let userId = null;
 
-  // Only call auth() if Clerk is configured
-  if (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
+  // Only call auth() if Clerk is fully configured
+  if (process.env.CLERK_SECRET_KEY) {
     const { auth } = await import("@clerk/nextjs/server");
     const authResult = await auth();
     userId = authResult.userId;
   }
 
-  // If signed in, go to dashboard (Stripe subscription checked there)
-  // If not signed in, go to sign-up
+  // Signed in → dashboard, not signed in → sign-up
   const ctaHref = userId ? "/dashboard" : "/sign-up";
   return (
     <div

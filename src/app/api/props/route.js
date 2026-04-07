@@ -105,20 +105,6 @@ const SPORT_CONFIG = {
         maxProps: 10,
         filterFn: () => true,
       },
-      {
-        id: "blocks",
-        name: "Blocks",
-        markets: ["player_blocks"],
-        maxProps: 8,
-        filterFn: () => true,
-      },
-      {
-        id: "steals",
-        name: "Steals",
-        markets: ["player_steals"],
-        maxProps: 8,
-        filterFn: () => true,
-      },
     ],
   },
 };
@@ -491,12 +477,22 @@ function scoreNBAProp(prop, bestOdds, edge) {
       else if (isAssists) statValue = g.assists || 0;
       // Default fallback
       else statValue = g.points || g.goals || 0;
-      return statValue >= line ? "H" : "M";
+
+      // Steals/Blocks: use 1+ threshold instead of line
+      const threshold = (isSteals || isBlocks) ? 1 : line;
+      return statValue >= threshold ? "H" : "M";
     });
 
     const hitCount = results.filter((r) => r === "H").length;
     const totalGames = results.length;
-    last10HitRate = `${hitCount}/${totalGames}`;
+    // Format steals/blocks as "1+ STL/BLK: X/10", others as "X/10"
+    if (isSteals) {
+      last10HitRate = `1+ STL: ${hitCount}/${totalGames}`;
+    } else if (isBlocks) {
+      last10HitRate = `1+ BLK: ${hitCount}/${totalGames}`;
+    } else {
+      last10HitRate = `${hitCount}/${totalGames}`;
+    }
     last10Results = results.join("");
   }
 
@@ -702,8 +698,12 @@ function scoreNBAProp(prop, bestOdds, edge) {
     tier = "Risky";
   }
 
-  // Compute hitRateLast10 as numeric for UI (e.g., 7 from "7/10")
-  const hitRateLast10 = last10HitRate ? parseInt(last10HitRate.split("/")[0], 10) : null;
+  // Compute hitRateLast10 as numeric for UI (e.g., 7 from "7/10" or "1+ STL: 7/10")
+  let hitRateLast10 = null;
+  if (last10HitRate) {
+    const match = last10HitRate.match(/(\d+)\/\d+$/);
+    hitRateLast10 = match ? parseInt(match[1], 10) : null;
+  }
 
   return {
     heaterScore,
@@ -715,7 +715,7 @@ function scoreNBAProp(prop, bestOdds, edge) {
     riskReason,
     whatCouldGoWrong: riskReason,
     // Hit rate context (matches MLB structure)
-    last10HitRate, // e.g., "7/10"
+    last10HitRate, // e.g., "7/10" or "1+ STL: 7/10"
     last10Results, // e.g., "HHMHHMHHHM"
     hitRateLast10, // numeric for UI (e.g., 7)
     scoreBreakdown: {

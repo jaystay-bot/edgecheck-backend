@@ -2320,54 +2320,52 @@ export default function DashboardClient({ userEmail }) {
             ))}
           </div>
 
-          {/* Props Loading Skeleton */}
+          {/* Props Loading - Branded Loader */}
           {propsLoading && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-              {/* Loading Message */}
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "60px 24px",
+              gap: 20,
+            }}>
+              {/* Animated Logo */}
               <div style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 12,
-                padding: "20px 24px",
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                borderRadius: 12,
+                position: "relative",
+                width: 64,
+                height: 64,
+                animation: "logoFloat 1.8s ease-in-out infinite",
               }}>
-                <div style={{
-                  width: 20,
-                  height: 20,
-                  border: "2px solid var(--border)",
-                  borderTopColor: "var(--accent)",
-                  borderRadius: "50%",
-                  animation: "spin 0.8s linear infinite",
-                }} />
-                <span style={{ color: "var(--text)", fontSize: 15, fontWeight: 600 }}>
-                  Loading {propsSport.toUpperCase()} props...
-                </span>
+                <img
+                  src="/logo.svg"
+                  alt="Loading"
+                  style={{
+                    width: 64,
+                    height: 64,
+                    filter: "drop-shadow(0 0 12px rgba(0, 255, 136, 0.4))",
+                  }}
+                />
               </div>
-              {/* Skeleton Cards */}
-              {[1, 2].map((i) => (
-                <div key={i}>
-                  <div style={{ background: "var(--border)", height: 20, width: 180, borderRadius: 4, marginBottom: 12, animation: "pulse 1.5s ease-in-out infinite" }} />
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {[1, 2, 3].map((j) => (
-                      <div key={j} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
-                        <div style={{ display: "flex", gap: 16 }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ background: "var(--border)", height: 14, width: 120, borderRadius: 4, marginBottom: 8, animation: "pulse 1.5s ease-in-out infinite" }} />
-                            <div style={{ background: "var(--border)", height: 18, width: 180, borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
-                          </div>
-                          <div style={{ background: "var(--border)", height: 50, width: 50, borderRadius: 8, animation: "pulse 1.5s ease-in-out infinite" }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+              <span style={{
+                color: "var(--text-dim)",
+                fontSize: 14,
+                fontWeight: 500,
+                letterSpacing: "0.5px",
+              }}>
+                Loading {propsSport.toUpperCase()} props
+              </span>
               <style>{`
-                @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-                @keyframes spin { to { transform: rotate(360deg); } }
+                @keyframes logoFloat {
+                  0%, 100% {
+                    transform: scale(0.95) rotate(-3deg);
+                    filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.3));
+                  }
+                  50% {
+                    transform: scale(1.05) rotate(3deg);
+                    filter: drop-shadow(0 0 16px rgba(0, 255, 136, 0.5));
+                  }
+                }
               `}</style>
             </div>
           )}
@@ -2645,7 +2643,7 @@ export default function DashboardClient({ userEmail }) {
                                   {/* Source */}
                                   {prop.odds?.[0]?.bookmaker && (
                                     <div style={{ marginTop: 6, fontSize: 10, color: "var(--text-dim)" }}>
-                                      Source: {prop.odds[0].bookmaker}
+                                      Source: EdgeCheck Verified Data
                                     </div>
                                   )}
 

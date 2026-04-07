@@ -1,12 +1,9 @@
-Deploy to Vercel. Run this to push and deploy changes.
+Verify the project builds and passes type-check, then deploy to Vercel.
 
-1. Run npm run build — must pass with zero errors
-2. Run npm run lint — fix any errors before continuing
-3. Check git status — confirm only intended files are staged
-4. Commit changes with clear message
-5. Push to GitHub — git push origin HEAD
-6. Monitor Vercel build — confirm deployment succeeds
-7. Test live URL — verify changes work in production
-8. Report deployment status and live URL
+Return:
+- what was verified
+- whether deploy succeeded
+- preview or production URL
+- any deploy error
 
-Stop immediately if build or lint fails. Fix issues before deploying.
+Do not modify unrelated code. Stop after deploy.

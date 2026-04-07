@@ -1,6 +1,8 @@
 import { SignIn } from "@clerk/nextjs";
 
 export default function SignInPage() {
+  const clerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
   return (
     <div
       style={{
@@ -20,18 +22,25 @@ export default function SignInPage() {
           Sign in to access your dashboard
         </p>
       </div>
-      <SignIn
-        appearance={{
-          elements: {
-            rootBox: { width: "100%", maxWidth: 400 },
-            card: { background: "var(--surface)", border: "1px solid var(--border)" },
-          },
-        }}
-        routing="path"
-        path="/sign-in"
-        signUpUrl="/sign-up"
-        afterSignInUrl="/dashboard"
-      />
+      {clerkEnabled ? (
+        <SignIn
+          appearance={{
+            elements: {
+              rootBox: { width: "100%", maxWidth: 400 },
+              card: { background: "var(--surface)", border: "1px solid var(--border)" },
+            },
+          }}
+          routing="path"
+          path="/sign-in"
+          signUpUrl="/sign-up"
+          afterSignInUrl="/dashboard"
+        />
+      ) : (
+        <div style={{ padding: 24, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, maxWidth: 400 }}>
+          <p style={{ color: "var(--text-dim)", fontSize: 14 }}>Auth not configured for local development.</p>
+          <a href="/dashboard" style={{ color: "var(--accent)", fontSize: 14 }}>Go to Dashboard</a>
+        </div>
+      )}
       <div style={{ marginTop: 24 }}>
         <a
           href="/"

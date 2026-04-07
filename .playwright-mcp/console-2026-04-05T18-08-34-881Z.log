@@ -1,0 +1,9 @@
+[    1393ms] [WARNING] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview @ https://logical-mule-24.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js:18
+[    2374ms] [LOG] [Merge Debug] ESPN games: 11, Odds games: 0 @ https://edgecheck.app/_next/static/chunks/app/dashboard/page-d2d76345e98e7a28.js:0
+[   85528ms] [ERROR] Failed to load resource: the server responded with a status of 504 () @ https://edgecheck.app/api/props?sport=nba:0
+[   85534ms] [WARNING] Props fetch error: Unexpected token 'A', "An error o"... is not valid JSON @ https://edgecheck.app/_next/static/chunks/app/dashboard/page-d2d76345e98e7a28.js:0
+[ 3359864ms] [WARNING] Props fetch error: Failed to fetch @ https://edgecheck.app/_next/static/chunks/app/dashboard/page-d2d76345e98e7a28.js:0
+[ 3360066ms] [LOG] [Merge Debug] ESPN games: 11, Odds games: 0 @ https://edgecheck.app/_next/static/chunks/app/dashboard/page-d2d76345e98e7a28.js:0
+[ 3360155ms] [WARNING] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview @ https://logical-mule-24.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js:18
+[ 3420253ms] [ERROR] Failed to load resource: the server responded with a status of 504 () @ https://edgecheck.app/api/best-play:0
+[ 3420255ms] [WARNING] Best Play fetch error: Unexpected token 'A', "An error o"... is not valid JSON @ https://edgecheck.app/_next/static/chunks/app/dashboard/page-d2d76345e98e7a28.js:0
