@@ -38,8 +38,8 @@ const SPORT_CONFIG = {
     oddsKey: "icehockey_nhl",
     cacheTTL: 30 * 60 * 1000,
     // NHL uses game-level grouping, not category-level
-    // Allowed prop types: goals, assists, shots, points (NO blocked shots)
-    allowedMarkets: ["player_goals", "player_assists", "player_shots_on_goal", "player_points"],
+    // Allowed prop types: assists, shots, points only (per user requirements)
+    allowedMarkets: ["player_assists", "player_shots_on_goal", "player_points"],
     maxPropsPerGame: 15, // Show top 10-20 props per game
     minHitRate: 5, // Prioritize props with >= 5/10 hit rate
     categories: [
@@ -1038,9 +1038,8 @@ async function fetchNHLPropsFromUnderdog() {
     const nhlProps = [];
 
     // Map Underdog stat names to our market keys
-    // NOTE: Blocked Shots excluded per user requirements (only shots/goals/assists/points)
+    // NOTE: Only Assists, Points, Shots on Goal per user requirements
     const nhlStatMap = {
-      "Goals": { marketKey: "player_goals", propType: "Goals", idPrefix: "goals" },
       "Assists": { marketKey: "player_assists", propType: "Assists", idPrefix: "ast" },
       "Points": { marketKey: "player_points", propType: "Points", idPrefix: "pts" },
       "Shots on Goal": { marketKey: "player_shots_on_goal", propType: "Shots on Goal", idPrefix: "sog" },
@@ -1062,10 +1061,10 @@ async function fetchNHLPropsFromUnderdog() {
       // Must be NHL game and not a combo prop
       if (game?.sport_id !== "NHL" || subheader.includes("+")) continue;
 
-      // Match stat type from subheader
+      // Match stat type from subheader (handles "Higher 2.5 Assists" or just "Assists")
       let matchedStat = null;
       for (const statName of Object.keys(nhlStatMap)) {
-        if (subheader.endsWith(` ${statName}`)) {
+        if (subheader.endsWith(` ${statName}`) || subheader === statName || subheader.toLowerCase().includes(statName.toLowerCase())) {
           matchedStat = nhlStatMap[statName];
           break;
         }
@@ -1680,9 +1679,9 @@ export async function GET(request) {
 
   for (const s of sportsToFetch) {
     if (!SPORT_CONFIG[s]) continue;
-    // Skip NHL if no API key (it requires Odds API)
-    if (s === "nhl" && !apiKey) {
-      console.warn("[Props] Skipping NHL - no ODDS_API_KEY configured");
+    // Skip NHL until fully tested (isolate from affecting NBA/MLB)
+    if (s === "nhl") {
+      console.log("[Props] NHL props temporarily disabled - use direct NHL endpoint when ready");
       continue;
     }
     const categories = await getPropsForSport(s, apiKey);

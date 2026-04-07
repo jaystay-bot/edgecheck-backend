@@ -240,7 +240,7 @@ async function ensureAllPlayersLoaded() {
     console.log(`[NBAStats] Fetching full player list for season ${seasonStr}...`);
     const url = `${NBA_STATS_API}/commonallplayers?LeagueID=00&Season=${seasonStr}&IsOnlyCurrentSeason=1`;
     const res = await fetch(url, {
-      signal: AbortSignal.timeout(8000), // 8s timeout (reduced from 15s)
+      signal: AbortSignal.timeout(10000), // 10s timeout for player list (called once)
       headers: NBA_STATS_HEADERS,
     });
 
@@ -334,7 +334,7 @@ async function fetchNBAPlayerStats(playerId) {
 
     const url = `${NBA_STATS_API}/playergamelog?PlayerID=${playerId}&Season=${seasonStr}&SeasonType=Regular+Season`;
     const res = await fetch(url, {
-      signal: AbortSignal.timeout(5000), // 5s timeout per player (reduced from 10s)
+      signal: AbortSignal.timeout(4000), // 4s timeout per player (faster failure for batch processing)
       headers: NBA_STATS_HEADERS,
     });
 
@@ -400,8 +400,8 @@ export async function enrichNBAProps(props) {
   if (!props || props.length === 0) return props;
 
   const startTime = Date.now();
-  const MAX_ENRICHMENT_TIME = 16500; // 16.5 seconds max (+1.5s for better L10 coverage)
-  const MAX_PLAYERS_TO_FETCH = 35; // Increased to use extra time budget
+  const MAX_ENRICHMENT_TIME = 22000; // 22 seconds max for better L10 coverage
+  const MAX_PLAYERS_TO_FETCH = 50; // Cover more players per category
 
   console.log(`[NBAStats] Enriching ${props.length} NBA props (max ${MAX_ENRICHMENT_TIME}ms budget)...`);
 
@@ -419,48 +419,45 @@ export async function enrichNBAProps(props) {
     return { ...p, _priority: priority };
   }).sort((a, b) => b._priority - a._priority);
 
-  // Reserve slots for top steals/blocks props (these categories need guaranteed L10 enrichment)
+  // Prioritize top players from each category for guaranteed L10 coverage
   const uniquePlayers = [];
   const seenPlayers = new Set();
 
-  // Find top 2 steals props and add their players first
-  const stealsProps = props.filter(p =>
-    p.propType?.toLowerCase().includes('steal') || p.statType?.toLowerCase()?.includes('steal')
-  ).sort((a, b) => (a.line || 10) - (b.line || 10)); // Lower lines = better
+  // Category filters for main NBA prop types (sorted by typical L10 coverage gaps)
+  const categoryFilters = [
+    { name: 'rebounds', match: (p) => p.propType?.toLowerCase().includes('rebound') },
+    { name: 'assists', match: (p) => p.propType?.toLowerCase().includes('assist') },
+    { name: 'threes', match: (p) => p.propType?.toLowerCase().includes('3-point') || p.propType?.toLowerCase().includes('three') },
+    { name: 'points', match: (p) => p.propType?.toLowerCase().includes('point') && !p.propType?.toLowerCase().includes('3-point') },
+  ];
 
-  for (const p of stealsProps.slice(0, 2)) {
-    if (p.playerName && !seenPlayers.has(p.playerName)) {
-      uniquePlayers.push(p.playerName);
-      seenPlayers.add(p.playerName);
+  // Reserve top 8 players from each category (ensures better L10 coverage)
+  for (const cat of categoryFilters) {
+    const catProps = scoredProps.filter(cat.match).slice(0, 8);
+    for (const p of catProps) {
+      if (p.playerName && !seenPlayers.has(p.playerName)) {
+        uniquePlayers.push(p.playerName);
+        seenPlayers.add(p.playerName);
+      }
     }
   }
+  console.log(`[NBAStats] Reserved ${uniquePlayers.length} slots for top category players`);
 
-  // Find top 2 blocks props and add their players
-  const blocksProps = props.filter(p =>
-    p.propType?.toLowerCase().includes('block') || p.statType?.toLowerCase()?.includes('block')
-  ).sort((a, b) => (a.line || 10) - (b.line || 10));
-
-  for (const p of blocksProps.slice(0, 2)) {
-    if (p.playerName && !seenPlayers.has(p.playerName)) {
-      uniquePlayers.push(p.playerName);
-      seenPlayers.add(p.playerName);
-    }
-  }
-
-  console.log(`[NBAStats] Reserved ${uniquePlayers.length} slots for steals/blocks players`);
-
-  // Fill remaining slots with high-priority players from other categories
+  // Fill remaining slots with other high-priority players
   for (const p of scoredProps) {
     if (!seenPlayers.has(p.playerName) && uniquePlayers.length < MAX_PLAYERS_TO_FETCH) {
       uniquePlayers.push(p.playerName);
       seenPlayers.add(p.playerName);
     }
   }
-  console.log(`[NBAStats] Prioritized ${uniquePlayers.length} players total (incl. reserved steals/blocks)...`);
+  console.log(`[NBAStats] Prioritized ${uniquePlayers.length} players total...`);
+
+  // Pre-load player list ONCE before batch fetches (avoids redundant parallel calls)
+  await ensureAllPlayersLoaded();
 
   // Batch fetch player IDs (with concurrency limit to avoid rate limiting)
   const playerStatsMap = new Map(); // playerName -> last10Games
-  const BATCH_SIZE = 5;
+  const BATCH_SIZE = 8; // Larger batches for more parallel fetches within time budget
   let timedOut = false;
 
   for (let i = 0; i < uniquePlayers.length && !timedOut; i += BATCH_SIZE) {

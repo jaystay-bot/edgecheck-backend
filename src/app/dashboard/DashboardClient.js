@@ -2584,9 +2584,9 @@ export default function DashboardClient({ userEmail }) {
                                 )}
                                 {prop.last10HitRate ? (
                                   <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: (prop.sport === "MLB" && prop.seasonAvg) ? 0 : "auto" }}>
-                                    <TargetIcon size={12} color="var(--green)" />
+                                    <TargetIcon size={12} color={prop.sport === "NBA" ? (prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--red)") : "var(--green)"} />
                                     <span style={{ color: "var(--text-dim)" }}>L10:</span>
-                                    <span style={{ fontWeight: 700, color: prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--text-dim)" }}>
+                                    <span style={{ fontWeight: 700, color: prop.sport === "NBA" ? (prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--red)") : (prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--text-dim)") }}>
                                       {prop.last10HitRate}
                                     </span>
                                   </div>
@@ -2672,7 +2672,7 @@ export default function DashboardClient({ userEmail }) {
                                     <div style={{ marginTop: 10, padding: "8px 10px", background: "var(--surface2)", borderRadius: 6 }}>
                                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                                         <span style={{ fontSize: 11, color: "var(--text-dim)" }}>Last 10 Games</span>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--red)" }}>
+                                        <span style={{ fontSize: 12, fontWeight: 700, color: prop.sport === "NBA" ? (prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--red)") : (prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--text-dim)") }}>
                                           {prop.last10HitRate}
                                         </span>
                                       </div>
