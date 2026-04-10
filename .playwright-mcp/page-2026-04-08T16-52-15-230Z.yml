@@ -1,0 +1,21 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - heading "EdgeCheck" [level=1] [ref=e4]
+      - paragraph [ref=e5]: Know What You're Betting
+      - paragraph [ref=e6]: Check any bet in seconds. See the risk, the strength, and whether it's worth playing — or worth skipping.
+      - paragraph [ref=e7]: Most bets aren't good bets. This helps you avoid them.
+      - link "Check a Bet" [ref=e8] [cursor=pointer]:
+        - /url: /dashboard
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: Live Odds
+          - generic [ref=e12]: Always see the current number before you bet
+        - generic [ref=e13]:
+          - generic [ref=e14]: Bet Breakdown
+          - generic [ref=e15]: Edge rating, confidence, and risk in seconds
+        - generic [ref=e16]:
+          - generic [ref=e17]: Clear Decision
+          - generic [ref=e18]: Know what's worth playing — and what to avoid
+    - generic [ref=e19]: For entertainment purposes only. Please bet responsibly.
+  - alert [ref=e20]

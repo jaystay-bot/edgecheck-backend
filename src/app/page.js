@@ -1,8 +1,8 @@
 export default async function LandingPage() {
   let userId = null;
 
-  // Only call auth() if Clerk is fully configured
-  if (process.env.CLERK_SECRET_KEY) {
+  // Only call auth() if Clerk is enabled (must match RootLayout condition)
+  if (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
     const { auth } = await import("@clerk/nextjs/server");
     const authResult = await auth();
     userId = authResult.userId;

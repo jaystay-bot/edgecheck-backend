@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { UserButton } from "@clerk/nextjs";
 import "../globals.css";
+
+// Module-level flag for one-shot prefetch (survives Strict Mode remounts)
+let propsPrefetched = false;
 
 // Lucide icons as simple SVG components
 const FlameIcon = ({ size = 20, color = "currentColor" }) => (
@@ -577,6 +580,8 @@ export default function DashboardClient({ userEmail }) {
   const [propsCategories, setPropsCategories] = useState([]);
   const [propsLoading, setPropsLoading] = useState(false);
   const [propsSport, setPropsSport] = useState("mlb"); // mlb | nba | nhl
+  const propsSportRef = useRef(propsSport);
+  propsSportRef.current = propsSport;
   const [isPaidUser, setIsPaidUser] = useState(false);
   const [propsScored, setPropsScored] = useState(false);
 
@@ -666,6 +671,16 @@ export default function DashboardClient({ userEmail }) {
     fetchHeatersData();
   }, [fetchHeatersData]);
 
+  // Prefetch default props sport on mount to warm server cache
+  useEffect(() => {
+    if (propsPrefetched) return; // Module-level guard survives Strict Mode remounts
+    propsPrefetched = true;
+    const defaultSport = "mlb";
+    fetch(`/api/props?sport=${defaultSport}`)
+      .then(() => console.log(`[Prefetch] ${defaultSport.toUpperCase()} props cache warmed`))
+      .catch(() => {}); // Silent fail - prefetch is best-effort
+  }, []);
+
   // Fetch Best Play with localStorage caching
   const fetchBestPlay = useCallback(async (forceRefresh = false) => {
     // Check cache first (unless forcing refresh)
@@ -722,10 +737,16 @@ export default function DashboardClient({ userEmail }) {
 
   // Fetch props when view changes to props or sport filter changes
   const fetchProps = useCallback(async () => {
+    const requestedSport = propsSport;
     setPropsLoading(true);
     try {
-      const res = await fetch(`/api/props?sport=${propsSport}`);
+      const res = await fetch(`/api/props?sport=${requestedSport}`);
       const data = await res.json();
+
+      // Guard: ignore stale responses if user switched sports
+      if (propsSportRef.current !== requestedSport) {
+        return;
+      }
 
       if (res.ok) {
         setPropsCategories(data.categories || []);
@@ -736,10 +757,16 @@ export default function DashboardClient({ userEmail }) {
         setPropsCategories([]);
       }
     } catch (err) {
+      // Guard: ignore stale errors if user switched sports
+      if (propsSportRef.current !== requestedSport) {
+        return;
+      }
       console.warn("Props fetch error:", err.message);
       setPropsCategories([]);
     } finally {
-      setPropsLoading(false);
+      if (propsSportRef.current === requestedSport) {
+        setPropsLoading(false);
+      }
     }
   }, [propsSport]);
 
@@ -2411,6 +2438,213 @@ export default function DashboardClient({ userEmail }) {
                     <div style={{ padding: 20, background: "var(--surface)", borderRadius: 10, color: "var(--text-dim)", fontSize: 13, textAlign: "center" }}>
                       No props in this category tonight
                     </div>
+                  ) : category.isGameGroup && category.sport === "NHL" ? (
+                    /* NHL game groups: render props grouped by propType (Points, Assists, Goals, Shots on Goal) */
+                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                      {["Points", "Assists", "Goals", "Shots on Goal"].map((propTypeName) => {
+                        const propsInType = category.props.filter(p => p.propType === propTypeName);
+                        if (propsInType.length === 0) return null;
+                        return (
+                          <div key={propTypeName}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, paddingLeft: 4 }}>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--accent)" }}>{propTypeName}</span>
+                              <span style={{ fontSize: 11, color: "var(--text-dim)" }}>({propsInType.length})</span>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                              {propsInType.map((prop) => {
+                                const isExpanded = expandedPropId === prop.id;
+                                const tierColors = getTierColor(prop.tier);
+                                const gameTimeStr = formatGameTime(prop.gameTime, prop.commenceTime);
+
+                                return (
+                                <div
+                                  key={prop.id}
+                                  style={{
+                                    background: "var(--surface)",
+                                    border: prop.heaterScore >= 8 ? "2px solid var(--green)" : "1px solid var(--border)",
+                                    borderRadius: 12,
+                                    padding: 16,
+                                    cursor: isPaidUser ? "pointer" : "default",
+                                    transition: "all 0.2s ease",
+                                  }}
+                                  onClick={() => isPaidUser && setExpandedPropId(isExpanded ? null : prop.id)}
+                                >
+                                  {/* Prop Header Row */}
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                                    <div style={{ flex: 1 }}>
+                                      {/* Tier Badge + Game Time */}
+                                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                                        {prop.tier && (
+                                          <span style={{
+                                            background: tierColors.bg,
+                                            color: tierColors.text,
+                                            padding: "2px 8px",
+                                            borderRadius: 4,
+                                            fontSize: 10,
+                                            fontWeight: 700,
+                                            textTransform: "uppercase",
+                                          }}>
+                                            {prop.tier}
+                                          </span>
+                                        )}
+                                        {gameTimeStr && (
+                                          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
+                                            <ClockIcon size={12} color={gameTimeStr === "Live" ? "var(--red)" : "var(--accent)"} />
+                                            <span style={{ color: gameTimeStr === "Live" ? "var(--red)" : "var(--accent)", fontWeight: gameTimeStr === "Live" ? 700 : 400 }}>
+                                              {gameTimeStr}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      {/* Player Name */}
+                                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                                        <UserIcon size={16} color="var(--accent)" />
+                                        <span style={{ fontWeight: 700, fontSize: 16 }}>{prop.playerName}</span>
+                                      </div>
+
+                                      {/* Prop Line + Best Odds */}
+                                      <div style={{ fontSize: 14, fontWeight: 600 }}>
+                                        {prop.overUnder} {prop.line} {prop.propType}
+                                        <span
+                                          style={{ marginLeft: 8, color: prop.bestOdds > 0 ? "var(--green)" : "var(--text-dim)" }}
+                                          title={explainOdds(prop.bestOdds)}
+                                        >
+                                          {prop.bestOdds > 0 ? "+" : ""}{prop.bestOdds}
+                                        </span>
+                                      </div>
+                                      <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 2 }}>
+                                        {explainOdds(prop.bestOdds)}
+                                      </div>
+                                    </div>
+
+                                    {/* Heater Score Badge */}
+                                    {prop.heaterScore ? (
+                                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 60 }}>
+                                        <div
+                                          style={{
+                                            background:
+                                              prop.heaterScore >= 9 ? "var(--green)"
+                                              : prop.heaterScore >= 8 ? "var(--yellow)"
+                                              : prop.heaterScore >= 7 ? "var(--orange)"
+                                              : "var(--surface2)",
+                                            color: prop.heaterScore >= 7 ? "#fff" : "var(--text)",
+                                            padding: "6px 12px",
+                                            borderRadius: 8,
+                                            fontWeight: 700,
+                                            fontSize: 20,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 4,
+                                          }}
+                                        >
+                                          <FlameIcon size={16} color={prop.heaterScore >= 7 ? "#fff" : "var(--text-dim)"} />
+                                          {prop.heaterScore}
+                                        </div>
+                                        <span style={{ fontSize: 9, color: "var(--text-dim)", marginTop: 2 }}>HEATER</span>
+                                        {isPaidUser && (
+                                          <span style={{ fontSize: 9, color: "var(--accent)", marginTop: 4 }}>
+                                            {isExpanded ? "tap to collapse" : "tap for details"}
+                                          </span>
+                                        )}
+                                      </div>
+                                    ) : !isPaidUser ? (
+                                      <div
+                                        style={{
+                                          background: "var(--surface2)",
+                                          padding: "10px",
+                                          borderRadius: 8,
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 4,
+                                        }}
+                                      >
+                                        <LockIcon size={14} color="var(--text-dim)" />
+                                        <span style={{ fontSize: 10, color: "var(--text-dim)" }}>PRO</span>
+                                      </div>
+                                    ) : null}
+                                  </div>
+
+                                  {/* Paid User Stats + Analysis (simplified for NHL) */}
+                                  {isPaidUser && prop.heaterScore && (
+                                    <>
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          gap: 12,
+                                          marginBottom: 8,
+                                          padding: "8px 12px",
+                                          background: "var(--surface2)",
+                                          borderRadius: 6,
+                                          flexWrap: "wrap",
+                                          fontSize: 12,
+                                        }}
+                                      >
+                                        {prop.edge && (
+                                          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                            <TrendingUpIcon size={12} color={parseFloat(prop.edge) >= 3 ? "var(--green)" : "var(--text-dim)"} />
+                                            <span style={{ color: "var(--text-dim)" }}>Edge:</span>
+                                            <span style={{ fontWeight: 700, color: parseFloat(prop.edge) >= 5 ? "var(--green)" : parseFloat(prop.edge) >= 2 ? "var(--yellow)" : "var(--text-dim)" }}>
+                                              {prop.edge}%
+                                            </span>
+                                          </div>
+                                        )}
+                                        {prop.last10HitRate && (
+                                          <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" }}>
+                                            <TargetIcon size={12} color={prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--text-dim)"} />
+                                            <span style={{ color: "var(--text-dim)" }}>L10:</span>
+                                            <span style={{ fontWeight: 700, color: prop.hitRateLast10 >= 7 ? "var(--green)" : prop.hitRateLast10 >= 5 ? "var(--yellow)" : "var(--text-dim)" }}>
+                                              {prop.last10HitRate}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </>
+                                  )}
+
+                                  {/* Free User Upsell */}
+                                  {!isPaidUser && (
+                                    <div
+                                      style={{
+                                        padding: "12px",
+                                        background: "linear-gradient(135deg, var(--surface2) 0%, rgba(99,102,241,0.1) 100%)",
+                                        borderRadius: 6,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        marginTop: 8,
+                                      }}
+                                    >
+                                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                        <LockIcon size={14} color="var(--accent)" />
+                                        <span style={{ fontSize: 12, color: "var(--text-dim)" }}>Unlock hit rates, AI analysis, and heater scores</span>
+                                      </div>
+                                      <button
+                                        onClick={handleUpgrade}
+                                        disabled={upgrading}
+                                        style={{
+                                          padding: "6px 14px",
+                                          background: "var(--accent)",
+                                          color: "#fff",
+                                          border: "none",
+                                          borderRadius: 6,
+                                          fontWeight: 600,
+                                          fontSize: 12,
+                                          cursor: upgrading ? "not-allowed" : "pointer",
+                                        }}
+                                      >
+                                        {upgrading ? "..." : "Upgrade"}
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                       {category.props.map((prop) => {
@@ -2590,14 +2824,14 @@ export default function DashboardClient({ userEmail }) {
                                       {prop.last10HitRate}
                                     </span>
                                   </div>
-                                ) : (
+                                ) : prop.sport !== "NBA" ? (
                                   <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" }}>
                                     <span style={{ color: "var(--text-dim)" }}>Conf:</span>
                                     <span style={{ fontWeight: 700, color: prop.confidence >= 8 ? "var(--green)" : "var(--text-dim)" }}>
                                       {prop.confidence}/10
                                     </span>
                                   </div>
-                                )}
+                                ) : null}
                               </div>
 
                               {/* Expanded Details */}

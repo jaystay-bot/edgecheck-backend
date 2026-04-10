@@ -1,0 +1,1138 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - heading "EdgeCheck" [level=1] [ref=e5]
+        - paragraph [ref=e6]: Sports Betting Edge Analyzer
+      - button "Open user menu" [ref=e9] [cursor=pointer]:
+        - img "Jonathan Staley's logo" [ref=e12]
+    - generic [ref=e14]:
+      - button "Games" [ref=e15] [cursor=pointer]
+      - button "Props" [ref=e16] [cursor=pointer]:
+        - img [ref=e17]
+        - text: Props
+      - button "Line Watch" [ref=e19] [cursor=pointer]:
+        - img [ref=e20]
+        - text: Line Watch
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - img [ref=e65]
+        - generic [ref=e67]: Best Play of the Day
+      - paragraph [ref=e68]: No strong edges found today
+    - generic [ref=e69]:
+      - generic [ref=e70]:
+        - img [ref=e71]
+        - heading "Smart Props" [level=2] [ref=e72]
+      - paragraph [ref=e73]: Top-ranked props by category. Cached 4 hours. One API call per sport.
+    - generic [ref=e74]:
+      - button "MLB" [ref=e75] [cursor=pointer]
+      - button "NBA" [ref=e76] [cursor=pointer]
+      - button "NHL" [active] [ref=e77] [cursor=pointer]
+    - generic [ref=e3020]:
+      - generic [ref=e3021]:
+        - generic [ref=e3022]:
+          - img [ref=e3023]
+          - heading "EDM @ SJ" [level=3] [ref=e3025]
+          - generic [ref=e3026]: (15 props)
+        - generic [ref=e3028]:
+          - generic [ref=e3029]:
+            - generic [ref=e3030]: Points
+            - generic [ref=e3031]: (15)
+          - generic [ref=e3032]:
+            - generic [ref=e3033] [cursor=pointer]:
+              - generic [ref=e3034]:
+                - generic [ref=e3035]:
+                  - generic [ref=e3036]:
+                    - generic [ref=e3037]: Risky
+                    - generic [ref=e3038]:
+                      - img [ref=e3039]
+                      - generic [ref=e3042]: Wed 10:00pm
+                  - generic [ref=e3043]:
+                    - img [ref=e3044]
+                    - generic [ref=e3047]: Connor McDavid
+                  - generic [ref=e3048]: Over 12.05 Points-112
+                  - generic [ref=e3049]: "-112 means bet $112 to win $100"
+                - generic [ref=e3050]:
+                  - generic [ref=e3051]:
+                    - img [ref=e3052]
+                    - text: "8.5"
+                  - generic [ref=e3054]: HEATER
+                  - generic [ref=e3055]: tap for details
+              - generic [ref=e3057]:
+                - img [ref=e3058]
+                - generic [ref=e3061]: "Edge:"
+                - generic [ref=e3062]: "-2.0%"
+            - generic [ref=e3063] [cursor=pointer]:
+              - generic [ref=e3064]:
+                - generic [ref=e3065]:
+                  - generic [ref=e3066]:
+                    - generic [ref=e3067]: Risky
+                    - generic [ref=e3068]:
+                      - img [ref=e3069]
+                      - generic [ref=e3072]: Wed 10:00pm
+                  - generic [ref=e3073]:
+                    - img [ref=e3074]
+                    - generic [ref=e3077]: Macklin Celebrini
+                  - generic [ref=e3078]: Over 11.05 Points-112
+                  - generic [ref=e3079]: "-112 means bet $112 to win $100"
+                - generic [ref=e3080]:
+                  - generic [ref=e3081]:
+                    - img [ref=e3082]
+                    - text: "8.5"
+                  - generic [ref=e3084]: HEATER
+                  - generic [ref=e3085]: tap for details
+              - generic [ref=e3087]:
+                - img [ref=e3088]
+                - generic [ref=e3091]: "Edge:"
+                - generic [ref=e3092]: "-2.0%"
+            - generic [ref=e3093] [cursor=pointer]:
+              - generic [ref=e3094]:
+                - generic [ref=e3095]:
+                  - generic [ref=e3096]:
+                    - generic [ref=e3097]: Risky
+                    - generic [ref=e3098]:
+                      - img [ref=e3099]
+                      - generic [ref=e3102]: Wed 10:00pm
+                  - generic [ref=e3103]:
+                    - img [ref=e3104]
+                    - generic [ref=e3107]: Alex Nedeljkovic
+                  - generic [ref=e3108]: Over 9.05 Points-112
+                  - generic [ref=e3109]: "-112 means bet $112 to win $100"
+                - generic [ref=e3110]:
+                  - generic [ref=e3111]:
+                    - img [ref=e3112]
+                    - text: "8.5"
+                  - generic [ref=e3114]: HEATER
+                  - generic [ref=e3115]: tap for details
+              - generic [ref=e3117]:
+                - img [ref=e3118]
+                - generic [ref=e3121]: "Edge:"
+                - generic [ref=e3122]: "-2.0%"
+            - generic [ref=e3123] [cursor=pointer]:
+              - generic [ref=e3124]:
+                - generic [ref=e3125]:
+                  - generic [ref=e3126]:
+                    - generic [ref=e3127]: Risky
+                    - generic [ref=e3128]:
+                      - img [ref=e3129]
+                      - generic [ref=e3132]: Wed 10:00pm
+                  - generic [ref=e3133]:
+                    - img [ref=e3134]
+                    - generic [ref=e3137]: Connor Ingram
+                  - generic [ref=e3138]: Over 9.05 Points-112
+                  - generic [ref=e3139]: "-112 means bet $112 to win $100"
+                - generic [ref=e3140]:
+                  - generic [ref=e3141]:
+                    - img [ref=e3142]
+                    - text: "8.5"
+                  - generic [ref=e3144]: HEATER
+                  - generic [ref=e3145]: tap for details
+              - generic [ref=e3147]:
+                - img [ref=e3148]
+                - generic [ref=e3151]: "Edge:"
+                - generic [ref=e3152]: "-2.0%"
+            - generic [ref=e3153] [cursor=pointer]:
+              - generic [ref=e3154]:
+                - generic [ref=e3155]:
+                  - generic [ref=e3156]:
+                    - generic [ref=e3157]: Risky
+                    - generic [ref=e3158]:
+                      - img [ref=e3159]
+                      - generic [ref=e3162]: Wed 10:00pm
+                  - generic [ref=e3163]:
+                    - img [ref=e3164]
+                    - generic [ref=e3167]: Evan Bouchard
+                  - generic [ref=e3168]: Over 9.05 Points-112
+                  - generic [ref=e3169]: "-112 means bet $112 to win $100"
+                - generic [ref=e3170]:
+                  - generic [ref=e3171]:
+                    - img [ref=e3172]
+                    - text: "8.5"
+                  - generic [ref=e3174]: HEATER
+                  - generic [ref=e3175]: tap for details
+              - generic [ref=e3177]:
+                - img [ref=e3178]
+                - generic [ref=e3181]: "Edge:"
+                - generic [ref=e3182]: "-2.0%"
+            - generic [ref=e3183] [cursor=pointer]:
+              - generic [ref=e3184]:
+                - generic [ref=e3185]:
+                  - generic [ref=e3186]:
+                    - generic [ref=e3187]: Risky
+                    - generic [ref=e3188]:
+                      - img [ref=e3189]
+                      - generic [ref=e3192]: Wed 10:00pm
+                  - generic [ref=e3193]:
+                    - img [ref=e3194]
+                    - generic [ref=e3197]: Tyler Toffoli
+                  - generic [ref=e3198]:
+                    - text: Over 0.5 Points
+                    - generic "+126 means $100 wins $126" [ref=e3199]: "+126"
+                  - generic [ref=e3200]: +126 means $100 wins $126
+                - generic [ref=e3201]:
+                  - generic [ref=e3202]:
+                    - img [ref=e3203]
+                    - text: "8"
+                  - generic [ref=e3205]: HEATER
+                  - generic [ref=e3206]: tap for details
+              - generic [ref=e3208]:
+                - img [ref=e3209]
+                - generic [ref=e3212]: "Edge:"
+                - generic [ref=e3213]: "-1.7%"
+            - generic [ref=e3214] [cursor=pointer]:
+              - generic [ref=e3215]:
+                - generic [ref=e3216]:
+                  - generic [ref=e3217]:
+                    - generic [ref=e3218]: Risky
+                    - generic [ref=e3219]:
+                      - img [ref=e3220]
+                      - generic [ref=e3223]: Wed 10:00pm
+                  - generic [ref=e3224]:
+                    - img [ref=e3225]
+                    - generic [ref=e3228]: Collin Graf
+                  - generic [ref=e3229]:
+                    - text: Over 0.5 Points
+                    - generic "+121 means $100 wins $121" [ref=e3230]: "+121"
+                  - generic [ref=e3231]: +121 means $100 wins $121
+                - generic [ref=e3232]:
+                  - generic [ref=e3233]:
+                    - img [ref=e3234]
+                    - text: "8"
+                  - generic [ref=e3236]: HEATER
+                  - generic [ref=e3237]: tap for details
+              - generic [ref=e3239]:
+                - img [ref=e3240]
+                - generic [ref=e3243]: "Edge:"
+                - generic [ref=e3244]: "-1.7%"
+            - generic [ref=e3245] [cursor=pointer]:
+              - generic [ref=e3246]:
+                - generic [ref=e3247]:
+                  - generic [ref=e3248]:
+                    - generic [ref=e3249]: Risky
+                    - generic [ref=e3250]:
+                      - img [ref=e3251]
+                      - generic [ref=e3254]: Wed 10:00pm
+                  - generic [ref=e3255]:
+                    - img [ref=e3256]
+                    - generic [ref=e3259]: Connor McDavid
+                  - generic [ref=e3260]:
+                    - text: Over 0.5 Points
+                    - generic "+118 means $100 wins $118" [ref=e3261]: "+118"
+                  - generic [ref=e3262]: +118 means $100 wins $118
+                - generic [ref=e3263]:
+                  - generic [ref=e3264]:
+                    - img [ref=e3265]
+                    - text: "8"
+                  - generic [ref=e3267]: HEATER
+                  - generic [ref=e3268]: tap for details
+              - generic [ref=e3270]:
+                - img [ref=e3271]
+                - generic [ref=e3274]: "Edge:"
+                - generic [ref=e3275]: "-1.8%"
+            - generic [ref=e3276] [cursor=pointer]:
+              - generic [ref=e3277]:
+                - generic [ref=e3278]:
+                  - generic [ref=e3279]:
+                    - generic [ref=e3280]: Risky
+                    - generic [ref=e3281]:
+                      - img [ref=e3282]
+                      - generic [ref=e3285]: Wed 10:00pm
+                  - generic [ref=e3286]:
+                    - img [ref=e3287]
+                    - generic [ref=e3290]: Jack Roslovic
+                  - generic [ref=e3291]:
+                    - text: Over 0.5 Points
+                    - generic "+108 means $100 wins $108" [ref=e3292]: "+108"
+                  - generic [ref=e3293]: +108 means $100 wins $108
+                - generic [ref=e3294]:
+                  - generic [ref=e3295]:
+                    - img [ref=e3296]
+                    - text: "8"
+                  - generic [ref=e3298]: HEATER
+                  - generic [ref=e3299]: tap for details
+              - generic [ref=e3301]:
+                - img [ref=e3302]
+                - generic [ref=e3305]: "Edge:"
+                - generic [ref=e3306]: "-1.8%"
+            - generic [ref=e3307] [cursor=pointer]:
+              - generic [ref=e3308]:
+                - generic [ref=e3309]:
+                  - generic [ref=e3310]:
+                    - generic [ref=e3311]: Risky
+                    - generic [ref=e3312]:
+                      - img [ref=e3313]
+                      - generic [ref=e3316]: Wed 10:00pm
+                  - generic [ref=e3317]:
+                    - img [ref=e3318]
+                    - generic [ref=e3321]: Vasily Podkolzin
+                  - generic [ref=e3322]:
+                    - text: Over 0.5 Points
+                    - generic "+118 means $100 wins $118" [ref=e3323]: "+118"
+                  - generic [ref=e3324]: +118 means $100 wins $118
+                - generic [ref=e3325]:
+                  - generic [ref=e3326]:
+                    - img [ref=e3327]
+                    - text: "8"
+                  - generic [ref=e3329]: HEATER
+                  - generic [ref=e3330]: tap for details
+              - generic [ref=e3332]:
+                - img [ref=e3333]
+                - generic [ref=e3336]: "Edge:"
+                - generic [ref=e3337]: "-1.8%"
+            - generic [ref=e3338] [cursor=pointer]:
+              - generic [ref=e3339]:
+                - generic [ref=e3340]:
+                  - generic [ref=e3341]:
+                    - generic [ref=e3342]: Risky
+                    - generic [ref=e3343]:
+                      - img [ref=e3344]
+                      - generic [ref=e3347]: Wed 10:00pm
+                  - generic [ref=e3348]:
+                    - img [ref=e3349]
+                    - generic [ref=e3352]: Dmitry Orlov
+                  - generic [ref=e3353]:
+                    - text: Over 0.5 Points
+                    - generic "+117 means $100 wins $117" [ref=e3354]: "+117"
+                  - generic [ref=e3355]: +117 means $100 wins $117
+                - generic [ref=e3356]:
+                  - generic [ref=e3357]:
+                    - img [ref=e3358]
+                    - text: "8"
+                  - generic [ref=e3360]: HEATER
+                  - generic [ref=e3361]: tap for details
+              - generic [ref=e3363]:
+                - img [ref=e3364]
+                - generic [ref=e3367]: "Edge:"
+                - generic [ref=e3368]: "-1.8%"
+            - generic [ref=e3369] [cursor=pointer]:
+              - generic [ref=e3370]:
+                - generic [ref=e3371]:
+                  - generic [ref=e3372]:
+                    - generic [ref=e3373]: Risky
+                    - generic [ref=e3374]:
+                      - img [ref=e3375]
+                      - generic [ref=e3378]: Wed 10:00pm
+                  - generic [ref=e3379]:
+                    - img [ref=e3380]
+                    - generic [ref=e3383]: William Eklund
+                  - generic [ref=e3384]:
+                    - text: Over 0.5 Points
+                    - generic "+102 means $100 wins $102" [ref=e3385]: "+102"
+                  - generic [ref=e3386]: +102 means $100 wins $102
+                - generic [ref=e3387]:
+                  - generic [ref=e3388]:
+                    - img [ref=e3389]
+                    - text: "8"
+                  - generic [ref=e3391]: HEATER
+                  - generic [ref=e3392]: tap for details
+              - generic [ref=e3394]:
+                - img [ref=e3395]
+                - generic [ref=e3398]: "Edge:"
+                - generic [ref=e3399]: "-1.9%"
+            - generic [ref=e3400] [cursor=pointer]:
+              - generic [ref=e3401]:
+                - generic [ref=e3402]:
+                  - generic [ref=e3403]:
+                    - generic [ref=e3404]: Risky
+                    - generic [ref=e3405]:
+                      - img [ref=e3406]
+                      - generic [ref=e3409]: Wed 10:00pm
+                  - generic [ref=e3410]:
+                    - img [ref=e3411]
+                    - generic [ref=e3414]: Connor McDavid
+                  - generic [ref=e3415]: Over 1.5 Points-117
+                  - generic [ref=e3416]: "-117 means bet $117 to win $100"
+                - generic [ref=e3417]:
+                  - generic [ref=e3418]:
+                    - img [ref=e3419]
+                    - text: "7.5"
+                  - generic [ref=e3421]: HEATER
+                  - generic [ref=e3422]: tap for details
+              - generic [ref=e3424]:
+                - img [ref=e3425]
+                - generic [ref=e3428]: "Edge:"
+                - generic [ref=e3429]: "-2.1%"
+            - generic [ref=e3430] [cursor=pointer]:
+              - generic [ref=e3431]:
+                - generic [ref=e3432]:
+                  - generic [ref=e3433]:
+                    - generic [ref=e3434]: Risky
+                    - generic [ref=e3435]:
+                      - img [ref=e3436]
+                      - generic [ref=e3439]: Wed 10:00pm
+                  - generic [ref=e3440]:
+                    - img [ref=e3441]
+                    - generic [ref=e3444]: Matt Savoie
+                  - generic [ref=e3445]: Over 0.5 Points-118
+                  - generic [ref=e3446]: "-118 means bet $118 to win $100"
+                - generic [ref=e3447]:
+                  - generic [ref=e3448]:
+                    - img [ref=e3449]
+                    - text: "7.5"
+                  - generic [ref=e3451]: HEATER
+                  - generic [ref=e3452]: tap for details
+              - generic [ref=e3454]:
+                - img [ref=e3455]
+                - generic [ref=e3458]: "Edge:"
+                - generic [ref=e3459]: "-2.1%"
+            - generic [ref=e3460] [cursor=pointer]:
+              - generic [ref=e3461]:
+                - generic [ref=e3462]:
+                  - generic [ref=e3463]:
+                    - generic [ref=e3464]: Risky
+                    - generic [ref=e3465]:
+                      - img [ref=e3466]
+                      - generic [ref=e3469]: Wed 10:00pm
+                  - generic [ref=e3470]:
+                    - img [ref=e3471]
+                    - generic [ref=e3474]: Alexander Wennberg
+                  - generic [ref=e3475]: Over 0.5 Points-121
+                  - generic [ref=e3476]: "-121 means bet $121 to win $100"
+                - generic [ref=e3477]:
+                  - generic [ref=e3478]:
+                    - img [ref=e3479]
+                    - text: "7.5"
+                  - generic [ref=e3481]: HEATER
+                  - generic [ref=e3482]: tap for details
+              - generic [ref=e3484]:
+                - img [ref=e3485]
+                - generic [ref=e3488]: "Edge:"
+                - generic [ref=e3489]: "-2.1%"
+      - generic [ref=e3490]:
+        - generic [ref=e3491]:
+          - img [ref=e3492]
+          - heading "WSH @ TOR" [level=3] [ref=e3494]
+          - generic [ref=e3495]: (15 props)
+        - generic [ref=e3497]:
+          - generic [ref=e3498]:
+            - generic [ref=e3499]: Points
+            - generic [ref=e3500]: (15)
+          - generic [ref=e3501]:
+            - generic [ref=e3502] [cursor=pointer]:
+              - generic [ref=e3503]:
+                - generic [ref=e3504]:
+                  - generic [ref=e3505]:
+                    - generic [ref=e3506]: Risky
+                    - generic [ref=e3507]:
+                      - img [ref=e3508]
+                      - generic [ref=e3511]: Wed 07:30pm
+                  - generic [ref=e3512]:
+                    - img [ref=e3513]
+                    - generic [ref=e3516]: Aliaksei Protas
+                  - generic [ref=e3517]: Over 0.5 Points-102
+                  - generic [ref=e3518]: "-102 means bet $102 to win $100"
+                - generic [ref=e3519]:
+                  - generic [ref=e3520]:
+                    - img [ref=e3521]
+                    - text: "8.5"
+                  - generic [ref=e3523]: HEATER
+                  - generic [ref=e3524]: tap for details
+              - generic [ref=e3526]:
+                - img [ref=e3527]
+                - generic [ref=e3530]: "Edge:"
+                - generic [ref=e3531]: "-1.9%"
+            - generic [ref=e3532] [cursor=pointer]:
+              - generic [ref=e3533]:
+                - generic [ref=e3534]:
+                  - generic [ref=e3535]:
+                    - generic [ref=e3536]: Risky
+                    - generic [ref=e3537]:
+                      - img [ref=e3538]
+                      - generic [ref=e3541]: Wed 07:30pm
+                  - generic [ref=e3542]:
+                    - img [ref=e3543]
+                    - generic [ref=e3546]: William Nylander
+                  - generic [ref=e3547]: Over 9.05 Points-112
+                  - generic [ref=e3548]: "-112 means bet $112 to win $100"
+                - generic [ref=e3549]:
+                  - generic [ref=e3550]:
+                    - img [ref=e3551]
+                    - text: "8.5"
+                  - generic [ref=e3553]: HEATER
+                  - generic [ref=e3554]: tap for details
+              - generic [ref=e3556]:
+                - img [ref=e3557]
+                - generic [ref=e3560]: "Edge:"
+                - generic [ref=e3561]: "-2.0%"
+            - generic [ref=e3562] [cursor=pointer]:
+              - generic [ref=e3563]:
+                - generic [ref=e3564]:
+                  - generic [ref=e3565]:
+                    - generic [ref=e3566]: Risky
+                    - generic [ref=e3567]:
+                      - img [ref=e3568]
+                      - generic [ref=e3571]: Wed 07:30pm
+                  - generic [ref=e3572]:
+                    - img [ref=e3573]
+                    - generic [ref=e3576]: Dylan Strome
+                  - generic [ref=e3577]: Over 0.5 Points-112
+                  - generic [ref=e3578]: "-112 means bet $112 to win $100"
+                - generic [ref=e3579]:
+                  - generic [ref=e3580]:
+                    - img [ref=e3581]
+                    - text: "8.5"
+                  - generic [ref=e3583]: HEATER
+                  - generic [ref=e3584]: tap for details
+              - generic [ref=e3586]:
+                - img [ref=e3587]
+                - generic [ref=e3590]: "Edge:"
+                - generic [ref=e3591]: "-2.0%"
+            - generic [ref=e3592] [cursor=pointer]:
+              - generic [ref=e3593]:
+                - generic [ref=e3594]:
+                  - generic [ref=e3595]:
+                    - generic [ref=e3596]: Risky
+                    - generic [ref=e3597]:
+                      - img [ref=e3598]
+                      - generic [ref=e3601]: Wed 07:30pm
+                  - generic [ref=e3602]:
+                    - img [ref=e3603]
+                    - generic [ref=e3606]: Matthew Knies
+                  - generic [ref=e3607]: Over 0.5 Points-113
+                  - generic [ref=e3608]: "-113 means bet $113 to win $100"
+                - generic [ref=e3609]:
+                  - generic [ref=e3610]:
+                    - img [ref=e3611]
+                    - text: "8.5"
+                  - generic [ref=e3613]: HEATER
+                  - generic [ref=e3614]: tap for details
+              - generic [ref=e3616]:
+                - img [ref=e3617]
+                - generic [ref=e3620]: "Edge:"
+                - generic [ref=e3621]: "-2.0%"
+            - generic [ref=e3622] [cursor=pointer]:
+              - generic [ref=e3623]:
+                - generic [ref=e3624]:
+                  - generic [ref=e3625]:
+                    - generic [ref=e3626]: Risky
+                    - generic [ref=e3627]:
+                      - img [ref=e3628]
+                      - generic [ref=e3631]: Wed 07:30pm
+                  - generic [ref=e3632]:
+                    - img [ref=e3633]
+                    - generic [ref=e3636]: Pierre-Luc Dubois
+                  - generic [ref=e3637]: Over 0.5 Points-104
+                  - generic [ref=e3638]: "-104 means bet $104 to win $100"
+                - generic [ref=e3639]:
+                  - generic [ref=e3640]:
+                    - img [ref=e3641]
+                    - text: "8.5"
+                  - generic [ref=e3643]: HEATER
+                  - generic [ref=e3644]: tap for details
+              - generic [ref=e3646]:
+                - img [ref=e3647]
+                - generic [ref=e3650]: "Edge:"
+                - generic [ref=e3651]: "-2.0%"
+            - generic [ref=e3652] [cursor=pointer]:
+              - generic [ref=e3653]:
+                - generic [ref=e3654]:
+                  - generic [ref=e3655]:
+                    - generic [ref=e3656]: Risky
+                    - generic [ref=e3657]:
+                      - img [ref=e3658]
+                      - generic [ref=e3661]: Wed 07:30pm
+                  - generic [ref=e3662]:
+                    - img [ref=e3663]
+                    - generic [ref=e3666]: Jakob Chychrun
+                  - generic [ref=e3667]: Over 0.5 Points-104
+                  - generic [ref=e3668]: "-104 means bet $104 to win $100"
+                - generic [ref=e3669]:
+                  - generic [ref=e3670]:
+                    - img [ref=e3671]
+                    - text: "8.5"
+                  - generic [ref=e3673]: HEATER
+                  - generic [ref=e3674]: tap for details
+              - generic [ref=e3676]:
+                - img [ref=e3677]
+                - generic [ref=e3680]: "Edge:"
+                - generic [ref=e3681]: "-2.0%"
+            - generic [ref=e3682] [cursor=pointer]:
+              - generic [ref=e3683]:
+                - generic [ref=e3684]:
+                  - generic [ref=e3685]:
+                    - generic [ref=e3686]: Risky
+                    - generic [ref=e3687]:
+                      - img [ref=e3688]
+                      - generic [ref=e3691]: Wed 07:30pm
+                  - generic [ref=e3692]:
+                    - img [ref=e3693]
+                    - generic [ref=e3696]: Logan Thompson
+                  - generic [ref=e3697]: Over 10.05 Points-112
+                  - generic [ref=e3698]: "-112 means bet $112 to win $100"
+                - generic [ref=e3699]:
+                  - generic [ref=e3700]:
+                    - img [ref=e3701]
+                    - text: "8.5"
+                  - generic [ref=e3703]: HEATER
+                  - generic [ref=e3704]: tap for details
+              - generic [ref=e3706]:
+                - img [ref=e3707]
+                - generic [ref=e3710]: "Edge:"
+                - generic [ref=e3711]: "-2.0%"
+            - generic [ref=e3712] [cursor=pointer]:
+              - generic [ref=e3713]:
+                - generic [ref=e3714]:
+                  - generic [ref=e3715]:
+                    - generic [ref=e3716]: Risky
+                    - generic [ref=e3717]:
+                      - img [ref=e3718]
+                      - generic [ref=e3721]: Wed 07:30pm
+                  - generic [ref=e3722]:
+                    - img [ref=e3723]
+                    - generic [ref=e3726]: Anthony Stolarz
+                  - generic [ref=e3727]: Over 10.05 Points-112
+                  - generic [ref=e3728]: "-112 means bet $112 to win $100"
+                - generic [ref=e3729]:
+                  - generic [ref=e3730]:
+                    - img [ref=e3731]
+                    - text: "8.5"
+                  - generic [ref=e3733]: HEATER
+                  - generic [ref=e3734]: tap for details
+              - generic [ref=e3736]:
+                - img [ref=e3737]
+                - generic [ref=e3740]: "Edge:"
+                - generic [ref=e3741]: "-2.0%"
+            - generic [ref=e3742] [cursor=pointer]:
+              - generic [ref=e3743]:
+                - generic [ref=e3744]:
+                  - generic [ref=e3745]:
+                    - generic [ref=e3746]: Risky
+                    - generic [ref=e3747]:
+                      - img [ref=e3748]
+                      - generic [ref=e3751]: Wed 07:30pm
+                  - generic [ref=e3752]:
+                    - img [ref=e3753]
+                    - generic [ref=e3756]: Connor McMichael
+                  - generic [ref=e3757]:
+                    - text: Over 0.5 Points
+                    - generic "+120 means $100 wins $120" [ref=e3758]: "+120"
+                  - generic [ref=e3759]: +120 means $100 wins $120
+                - generic [ref=e3760]:
+                  - generic [ref=e3761]:
+                    - img [ref=e3762]
+                    - text: "8"
+                  - generic [ref=e3764]: HEATER
+                  - generic [ref=e3765]: tap for details
+              - generic [ref=e3767]:
+                - img [ref=e3768]
+                - generic [ref=e3771]: "Edge:"
+                - generic [ref=e3772]: "-1.7%"
+            - generic [ref=e3773] [cursor=pointer]:
+              - generic [ref=e3774]:
+                - generic [ref=e3775]:
+                  - generic [ref=e3776]:
+                    - generic [ref=e3777]: Risky
+                    - generic [ref=e3778]:
+                      - img [ref=e3779]
+                      - generic [ref=e3782]: Wed 07:30pm
+                  - generic [ref=e3783]:
+                    - img [ref=e3784]
+                    - generic [ref=e3787]: Ilya Protas
+                  - generic [ref=e3788]:
+                    - text: Over 0.5 Points
+                    - generic "+111 means $100 wins $111" [ref=e3789]: "+111"
+                  - generic [ref=e3790]: +111 means $100 wins $111
+                - generic [ref=e3791]:
+                  - generic [ref=e3792]:
+                    - img [ref=e3793]
+                    - text: "8"
+                  - generic [ref=e3795]: HEATER
+                  - generic [ref=e3796]: tap for details
+              - generic [ref=e3798]:
+                - img [ref=e3799]
+                - generic [ref=e3802]: "Edge:"
+                - generic [ref=e3803]: "-1.8%"
+            - generic [ref=e3804] [cursor=pointer]:
+              - generic [ref=e3805]:
+                - generic [ref=e3806]:
+                  - generic [ref=e3807]:
+                    - generic [ref=e3808]: Risky
+                    - generic [ref=e3809]:
+                      - img [ref=e3810]
+                      - generic [ref=e3813]: Wed 07:30pm
+                  - generic [ref=e3814]:
+                    - img [ref=e3815]
+                    - generic [ref=e3818]: Ryan Leonard
+                  - generic [ref=e3819]:
+                    - text: Over 0.5 Points
+                    - generic "+111 means $100 wins $111" [ref=e3820]: "+111"
+                  - generic [ref=e3821]: +111 means $100 wins $111
+                - generic [ref=e3822]:
+                  - generic [ref=e3823]:
+                    - img [ref=e3824]
+                    - text: "8"
+                  - generic [ref=e3826]: HEATER
+                  - generic [ref=e3827]: tap for details
+              - generic [ref=e3829]:
+                - img [ref=e3830]
+                - generic [ref=e3833]: "Edge:"
+                - generic [ref=e3834]: "-1.8%"
+            - generic [ref=e3835] [cursor=pointer]:
+              - generic [ref=e3836]:
+                - generic [ref=e3837]:
+                  - generic [ref=e3838]:
+                    - generic [ref=e3839]: Risky
+                    - generic [ref=e3840]:
+                      - img [ref=e3841]
+                      - generic [ref=e3844]: Wed 07:30pm
+                  - generic [ref=e3845]:
+                    - img [ref=e3846]
+                    - generic [ref=e3849]: Easton Cowan
+                  - generic [ref=e3850]:
+                    - text: Over 0.5 Points
+                    - generic "+108 means $100 wins $108" [ref=e3851]: "+108"
+                  - generic [ref=e3852]: +108 means $100 wins $108
+                - generic [ref=e3853]:
+                  - generic [ref=e3854]:
+                    - img [ref=e3855]
+                    - text: "8"
+                  - generic [ref=e3857]: HEATER
+                  - generic [ref=e3858]: tap for details
+              - generic [ref=e3860]:
+                - img [ref=e3861]
+                - generic [ref=e3864]: "Edge:"
+                - generic [ref=e3865]: "-1.8%"
+            - generic [ref=e3866] [cursor=pointer]:
+              - generic [ref=e3867]:
+                - generic [ref=e3868]:
+                  - generic [ref=e3869]:
+                    - generic [ref=e3870]: Risky
+                    - generic [ref=e3871]:
+                      - img [ref=e3872]
+                      - generic [ref=e3875]: Wed 07:30pm
+                  - generic [ref=e3876]:
+                    - img [ref=e3877]
+                    - generic [ref=e3880]: Tom Wilson
+                  - generic [ref=e3881]: Over 0.5 Points-122
+                  - generic [ref=e3882]: "-122 means bet $122 to win $100"
+                - generic [ref=e3883]:
+                  - generic [ref=e3884]:
+                    - img [ref=e3885]
+                    - text: "7.5"
+                  - generic [ref=e3887]: HEATER
+                  - generic [ref=e3888]: tap for details
+              - generic [ref=e3890]:
+                - img [ref=e3891]
+                - generic [ref=e3894]: "Edge:"
+                - generic [ref=e3895]: "-2.1%"
+            - generic [ref=e3896] [cursor=pointer]:
+              - generic [ref=e3897]:
+                - generic [ref=e3898]:
+                  - generic [ref=e3899]:
+                    - generic [ref=e3900]: Risky
+                    - generic [ref=e3901]:
+                      - img [ref=e3902]
+                      - generic [ref=e3905]: Wed 07:30pm
+                  - generic [ref=e3906]:
+                    - img [ref=e3907]
+                    - generic [ref=e3910]: Alex Ovechkin
+                  - generic [ref=e3911]: Over 0.5 Points-137
+                  - generic [ref=e3912]: "-137 means bet $137 to win $100"
+                - generic [ref=e3913]:
+                  - generic [ref=e3914]:
+                    - img [ref=e3915]
+                    - text: "7.5"
+                  - generic [ref=e3917]: HEATER
+                  - generic [ref=e3918]: tap for details
+              - generic [ref=e3920]:
+                - img [ref=e3921]
+                - generic [ref=e3924]: "Edge:"
+                - generic [ref=e3925]: "-2.2%"
+            - generic [ref=e3926] [cursor=pointer]:
+              - generic [ref=e3927]:
+                - generic [ref=e3928]:
+                  - generic [ref=e3929]:
+                    - generic [ref=e3930]: Risky
+                    - generic [ref=e3931]:
+                      - img [ref=e3932]
+                      - generic [ref=e3935]: Wed 07:30pm
+                  - generic [ref=e3936]:
+                    - img [ref=e3937]
+                    - generic [ref=e3940]: Rasmus Sandin
+                  - generic [ref=e3941]:
+                    - text: Over 0.5 Points
+                    - generic "+215 means $100 wins $215" [ref=e3942]: "+215"
+                  - generic [ref=e3943]: +215 means $100 wins $215
+                - generic [ref=e3944]:
+                  - generic [ref=e3945]:
+                    - img [ref=e3946]
+                    - text: "7"
+                  - generic [ref=e3948]: HEATER
+                  - generic [ref=e3949]: tap for details
+              - generic [ref=e3951]:
+                - img [ref=e3952]
+                - generic [ref=e3955]: "Edge:"
+                - generic [ref=e3956]: "-1.2%"
+      - generic [ref=e3957]:
+        - generic [ref=e3958]:
+          - img [ref=e3959]
+          - heading "BUF @ NYR" [level=3] [ref=e3961]
+          - generic [ref=e3962]: (15 props)
+        - generic [ref=e3964]:
+          - generic [ref=e3965]:
+            - generic [ref=e3966]: Points
+            - generic [ref=e3967]: (15)
+          - generic [ref=e3968]:
+            - generic [ref=e3969] [cursor=pointer]:
+              - generic [ref=e3970]:
+                - generic [ref=e3971]:
+                  - generic [ref=e3972]:
+                    - generic [ref=e3973]: Risky
+                    - generic [ref=e3974]:
+                      - img [ref=e3975]
+                      - generic [ref=e3978]: Wed 07:00pm
+                  - generic [ref=e3979]:
+                    - img [ref=e3980]
+                    - generic [ref=e3983]: Tage Thompson
+                  - generic [ref=e3984]: Over 9.55 Points-112
+                  - generic [ref=e3985]: "-112 means bet $112 to win $100"
+                - generic [ref=e3986]:
+                  - generic [ref=e3987]:
+                    - img [ref=e3988]
+                    - text: "8.5"
+                  - generic [ref=e3990]: HEATER
+                  - generic [ref=e3991]: tap for details
+              - generic [ref=e3993]:
+                - img [ref=e3994]
+                - generic [ref=e3997]: "Edge:"
+                - generic [ref=e3998]: "-2.0%"
+            - generic [ref=e3999] [cursor=pointer]:
+              - generic [ref=e4000]:
+                - generic [ref=e4001]:
+                  - generic [ref=e4002]:
+                    - generic [ref=e4003]: Risky
+                    - generic [ref=e4004]:
+                      - img [ref=e4005]
+                      - generic [ref=e4008]: Wed 07:00pm
+                  - generic [ref=e4009]:
+                    - img [ref=e4010]
+                    - generic [ref=e4013]: Jason Zucker
+                  - generic [ref=e4014]: Over 0.5 Points-109
+                  - generic [ref=e4015]: "-109 means bet $109 to win $100"
+                - generic [ref=e4016]:
+                  - generic [ref=e4017]:
+                    - img [ref=e4018]
+                    - text: "8.5"
+                  - generic [ref=e4020]: HEATER
+                  - generic [ref=e4021]: tap for details
+              - generic [ref=e4023]:
+                - img [ref=e4024]
+                - generic [ref=e4027]: "Edge:"
+                - generic [ref=e4028]: "-2.0%"
+            - generic [ref=e4029] [cursor=pointer]:
+              - generic [ref=e4030]:
+                - generic [ref=e4031]:
+                  - generic [ref=e4032]:
+                    - generic [ref=e4033]: Risky
+                    - generic [ref=e4034]:
+                      - img [ref=e4035]
+                      - generic [ref=e4038]: Wed 07:00pm
+                  - generic [ref=e4039]:
+                    - img [ref=e4040]
+                    - generic [ref=e4043]: Igor Shesterkin
+                  - generic [ref=e4044]: Over 9.55 Points-112
+                  - generic [ref=e4045]: "-112 means bet $112 to win $100"
+                - generic [ref=e4046]:
+                  - generic [ref=e4047]:
+                    - img [ref=e4048]
+                    - text: "8.5"
+                  - generic [ref=e4050]: HEATER
+                  - generic [ref=e4051]: tap for details
+              - generic [ref=e4053]:
+                - img [ref=e4054]
+                - generic [ref=e4057]: "Edge:"
+                - generic [ref=e4058]: "-2.0%"
+            - generic [ref=e4059] [cursor=pointer]:
+              - generic [ref=e4060]:
+                - generic [ref=e4061]:
+                  - generic [ref=e4062]:
+                    - generic [ref=e4063]: Risky
+                    - generic [ref=e4064]:
+                      - img [ref=e4065]
+                      - generic [ref=e4068]: Wed 07:00pm
+                  - generic [ref=e4069]:
+                    - img [ref=e4070]
+                    - generic [ref=e4073]: Ukko-Pekka Luukkonen
+                  - generic [ref=e4074]: Over 10.05 Points-112
+                  - generic [ref=e4075]: "-112 means bet $112 to win $100"
+                - generic [ref=e4076]:
+                  - generic [ref=e4077]:
+                    - img [ref=e4078]
+                    - text: "8.5"
+                  - generic [ref=e4080]: HEATER
+                  - generic [ref=e4081]: tap for details
+              - generic [ref=e4083]:
+                - img [ref=e4084]
+                - generic [ref=e4087]: "Edge:"
+                - generic [ref=e4088]: "-2.0%"
+            - generic [ref=e4089] [cursor=pointer]:
+              - generic [ref=e4090]:
+                - generic [ref=e4091]:
+                  - generic [ref=e4092]:
+                    - generic [ref=e4093]: Risky
+                    - generic [ref=e4094]:
+                      - img [ref=e4095]
+                      - generic [ref=e4098]: Wed 07:00pm
+                  - generic [ref=e4099]:
+                    - img [ref=e4100]
+                    - generic [ref=e4103]: Josh Doan
+                  - generic [ref=e4104]:
+                    - text: Over 0.5 Points
+                    - generic "+120 means $100 wins $120" [ref=e4105]: "+120"
+                  - generic [ref=e4106]: +120 means $100 wins $120
+                - generic [ref=e4107]:
+                  - generic [ref=e4108]:
+                    - img [ref=e4109]
+                    - text: "8"
+                  - generic [ref=e4111]: HEATER
+                  - generic [ref=e4112]: tap for details
+              - generic [ref=e4114]:
+                - img [ref=e4115]
+                - generic [ref=e4118]: "Edge:"
+                - generic [ref=e4119]: "-1.7%"
+            - generic [ref=e4120] [cursor=pointer]:
+              - generic [ref=e4121]:
+                - generic [ref=e4122]:
+                  - generic [ref=e4123]:
+                    - generic [ref=e4124]: Risky
+                    - generic [ref=e4125]:
+                      - img [ref=e4126]
+                      - generic [ref=e4129]: Wed 07:00pm
+                  - generic [ref=e4130]:
+                    - img [ref=e4131]
+                    - generic [ref=e4134]: Zach Benson
+                  - generic [ref=e4135]:
+                    - text: Over 0.5 Points
+                    - generic "+124 means $100 wins $124" [ref=e4136]: "+124"
+                  - generic [ref=e4137]: +124 means $100 wins $124
+                - generic [ref=e4138]:
+                  - generic [ref=e4139]:
+                    - img [ref=e4140]
+                    - text: "8"
+                  - generic [ref=e4142]: HEATER
+                  - generic [ref=e4143]: tap for details
+              - generic [ref=e4145]:
+                - img [ref=e4146]
+                - generic [ref=e4149]: "Edge:"
+                - generic [ref=e4150]: "-1.7%"
+            - generic [ref=e4151] [cursor=pointer]:
+              - generic [ref=e4152]:
+                - generic [ref=e4153]:
+                  - generic [ref=e4154]:
+                    - generic [ref=e4155]: Risky
+                    - generic [ref=e4156]:
+                      - img [ref=e4157]
+                      - generic [ref=e4160]: Wed 07:00pm
+                  - generic [ref=e4161]:
+                    - img [ref=e4162]
+                    - generic [ref=e4165]: Josh Norris
+                  - generic [ref=e4166]:
+                    - text: Over 0.5 Points
+                    - generic "+108 means $100 wins $108" [ref=e4167]: "+108"
+                  - generic [ref=e4168]: +108 means $100 wins $108
+                - generic [ref=e4169]:
+                  - generic [ref=e4170]:
+                    - img [ref=e4171]
+                    - text: "8"
+                  - generic [ref=e4173]: HEATER
+                  - generic [ref=e4174]: tap for details
+              - generic [ref=e4176]:
+                - img [ref=e4177]
+                - generic [ref=e4180]: "Edge:"
+                - generic [ref=e4181]: "-1.8%"
+            - generic [ref=e4182] [cursor=pointer]:
+              - generic [ref=e4183]:
+                - generic [ref=e4184]:
+                  - generic [ref=e4185]:
+                    - generic [ref=e4186]: Risky
+                    - generic [ref=e4187]:
+                      - img [ref=e4188]
+                      - generic [ref=e4191]: Wed 07:00pm
+                  - generic [ref=e4192]:
+                    - img [ref=e4193]
+                    - generic [ref=e4196]: Ryan McLeod
+                  - generic [ref=e4197]:
+                    - text: Over 0.5 Points
+                    - generic "+113 means $100 wins $113" [ref=e4198]: "+113"
+                  - generic [ref=e4199]: +113 means $100 wins $113
+                - generic [ref=e4200]:
+                  - generic [ref=e4201]:
+                    - img [ref=e4202]
+                    - text: "8"
+                  - generic [ref=e4204]: HEATER
+                  - generic [ref=e4205]: tap for details
+              - generic [ref=e4207]:
+                - img [ref=e4208]
+                - generic [ref=e4211]: "Edge:"
+                - generic [ref=e4212]: "-1.8%"
+            - generic [ref=e4213] [cursor=pointer]:
+              - generic [ref=e4214]:
+                - generic [ref=e4215]:
+                  - generic [ref=e4216]:
+                    - generic [ref=e4217]: Risky
+                    - generic [ref=e4218]:
+                      - img [ref=e4219]
+                      - generic [ref=e4222]: Wed 07:00pm
+                  - generic [ref=e4223]:
+                    - img [ref=e4224]
+                    - generic [ref=e4227]: Vincent Trocheck
+                  - generic [ref=e4228]: Over 0.5 Points-121
+                  - generic [ref=e4229]: "-121 means bet $121 to win $100"
+                - generic [ref=e4230]:
+                  - generic [ref=e4231]:
+                    - img [ref=e4232]
+                    - text: "7.5"
+                  - generic [ref=e4234]: HEATER
+                  - generic [ref=e4235]: tap for details
+              - generic [ref=e4237]:
+                - img [ref=e4238]
+                - generic [ref=e4241]: "Edge:"
+                - generic [ref=e4242]: "-2.1%"
+            - generic [ref=e4243] [cursor=pointer]:
+              - generic [ref=e4244]:
+                - generic [ref=e4245]:
+                  - generic [ref=e4246]:
+                    - generic [ref=e4247]: Risky
+                    - generic [ref=e4248]:
+                      - img [ref=e4249]
+                      - generic [ref=e4252]: Wed 07:00pm
+                  - generic [ref=e4253]:
+                    - img [ref=e4254]
+                    - generic [ref=e4257]: Alex Tuch
+                  - generic [ref=e4258]: Over 0.5 Points-118
+                  - generic [ref=e4259]: "-118 means bet $118 to win $100"
+                - generic [ref=e4260]:
+                  - generic [ref=e4261]:
+                    - img [ref=e4262]
+                    - text: "7.5"
+                  - generic [ref=e4264]: HEATER
+                  - generic [ref=e4265]: tap for details
+              - generic [ref=e4267]:
+                - img [ref=e4268]
+                - generic [ref=e4271]: "Edge:"
+                - generic [ref=e4272]: "-2.1%"
+            - generic [ref=e4273] [cursor=pointer]:
+              - generic [ref=e4274]:
+                - generic [ref=e4275]:
+                  - generic [ref=e4276]:
+                    - generic [ref=e4277]: Risky
+                    - generic [ref=e4278]:
+                      - img [ref=e4279]
+                      - generic [ref=e4282]: Wed 07:00pm
+                  - generic [ref=e4283]:
+                    - img [ref=e4284]
+                    - generic [ref=e4287]: Alexis Lafreniere
+                  - generic [ref=e4288]: Over 0.5 Points-129
+                  - generic [ref=e4289]: "-129 means bet $129 to win $100"
+                - generic [ref=e4290]:
+                  - generic [ref=e4291]:
+                    - img [ref=e4292]
+                    - text: "7.5"
+                  - generic [ref=e4294]: HEATER
+                  - generic [ref=e4295]: tap for details
+              - generic [ref=e4297]:
+                - img [ref=e4298]
+                - generic [ref=e4301]: "Edge:"
+                - generic [ref=e4302]: "-2.2%"
+            - generic [ref=e4303] [cursor=pointer]:
+              - generic [ref=e4304]:
+                - generic [ref=e4305]:
+                  - generic [ref=e4306]:
+                    - generic [ref=e4307]: Risky
+                    - generic [ref=e4308]:
+                      - img [ref=e4309]
+                      - generic [ref=e4312]: Wed 07:00pm
+                  - generic [ref=e4313]:
+                    - img [ref=e4314]
+                    - generic [ref=e4317]: Jack Quinn
+                  - generic [ref=e4318]: Over 0.5 Points-127
+                  - generic [ref=e4319]: "-127 means bet $127 to win $100"
+                - generic [ref=e4320]:
+                  - generic [ref=e4321]:
+                    - img [ref=e4322]
+                    - text: "7.5"
+                  - generic [ref=e4324]: HEATER
+                  - generic [ref=e4325]: tap for details
+              - generic [ref=e4327]:
+                - img [ref=e4328]
+                - generic [ref=e4331]: "Edge:"
+                - generic [ref=e4332]: "-2.2%"
+            - generic [ref=e4333] [cursor=pointer]:
+              - generic [ref=e4334]:
+                - generic [ref=e4335]:
+                  - generic [ref=e4336]:
+                    - generic [ref=e4337]: Risky
+                    - generic [ref=e4338]:
+                      - img [ref=e4339]
+                      - generic [ref=e4342]: Wed 07:00pm
+                  - generic [ref=e4343]:
+                    - img [ref=e4344]
+                    - generic [ref=e4347]: Mattias Samuelsson
+                  - generic [ref=e4348]:
+                    - text: Over 0.5 Points
+                    - generic "+214 means $100 wins $214" [ref=e4349]: "+214"
+                  - generic [ref=e4350]: +214 means $100 wins $214
+                - generic [ref=e4351]:
+                  - generic [ref=e4352]:
+                    - img [ref=e4353]
+                    - text: "7"
+                  - generic [ref=e4355]: HEATER
+                  - generic [ref=e4356]: tap for details
+              - generic [ref=e4358]:
+                - img [ref=e4359]
+                - generic [ref=e4362]: "Edge:"
+                - generic [ref=e4363]: "-1.2%"
+            - generic [ref=e4364] [cursor=pointer]:
+              - generic [ref=e4365]:
+                - generic [ref=e4366]:
+                  - generic [ref=e4367]:
+                    - generic [ref=e4368]: Risky
+                    - generic [ref=e4369]:
+                      - img [ref=e4370]
+                      - generic [ref=e4373]: Wed 07:00pm
+                  - generic [ref=e4374]:
+                    - img [ref=e4375]
+                    - generic [ref=e4378]: Owen Power
+                  - generic [ref=e4379]:
+                    - text: Over 0.5 Points
+                    - generic "+211 means $100 wins $211" [ref=e4380]: "+211"
+                  - generic [ref=e4381]: +211 means $100 wins $211
+                - generic [ref=e4382]:
+                  - generic [ref=e4383]:
+                    - img [ref=e4384]
+                    - text: "7"
+                  - generic [ref=e4386]: HEATER
+                  - generic [ref=e4387]: tap for details
+              - generic [ref=e4389]:
+                - img [ref=e4390]
+                - generic [ref=e4393]: "Edge:"
+                - generic [ref=e4394]: "-1.2%"
+            - generic [ref=e4395] [cursor=pointer]:
+              - generic [ref=e4396]:
+                - generic [ref=e4397]:
+                  - generic [ref=e4398]:
+                    - generic [ref=e4399]: Risky
+                    - generic [ref=e4400]:
+                      - img [ref=e4401]
+                      - generic [ref=e4404]: Wed 07:00pm
+                  - generic [ref=e4405]:
+                    - img [ref=e4406]
+                    - generic [ref=e4409]: Vladislav Gavrikov
+                  - generic [ref=e4410]:
+                    - text: Over 0.5 Points
+                    - generic "+188 means $100 wins $188" [ref=e4411]: "+188"
+                  - generic [ref=e4412]: +188 means $100 wins $188
+                - generic [ref=e4413]:
+                  - generic [ref=e4414]:
+                    - img [ref=e4415]
+                    - text: "7"
+                  - generic [ref=e4417]: HEATER
+                  - generic [ref=e4418]: tap for details
+              - generic [ref=e4420]:
+                - img [ref=e4421]
+                - generic [ref=e4424]: "Edge:"
+                - generic [ref=e4425]: "-1.3%"
+    - generic [ref=e61]:
+      - text: EdgeCheck — Data from ESPN. Independent matchup analysis.
+      - text: For entertainment purposes only. Please bet responsibly.
+  - alert [ref=e62]

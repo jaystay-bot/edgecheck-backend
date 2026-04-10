@@ -35,7 +35,7 @@ export async function POST(request) {
     if (existingCustomers.data.length > 0) {
       customerId = existingCustomers.data[0].id;
 
-      // Check if they already have an active subscription
+      // Check if they already have an active or trialing subscription
       const activeSubs = await stripe.subscriptions.list({
         customer: customerId,
         status: "active",
@@ -43,6 +43,19 @@ export async function POST(request) {
       });
 
       if (activeSubs.data.length > 0) {
+        return NextResponse.json({
+          error: "Already subscribed",
+          message: "You already have an active subscription",
+        }, { status: 400 });
+      }
+
+      const trialingSubs = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "trialing",
+        limit: 1,
+      });
+
+      if (trialingSubs.data.length > 0) {
         return NextResponse.json({
           error: "Already subscribed",
           message: "You already have an active subscription",

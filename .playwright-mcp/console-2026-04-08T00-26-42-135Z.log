@@ -1,0 +1,4 @@
+[    2251ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:38559
+[    2851ms] [WARNING] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview @ https://logical-mule-24.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js:18
+[    3019ms] [LOG] [Merge Debug] ESPN games: 10, Odds games: 0 @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:883
+[    3219ms] [LOG] [Merge Debug] ESPN games: 10, Odds games: 0 @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:883

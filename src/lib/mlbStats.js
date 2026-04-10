@@ -412,6 +412,7 @@ async function fetchAllPlayers() {
     const players = data.people || [];
     const playerMap = new Map(); // Full name → id
     const initialLastMap = new Map(); // "j ramirez" → id
+    const firstLastMap = new Map(); // "jose ramirez" (first + last only) → id
     const lastNameCounts = new Map(); // Track duplicates for last name
     const lastNameMap = new Map(); // Last name → id (only if unique)
 
@@ -431,6 +432,15 @@ async function fetchAllPlayers() {
         }
       }
 
+      // First name + last name lookup (ignores middle names)
+      const parts = name.split(" ");
+      if (parts.length >= 2) {
+        const firstLast = `${parts[0]} ${parts[parts.length - 1]}`;
+        if (!firstLastMap.has(firstLast)) {
+          firstLastMap.set(firstLast, player.id);
+        }
+      }
+
       // Track last name occurrences
       const lastName = getLastName(name);
       if (lastName) {
@@ -445,8 +455,9 @@ async function fetchAllPlayers() {
       }
     }
 
-    console.log(`[MLBStats] Cached ${playerMap.size} players (${initialLastMap.size} initial+last, ${lastNameMap.size} unique last names)`);
+    console.log(`[MLBStats] Cached ${playerMap.size} players (${firstLastMap.size} first+last, ${initialLastMap.size} initial+last, ${lastNameMap.size} unique last names)`);
     mlbStatsCache.allPlayers = playerMap;
+    mlbStatsCache.playersByFirstLast = firstLastMap;
     mlbStatsCache.playersByInitialLast = initialLastMap;
     mlbStatsCache.playersByLastName = lastNameMap;
     mlbStatsCache.allPlayersTimestamp = now;
@@ -459,7 +470,7 @@ async function fetchAllPlayers() {
 }
 
 // Find player ID using fallback matching strategies
-// Priority: 1) exact match, 2) first initial + last name, 3) unique last name
+// Priority: 1) lineup, 2) exact match, 3) first+last name, 4) initial+last, 5) unique last
 function findPlayerId(playerName, allPlayersMap, lineupPlayerIdMap = {}) {
   if (!playerName) return null;
 
@@ -475,13 +486,22 @@ function findPlayerId(playerName, allPlayersMap, lineupPlayerIdMap = {}) {
     return allPlayersMap.get(normalizedName);
   }
 
-  // 3. First initial + last name fallback
+  // 3. First name + last name fallback (handles middle name differences)
+  const parts = normalizedName.split(" ");
+  if (parts.length >= 2) {
+    const firstLast = `${parts[0]} ${parts[parts.length - 1]}`;
+    if (mlbStatsCache.playersByFirstLast?.get(firstLast)) {
+      return mlbStatsCache.playersByFirstLast.get(firstLast);
+    }
+  }
+
+  // 4. First initial + last name fallback
   const initialLast = getInitialLastName(normalizedName);
   if (initialLast && mlbStatsCache.playersByInitialLast?.get(initialLast)) {
     return mlbStatsCache.playersByInitialLast.get(initialLast);
   }
 
-  // 4. Unique last name fallback (only if unambiguous)
+  // 5. Unique last name fallback (only if unambiguous)
   const lastName = getLastName(normalizedName);
   if (lastName && mlbStatsCache.playersByLastName?.get(lastName)) {
     return mlbStatsCache.playersByLastName.get(lastName);
@@ -695,12 +715,36 @@ export async function enrichMLBProps(props) {
     if (stats) pitcherStatsMap[id] = stats;
   }));
 
+  // Collect unique batter IDs from all props for batch fetching
+  const batterIds = new Set();
+  const propBatterIdMap = {}; // playerName -> batterId (for lookup during enrichment)
+  for (const prop of props) {
+    const matchup = prop.matchup;
+    const group = matchupGroups[matchup];
+    const lineupContext = group?.lineup ? findPlayerInLineup(prop.playerName, group.lineup) : null;
+    const batterId = lineupContext?.playerId || findPlayerId(prop.playerName, allPlayersMap, playerIdMap);
+    if (batterId) {
+      batterIds.add(batterId);
+      propBatterIdMap[normalizeName(prop.playerName)] = batterId;
+    }
+  }
+
+  // Batch fetch batter stats (limit to 50 concurrent to cover all displayed props)
+  console.log(`[MLBStats] Fetching stats for ${batterIds.size} batters...`);
+  const batterStatsMap = {};
+  const batterIdArray = Array.from(batterIds).slice(0, 50);
+
+  await Promise.all(batterIdArray.map(async (id) => {
+    const stats = await fetchBatterStats(id);
+    if (stats) batterStatsMap[id] = stats;
+  }));
+
   // Enrich each prop with context and stats
   let enrichedCount = 0;
   let statsCount = 0;
   let injuryCount = 0;
 
-  const enrichedProps = await Promise.all(props.map(async (prop) => {
+  const enrichedProps = props.map((prop) => {
     const matchup = prop.matchup;
     const group = matchupGroups[matchup];
 
@@ -765,10 +809,10 @@ export async function enrichMLBProps(props) {
       }
     }
 
-    // Fetch batter stats regardless of game match (uses fallback matching)
-    const batterId = lineupContext?.playerId || findPlayerId(prop.playerName, allPlayersMap, playerIdMap);
+    // Use pre-fetched batter stats from batterStatsMap
+    const batterId = propBatterIdMap[playerNameNorm];
     if (batterId) {
-      const batterStats = await fetchBatterStats(batterId);
+      const batterStats = batterStatsMap[batterId];
       if (batterStats) {
         enrichment.hitsLast5 = batterStats.hitsLast5;
         enrichment.hitsLast10 = batterStats.hitsLast10;
@@ -788,7 +832,7 @@ export async function enrichMLBProps(props) {
     }
 
     return { ...prop, ...enrichment, ...injuryEnrichment };
-  }));
+  });
 
   console.log(`[MLBStats] Enriched ${enrichedCount}/${props.length} props (${statsCount} stats, ${injuryCount} injuries)`);
   return enrichedProps;

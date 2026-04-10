@@ -1,0 +1,6 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "EdgeCheck" [level=1] [ref=e4]
+    - paragraph [ref=e5]: Sign in to access your dashboard
+  - link "Back to home" [ref=e7] [cursor=pointer]:
+    - /url: /

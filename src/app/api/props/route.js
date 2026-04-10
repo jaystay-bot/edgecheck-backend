@@ -1446,6 +1446,15 @@ function organizeIntoCategories(allProps, sportKey) {
       }
     }
 
+    // MLB HIT props: require L10 enrichment data before scoring
+    if (sportKey === "mlb" && category.id === "hits") {
+      const beforeL10 = categoryProps.length;
+      categoryProps = categoryProps.filter((p) => p.last10Games && p.last10Games.length > 0);
+      if (beforeL10 > categoryProps.length) {
+        console.log(`[Props] MLB: Excluded ${beforeL10 - categoryProps.length} ${category.name} props missing L10 data`);
+      }
+    }
+
     // Add edge data and filter by minimum edge requirement
     categoryProps = addEdgeDataToProps(categoryProps);
 

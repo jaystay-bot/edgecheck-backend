@@ -35,8 +35,8 @@ Before changing code, identify which layer has the bug:
 2. Normalize
 3. Merge
 4. Enrichment
-5. Response shaping
-6. UI render
+5. SHAPE API RESPONSE
+6. RENDER UI
 
 ## Important Files
 | File                                      | Purpose                    |

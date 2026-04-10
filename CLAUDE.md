@@ -84,7 +84,7 @@ Rules:
 - NO negative EV in Top Pick / Strong
 - last10 data must pass through to UI
 
----
+---$de
 
 ## Do NOT Touch
 

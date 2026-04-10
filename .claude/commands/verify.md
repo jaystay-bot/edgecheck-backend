@@ -1,25 +1,50 @@
-Verify the fix actually works.
+erify the fix actually works.
 
-Use Clauder (Claude):
+ROLE:
+Truth = verification only (no code changes).
 
-- run build or type-check if applicable
-- test the relevant endpoint, route, or function
-- confirm expected behavior
+---
 
-Then use Opender (Codex) to review:
+FLOW
 
-- analyze the modified file(s)
-- check for logic errors, missed edge cases, or broken data flow
+1. Run local validation first:
+- build / type-check (if applicable)
+- test only the affected route, page, or function
 
-Return:
+2. Verify real behavior:
+- use localhost when possible
+- use deployed app only if necessary
+
+3. If UI:
+- navigate to affected area
+- confirm what user actually sees
+
+4. If API:
+- send minimal real request (curl)
+- confirm response matches expected result
+
+---
+
+RULES
+
+- Do NOT modify code
+- Do NOT suggest fixes
+- Do NOT investigate unrelated issues
+- Verify ONLY the requested task
+
+---
+
+RETURN
 
 VERIFICATION RESULT:
 - PASS or FAIL
 - what was tested
 - result observed
-- any remaining issue
-- Codex review notes (if any risks found)
+- remaining issue (if any)
+- no code changes made
 
-Do not modify code.
-
-Stop after verification.
+STOP RULE:
+- After the first successful direct check, stop.
+- Do not run additional curl, shell, or retry commands.
+- Do not verify more thoroughly.
+- Return the result immediately. SUCCESS RULE: - One successful localhost response or one confirmed browser load is enough. - Do not perform secondary confirmation checks unless explicitly requested.

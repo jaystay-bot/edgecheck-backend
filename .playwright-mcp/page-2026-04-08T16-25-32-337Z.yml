@@ -1,0 +1,324 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - heading "EdgeCheck" [level=1] [ref=e5]
+        - paragraph [ref=e6]: Sports Betting Edge Analyzer
+      - button "Open user menu" [ref=e9] [cursor=pointer]:
+        - img "Jonathan Staley's logo" [ref=e12]
+    - generic [ref=e14]:
+      - button "Games" [ref=e15] [cursor=pointer]
+      - button "Props" [ref=e16] [cursor=pointer]:
+        - img [ref=e17]
+        - text: Props
+      - button "Line Watch" [ref=e19] [cursor=pointer]:
+        - img [ref=e20]
+        - text: Line Watch
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - img [ref=e26]
+        - generic [ref=e28]: Best Play of the Day
+      - paragraph [ref=e29]: No strong edges found today
+    - generic [ref=e30]:
+      - button "NBA" [ref=e31] [cursor=pointer]
+      - button "NFL" [ref=e32] [cursor=pointer]
+      - button "MLB" [ref=e33] [cursor=pointer]
+      - button "NHL" [ref=e34] [cursor=pointer]
+      - button "NCAAF" [ref=e35] [cursor=pointer]
+      - button "NCAAB" [ref=e36] [cursor=pointer]
+      - button "MLS" [ref=e37] [cursor=pointer]
+    - generic [ref=e39]:
+      - generic [ref=e40]: 🔥
+      - heading "Today's Heaters" [level=2] [ref=e41]
+    - generic [ref=e58]: 7 games today — National Basketball Association
+    - generic [ref=e59]:
+      - generic [ref=e60]:
+        - generic [ref=e61]: Wed, Apr 8 7:00 PM
+        - generic [ref=e62]: ESPN
+      - generic [ref=e63]:
+        - generic [ref=e66]:
+          - generic [ref=e67]: ATL
+          - generic [ref=e68]: 45-34
+        - generic [ref=e69]: VS
+        - generic [ref=e72]:
+          - generic [ref=e73]: CLE
+          - generic [ref=e74]: 50-29
+      - generic [ref=e75]:
+        - generic [ref=e76]:
+          - generic [ref=e77]: Spread
+          - generic [ref=e78]:
+            - generic [ref=e79]: CLE -1.5
+            - generic [ref=e80]: "|"
+            - generic [ref=e81]: ATL +1.5
+        - generic [ref=e82]:
+          - generic [ref=e83]: Moneyline
+          - generic [ref=e84]:
+            - generic [ref=e85]: CLE -120
+            - generic [ref=e86]: "|"
+            - generic [ref=e87]: ATL +100
+        - generic [ref=e88]:
+          - generic [ref=e89]: Total (235.5)
+          - generic [ref=e90]:
+            - generic [ref=e91]: Over 235.5
+            - generic [ref=e92]: "|"
+            - generic [ref=e93]: Under 235.5
+      - generic [ref=e94]:
+        - button "Props" [ref=e95] [cursor=pointer]
+        - combobox [ref=e96]:
+          - option "CLE Spread -1.5" [selected]
+          - option "ATL Spread +1.5"
+          - option "CLE ML -120"
+          - option "ATL ML +100"
+          - option "Over 235.5"
+          - option "Under 235.5"
+        - button "EdgeCheck" [ref=e97] [cursor=pointer]
+    - generic [ref=e98]:
+      - generic [ref=e99]:
+        - generic [ref=e100]: Wed, Apr 8 7:00 PM
+        - generic [ref=e101]: FanDuel SN FL
+      - generic [ref=e102]:
+        - generic [ref=e105]:
+          - generic [ref=e106]: MIN
+          - generic [ref=e107]: 47-32
+        - generic [ref=e108]: VS
+        - generic [ref=e111]:
+          - generic [ref=e112]: ORL
+          - generic [ref=e113]: 43-36
+      - generic [ref=e114]:
+        - generic [ref=e115]:
+          - generic [ref=e116]: Spread
+          - generic [ref=e117]:
+            - generic [ref=e118]: ORL -6.5
+            - generic [ref=e119]: "|"
+            - generic [ref=e120]: MIN +6.5
+        - generic [ref=e121]:
+          - generic [ref=e122]: Moneyline
+          - generic [ref=e123]:
+            - generic [ref=e124]: ORL -225
+            - generic [ref=e125]: "|"
+            - generic [ref=e126]: MIN +185
+        - generic [ref=e127]:
+          - generic [ref=e128]: Total (228.5)
+          - generic [ref=e129]:
+            - generic [ref=e130]: Over 228.5
+            - generic [ref=e131]: "|"
+            - generic [ref=e132]: Under 228.5
+      - generic [ref=e133]:
+        - button "Props" [ref=e134] [cursor=pointer]
+        - combobox [ref=e135]:
+          - option "ORL Spread -6.5" [selected]
+          - option "MIN Spread +6.5"
+          - option "ORL ML -225"
+          - option "MIN ML +185"
+          - option "Over 228.5"
+          - option "Under 228.5"
+        - button "EdgeCheck" [ref=e136] [cursor=pointer]
+    - generic [ref=e137]:
+      - generic [ref=e138]:
+        - generic [ref=e139]: Wed, Apr 8 7:00 PM
+        - generic [ref=e140]: NBA League Pass
+      - generic [ref=e141]:
+        - generic [ref=e144]:
+          - generic [ref=e145]: MIL
+          - generic [ref=e146]: 31-48
+        - generic [ref=e147]: VS
+        - generic [ref=e150]:
+          - generic [ref=e151]: DET
+          - generic [ref=e152]: 57-22
+      - generic [ref=e153]:
+        - generic [ref=e154]:
+          - generic [ref=e155]: Spread
+          - generic [ref=e156]:
+            - generic [ref=e157]: DET -18.5
+            - generic [ref=e158]: "|"
+            - generic [ref=e159]: MIL +18.5
+        - generic [ref=e160]:
+          - generic [ref=e161]: Moneyline
+          - generic [ref=e162]:
+            - generic [ref=e163]: DET -1800
+            - generic [ref=e164]: "|"
+            - generic [ref=e165]: MIL +1000
+        - generic [ref=e166]:
+          - generic [ref=e167]: Total (221.5)
+          - generic [ref=e168]:
+            - generic [ref=e169]: Over 221.5
+            - generic [ref=e170]: "|"
+            - generic [ref=e171]: Under 221.5
+      - generic [ref=e172]:
+        - button "Props" [ref=e173] [cursor=pointer]
+        - combobox [ref=e174]:
+          - option "DET Spread -18.5" [selected]
+          - option "MIL Spread +18.5"
+          - option "DET ML -1800"
+          - option "MIL ML +1000"
+          - option "Over 221.5"
+          - option "Under 221.5"
+        - button "EdgeCheck" [ref=e175] [cursor=pointer]
+    - generic [ref=e176]:
+      - generic [ref=e177]:
+        - generic [ref=e178]: Wed, Apr 8 9:00 PM
+        - generic [ref=e179]: FanDuel SN SE
+      - generic [ref=e180]:
+        - generic [ref=e183]:
+          - generic [ref=e184]: MEM
+          - generic [ref=e185]: 25-54
+        - generic [ref=e186]: VS
+        - generic [ref=e189]:
+          - generic [ref=e190]: DEN
+          - generic [ref=e191]: 51-28
+      - generic [ref=e192]:
+        - generic [ref=e193]:
+          - generic [ref=e194]: Spread
+          - generic [ref=e195]:
+            - generic [ref=e196]: DEN -22.5
+            - generic [ref=e197]: "|"
+            - generic [ref=e198]: MEM +22.5
+        - generic [ref=e199]:
+          - generic [ref=e200]: Moneyline
+          - generic [ref=e201]:
+            - generic [ref=e202]: DEN -3200
+            - generic [ref=e203]: "|"
+            - generic [ref=e204]: MEM +1400
+        - generic [ref=e205]:
+          - generic [ref=e206]: Total (244.5)
+          - generic [ref=e207]:
+            - generic [ref=e208]: Over 244.5
+            - generic [ref=e209]: "|"
+            - generic [ref=e210]: Under 244.5
+      - generic [ref=e211]:
+        - button "Props" [ref=e212] [cursor=pointer]
+        - combobox [ref=e213]:
+          - option "DEN Spread -22.5" [selected]
+          - option "MEM Spread +22.5"
+          - option "DEN ML -3200"
+          - option "MEM ML +1400"
+          - option "Over 244.5"
+          - option "Under 244.5"
+        - button "EdgeCheck" [ref=e214] [cursor=pointer]
+    - generic [ref=e215]:
+      - generic [ref=e216]:
+        - generic [ref=e217]: Wed, Apr 8 9:30 PM
+        - generic [ref=e218]: ESPN
+      - generic [ref=e219]:
+        - generic [ref=e222]:
+          - generic [ref=e223]: POR
+          - generic [ref=e224]: 40-39
+        - generic [ref=e225]: VS
+        - generic [ref=e228]:
+          - generic [ref=e229]: SA
+          - generic [ref=e230]: 60-19
+      - generic [ref=e231]:
+        - generic [ref=e232]:
+          - generic [ref=e233]: Spread
+          - generic [ref=e234]:
+            - generic [ref=e235]: SA -3.5
+            - generic [ref=e236]: "|"
+            - generic [ref=e237]: POR +3.5
+        - generic [ref=e238]:
+          - generic [ref=e239]: Moneyline
+          - generic [ref=e240]:
+            - generic [ref=e241]: SA -166
+            - generic [ref=e242]: "|"
+            - generic [ref=e243]: POR +140
+        - generic [ref=e244]:
+          - generic [ref=e245]: Total (232.5)
+          - generic [ref=e246]:
+            - generic [ref=e247]: Over 232.5
+            - generic [ref=e248]: "|"
+            - generic [ref=e249]: Under 232.5
+      - generic [ref=e250]:
+        - button "Props" [ref=e251] [cursor=pointer]
+        - combobox [ref=e252]:
+          - option "SA Spread -3.5" [selected]
+          - option "POR Spread +3.5"
+          - option "SA ML -166"
+          - option "POR ML +140"
+          - option "Over 232.5"
+          - option "Under 232.5"
+        - button "EdgeCheck" [ref=e253] [cursor=pointer]
+    - generic [ref=e254]:
+      - generic [ref=e255]:
+        - generic [ref=e256]: Wed, Apr 8 10:00 PM
+        - generic [ref=e257]: FanDuel SN OK
+      - generic [ref=e258]:
+        - generic [ref=e261]:
+          - generic [ref=e262]: OKC
+          - generic [ref=e263]: 63-16
+        - generic [ref=e264]: VS
+        - generic [ref=e267]:
+          - generic [ref=e268]: LAC
+          - generic [ref=e269]: 41-38
+      - generic [ref=e270]:
+        - generic [ref=e271]:
+          - generic [ref=e272]: Spread
+          - generic [ref=e273]:
+            - generic [ref=e274]: LAC +6.5
+            - generic [ref=e275]: "|"
+            - generic [ref=e276]: OKC -6.5
+        - generic [ref=e277]:
+          - generic [ref=e278]: Moneyline
+          - generic [ref=e279]:
+            - generic [ref=e280]: LAC +220
+            - generic [ref=e281]: "|"
+            - generic [ref=e282]: OKC -270
+        - generic [ref=e283]:
+          - generic [ref=e284]: Total (226.5)
+          - generic [ref=e285]:
+            - generic [ref=e286]: Over 226.5
+            - generic [ref=e287]: "|"
+            - generic [ref=e288]: Under 226.5
+      - generic [ref=e289]:
+        - button "Props" [ref=e290] [cursor=pointer]
+        - combobox [ref=e291]:
+          - option "LAC Spread +6.5" [selected]
+          - option "OKC Spread -6.5"
+          - option "LAC ML +220"
+          - option "OKC ML -270"
+          - option "Over 226.5"
+          - option "Under 226.5"
+        - button "EdgeCheck" [ref=e292] [cursor=pointer]
+    - generic [ref=e293]:
+      - generic [ref=e294]:
+        - generic [ref=e295]: Wed, Apr 8 10:00 PM
+        - generic [ref=e296]: KFAA-TV
+      - generic [ref=e297]:
+        - generic [ref=e300]:
+          - generic [ref=e301]: DAL
+          - generic [ref=e302]: 25-54
+        - generic [ref=e303]: VS
+        - generic [ref=e306]:
+          - generic [ref=e307]: PHX
+          - generic [ref=e308]: 43-36
+      - generic [ref=e309]:
+        - generic [ref=e310]:
+          - generic [ref=e311]: Spread
+          - generic [ref=e312]:
+            - generic [ref=e313]: PHX -11.5
+            - generic [ref=e314]: "|"
+            - generic [ref=e315]: DAL +11.5
+        - generic [ref=e316]:
+          - generic [ref=e317]: Moneyline
+          - generic [ref=e318]:
+            - generic [ref=e319]: PHX -575
+            - generic [ref=e320]: "|"
+            - generic [ref=e321]: DAL +425
+        - generic [ref=e322]:
+          - generic [ref=e323]: Total (230.5)
+          - generic [ref=e324]:
+            - generic [ref=e325]: Over 230.5
+            - generic [ref=e326]: "|"
+            - generic [ref=e327]: Under 230.5
+      - generic [ref=e328]:
+        - button "Props" [ref=e329] [cursor=pointer]
+        - combobox [ref=e330]:
+          - option "PHX Spread -11.5" [selected]
+          - option "DAL Spread +11.5"
+          - option "PHX ML -575"
+          - option "DAL ML +425"
+          - option "Over 230.5"
+          - option "Under 230.5"
+        - button "EdgeCheck" [ref=e331] [cursor=pointer]
+    - generic [ref=e332]:
+      - text: EdgeCheck — Data from ESPN. Independent matchup analysis.
+      - text: For entertainment purposes only. Please bet responsibly.
+  - alert [ref=e333]

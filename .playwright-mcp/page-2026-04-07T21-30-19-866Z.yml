@@ -1,0 +1,70 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - heading "EdgeCheck" [level=1] [ref=e4]
+      - paragraph [ref=e5]: Create your account
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e12]:
+          - heading "Create your account" [level=1] [ref=e13]
+          - paragraph [ref=e14]: Welcome! Please fill in the details to get started.
+        - generic [ref=e15]:
+          - generic [ref=e17]:
+            - button "Sign in with Google Continue with Google" [disabled]:
+              - generic:
+                - generic:
+                  - img "Sign in with Google"
+                - generic: Continue with Google
+          - paragraph [ref=e25]: or
+          - generic [ref=e27]:
+            - generic [ref=e28]:
+              - generic [ref=e29]:
+                - generic [ref=e31]:
+                  - generic [ref=e32]:
+                    - generic: First name
+                    - generic: Optional
+                  - textbox "First name" [disabled]
+                - generic [ref=e38]:
+                  - generic [ref=e39]:
+                    - generic: Last name
+                    - generic: Optional
+                  - textbox "Last name" [disabled]
+              - generic [ref=e46]:
+                - generic [ref=e47]:
+                  - generic: Email address
+                - textbox "Email address" [disabled]:
+                  - /placeholder: Enter your email address
+                  - text: test2026@test.dev
+              - generic [ref=e52]:
+                - generic [ref=e53]:
+                  - generic [ref=e54]:
+                    - generic: Password
+                  - generic [ref=e56]:
+                    - textbox "Password" [disabled]:
+                      - /placeholder: Enter your password
+                      - text: TestPass123!
+                    - button "Show password" [ref=e58] [cursor=pointer]:
+                      - img [ref=e59]
+                - generic [ref=e62]: Your password meets all the necessary requirements.
+                - paragraph [ref=e90]:
+                  - img [ref=e87]
+                  - text: Your password meets all the necessary requirements.
+            - generic [ref=e64]:
+              - button "Loading" [disabled]:
+                - generic:
+                  - generic "Loading"
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - generic [ref=e71]: Already have an account?
+          - link "Sign in" [ref=e72] [cursor=pointer]:
+            - /url: http://localhost:3000/sign-in
+        - generic [ref=e74]:
+          - generic [ref=e76]:
+            - paragraph [ref=e77]: Secured by
+            - link "Clerk logo" [ref=e78] [cursor=pointer]:
+              - /url: https://go.clerk.com/components
+              - img [ref=e79]
+          - paragraph [ref=e84]: Development mode
+    - link "Back to home" [ref=e7] [cursor=pointer]:
+      - /url: /
+  - alert [ref=e85]

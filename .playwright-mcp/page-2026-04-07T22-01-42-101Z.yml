@@ -1,0 +1,34 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]:
+      - heading "EdgeCheck" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Sports Betting Edge Analyzer
+    - generic [ref=e7]:
+      - button "Games" [ref=e8] [cursor=pointer]
+      - button "Props" [ref=e9] [cursor=pointer]:
+        - img [ref=e10]
+        - text: Props
+      - button "Line Watch" [ref=e12] [cursor=pointer]:
+        - img [ref=e13]
+        - text: Line Watch
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - img [ref=e19]
+        - generic [ref=e21]: Best Play of the Day
+      - paragraph [ref=e22]: No strong edges found today
+    - generic [ref=e23]:
+      - button "NBA" [ref=e24] [cursor=pointer]
+      - button "NFL" [ref=e25] [cursor=pointer]
+      - button "MLB" [ref=e26] [cursor=pointer]
+      - button "NHL" [ref=e27] [cursor=pointer]
+      - button "NCAAF" [ref=e28] [cursor=pointer]
+      - button "NCAAB" [ref=e29] [cursor=pointer]
+      - button "MLS" [ref=e30] [cursor=pointer]
+    - generic [ref=e32]:
+      - generic [ref=e33]: 🔥
+      - heading "Today's Heaters" [level=2] [ref=e34]
+    - generic [ref=e51]: Loading NBA games from ESPN...
+    - generic [ref=e53]:
+      - text: EdgeCheck — Data from ESPN. Independent matchup analysis.
+      - text: For entertainment purposes only. Please bet responsibly.
+  - alert [ref=e54]

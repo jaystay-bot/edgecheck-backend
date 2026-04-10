@@ -400,10 +400,9 @@ export async function enrichNBAProps(props) {
   if (!props || props.length === 0) return props;
 
   const startTime = Date.now();
-  const MAX_ENRICHMENT_TIME = 22000; // 22 seconds max for better L10 coverage
-  const MAX_PLAYERS_TO_FETCH = 50; // Cover more players per category
+  const MAX_PLAYERS_TO_FETCH = 100; // Cover all displayed players across categories
 
-  console.log(`[NBAStats] Enriching ${props.length} NBA props (max ${MAX_ENRICHMENT_TIME}ms budget)...`);
+  console.log(`[NBAStats] Enriching ${props.length} NBA props (deterministic, no time cutoff)...`);
 
   // Fetch today's games only (injuries disabled to prioritize L10 stats fetch time)
   const games = await fetchTodaysNBAGames();
@@ -423,17 +422,21 @@ export async function enrichNBAProps(props) {
   const uniquePlayers = [];
   const seenPlayers = new Set();
 
-  // Category filters for main NBA prop types (sorted by typical L10 coverage gaps)
+  // Category filters for main NBA prop types (ordered by display priority to maximize L10 coverage)
   const categoryFilters = [
+    { name: 'points', match: (p) => p.propType?.toLowerCase().includes('point') && !p.propType?.toLowerCase().includes('3-point') },
+    { name: 'threes', match: (p) => p.propType?.toLowerCase().includes('3-point') || p.propType?.toLowerCase().includes('three') },
     { name: 'rebounds', match: (p) => p.propType?.toLowerCase().includes('rebound') },
     { name: 'assists', match: (p) => p.propType?.toLowerCase().includes('assist') },
-    { name: 'threes', match: (p) => p.propType?.toLowerCase().includes('3-point') || p.propType?.toLowerCase().includes('three') },
-    { name: 'points', match: (p) => p.propType?.toLowerCase().includes('point') && !p.propType?.toLowerCase().includes('3-point') },
+    { name: 'steals', match: (p) => p.propType?.toLowerCase().includes('steal') },
+    { name: 'blocks', match: (p) => p.propType?.toLowerCase().includes('block') },
+    { name: 'turnovers', match: (p) => p.propType?.toLowerCase().includes('turnover') },
+    { name: 'combos', match: (p) => p.propType?.toLowerCase().includes('+') || p.propType?.toLowerCase().includes('double') },
   ];
 
-  // Reserve top 8 players from each category (ensures better L10 coverage)
+  // Reserve top 10 players from each category (matches maxProps display limit)
   for (const cat of categoryFilters) {
-    const catProps = scoredProps.filter(cat.match).slice(0, 8);
+    const catProps = scoredProps.filter(cat.match).slice(0, 10);
     for (const p of catProps) {
       if (p.playerName && !seenPlayers.has(p.playerName)) {
         uniquePlayers.push(p.playerName);
@@ -455,26 +458,18 @@ export async function enrichNBAProps(props) {
   // Pre-load player list ONCE before batch fetches (avoids redundant parallel calls)
   await ensureAllPlayersLoaded();
 
-  // Batch fetch player IDs (with concurrency limit to avoid rate limiting)
+  // Batch fetch player stats deterministically (no time cutoff for displayed props)
   const playerStatsMap = new Map(); // playerName -> last10Games
-  const BATCH_SIZE = 8; // Larger batches for more parallel fetches within time budget
-  let timedOut = false;
+  const BATCH_SIZE = 8; // Batched for rate limiting protection
 
-  for (let i = 0; i < uniquePlayers.length && !timedOut; i += BATCH_SIZE) {
-    // Check time budget before each batch
-    if (Date.now() - startTime > MAX_ENRICHMENT_TIME) {
-      console.log(`[NBAStats] Time budget exceeded after ${i} players, returning partial data`);
-      timedOut = true;
-      break;
-    }
-
+  for (let i = 0; i < uniquePlayers.length; i += BATCH_SIZE) {
     const batch = uniquePlayers.slice(i, i + BATCH_SIZE);
     const batchResults = await Promise.all(
       batch.map(async (playerName) => {
         const playerId = await findNBAPlayerId(playerName);
-        if (!playerId) return { playerName, stats: null };
+        if (!playerId) return { playerName, stats: null, unavailable: true };
         const stats = await fetchNBAPlayerStats(playerId);
-        return { playerName, stats };
+        return { playerName, stats, unavailable: !stats };
       })
     );
     for (const { playerName, stats } of batchResults) {
@@ -526,11 +521,13 @@ export async function enrichNBAProps(props) {
       if (!game && prop.awayTeam) game = findGameForTeam(games, prop.awayTeam);
     }
 
-    // Build enrichment
+    // Build enrichment - do NOT overwrite existing trusted game identity
     const enrichment = { ...injuryEnrichment, ...statsEnrichment };
     if (game) {
-      if (game.matchup) enrichment.matchup = game.matchup;
-      if (game.gameTime) enrichment.gameTime = game.gameTime;
+      // Only add matchup/gameTime if prop lacks trusted game context
+      const hasTrustedMatchup = prop.matchup && !prop.matchup.includes("AWY") && !prop.matchup.includes("HOM");
+      if (!hasTrustedMatchup && game.matchup) enrichment.matchup = game.matchup;
+      if (!prop.gameTime && game.gameTime) enrichment.gameTime = game.gameTime;
       if (prop.isHome === undefined && prop.homeTeam) {
         enrichment.isHome = game.homeAbbrev === prop.homeTeam ||
                             game.homeTeam?.includes(prop.homeTeam);

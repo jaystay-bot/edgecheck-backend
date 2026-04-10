@@ -1,7 +1,17 @@
-Validate the EdgeCheck project is working correctly:
+/validate
 
-1. Run `npm run build` to verify the build succeeds
-2. Check for TypeScript errors
-3. Report any issues found
+Check all upstream data sources before any render or ranking.
 
-If build passes, report "Validation passed."
+Return:
+- ESPN odds feed: LIVE / DOWN / EMPTY
+- Props feed: LIVE / DOWN / EMPTY
+- Player stats API: LIVE / DOWN / EMPTY
+- Props with complete data: X / X total
+
+Rules:
+- Do not fix anything
+- Do not refactor
+- Only inspect API responses and data presence
+- If any source is EMPTY or DOWN, flag clearly
+
+Stop after validation.

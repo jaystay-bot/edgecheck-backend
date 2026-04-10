@@ -270,6 +270,37 @@ export async function POST(request) {
 }
 
 export async function GET(request) {
+  // Auth and subscription checks matching POST handler
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json(
+      { error: "Unauthorized", code: "UNAUTHORIZED" },
+      { status: 401 }
+    );
+  }
+
+  const user = await currentUser();
+  const email = user?.primaryEmailAddress?.emailAddress;
+
+  if (!email) {
+    return NextResponse.json(
+      { error: "No email found", code: "NO_EMAIL" },
+      { status: 400 }
+    );
+  }
+
+  const hasSubscription = await hasActiveSubscription(email);
+  if (!hasSubscription) {
+    return NextResponse.json(
+      {
+        error: "Subscription required",
+        code: "SUBSCRIPTION_REQUIRED",
+        message: "Upgrade to EdgeCheck Pro to unlock AI analysis",
+      },
+      { status: 402 }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const gameId = searchParams.get("gameId");
 

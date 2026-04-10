@@ -1,0 +1,619 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - heading "EdgeCheck" [level=1] [ref=e5]
+        - paragraph [ref=e6]: Sports Betting Edge Analyzer
+      - button "Open user menu" [ref=e57] [cursor=pointer]:
+        - img "Jonathan Staley's logo" [ref=e60]
+    - generic [ref=e7]:
+      - button "Games" [ref=e8] [cursor=pointer]
+      - button "Props" [ref=e9] [cursor=pointer]:
+        - img [ref=e10]
+        - text: Props
+      - button "Line Watch" [ref=e12] [cursor=pointer]:
+        - img [ref=e13]
+        - text: Line Watch
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - img [ref=e19]
+        - generic [ref=e21]: Best Play of the Day
+      - paragraph [ref=e22]: No strong edges found today
+    - generic [ref=e23]:
+      - button "NBA" [ref=e24] [cursor=pointer]
+      - button "NFL" [ref=e25] [cursor=pointer]
+      - button "MLB" [active] [ref=e26] [cursor=pointer]
+      - button "NHL" [ref=e27] [cursor=pointer]
+      - button "NCAAF" [ref=e28] [cursor=pointer]
+      - button "NCAAB" [ref=e29] [cursor=pointer]
+      - button "MLS" [ref=e30] [cursor=pointer]
+    - generic [ref=e336]: 15 games today — Major League Baseball
+    - generic [ref=e337]:
+      - generic [ref=e338]:
+        - generic [ref=e339]: Wed, Apr 8 12:35 PM
+        - generic [ref=e340]: MLB.TV
+      - generic [ref=e341]:
+        - generic [ref=e344]:
+          - generic [ref=e345]: SD
+          - generic [ref=e346]: 5-6
+        - generic [ref=e347]: VS
+        - generic [ref=e350]:
+          - generic [ref=e351]: PIT
+          - generic [ref=e352]: 7-4
+      - generic [ref=e353]:
+        - generic [ref=e354]:
+          - generic [ref=e355]: Spread
+          - generic [ref=e356]:
+            - generic [ref=e357]: PIT +1.5
+            - generic [ref=e358]: "|"
+            - generic [ref=e359]: SD -1.5
+        - generic [ref=e360]:
+          - generic [ref=e361]: Total (7)
+          - generic [ref=e362]:
+            - generic [ref=e363]: Over 7
+            - generic [ref=e364]: "|"
+            - generic [ref=e365]: Under 7
+      - generic [ref=e366]:
+        - generic [ref=e367]: Public Betting
+        - generic [ref=e368]:
+          - generic [ref=e369]:
+            - strong [ref=e370]: 72%
+            - text: bets
+          - generic [ref=e371]: "|"
+          - generic [ref=e372]:
+            - strong [ref=e373]: 65%
+            - text: handle
+      - generic [ref=e374]:
+        - button "Props" [ref=e375] [cursor=pointer]
+        - combobox [ref=e376]:
+          - option "PIT Spread +1.5" [selected]
+          - option "SD Spread -1.5"
+          - option "Over 7"
+          - option "Under 7"
+        - button "EdgeCheck" [ref=e377] [cursor=pointer]
+    - generic [ref=e378]:
+      - generic [ref=e379]:
+        - generic [ref=e380]: Wed, Apr 8 1:10 PM
+        - generic [ref=e381]: MLB.TV
+      - generic [ref=e382]:
+        - generic [ref=e385]:
+          - generic [ref=e386]: KC
+          - generic [ref=e387]: 5-6
+        - generic [ref=e388]: VS
+        - generic [ref=e391]:
+          - generic [ref=e392]: CLE
+          - generic [ref=e393]: 7-5
+      - generic [ref=e394]:
+        - generic [ref=e395]:
+          - generic [ref=e396]: Spread
+          - generic [ref=e397]:
+            - generic [ref=e398]: CLE +1.5
+            - generic [ref=e399]: "|"
+            - generic [ref=e400]: KC -1.5
+        - generic [ref=e401]:
+          - generic [ref=e402]: Total (7)
+          - generic [ref=e403]:
+            - generic [ref=e404]: Over 7
+            - generic [ref=e405]: "|"
+            - generic [ref=e406]: Under 7
+      - generic [ref=e407]:
+        - generic [ref=e408]: Public Betting
+        - generic [ref=e409]:
+          - generic [ref=e410]:
+            - strong [ref=e411]: 71%
+            - text: bets
+          - generic [ref=e412]: "|"
+          - generic [ref=e413]:
+            - strong [ref=e414]: 60%
+            - text: handle
+      - generic [ref=e415]:
+        - button "Props" [ref=e416] [cursor=pointer]
+        - combobox [ref=e417]:
+          - option "CLE Spread +1.5" [selected]
+          - option "KC Spread -1.5"
+          - option "Over 7"
+          - option "Under 7"
+        - button "EdgeCheck" [ref=e418] [cursor=pointer]
+    - generic [ref=e419]:
+      - generic [ref=e420]:
+        - generic [ref=e421]: Wed, Apr 8 1:35 PM
+        - generic [ref=e422]: MLB.TV
+      - generic [ref=e423]:
+        - generic [ref=e426]:
+          - generic [ref=e427]: MIL
+          - generic [ref=e428]: 8-3
+        - generic [ref=e429]: VS
+        - generic [ref=e432]:
+          - generic [ref=e433]: BOS
+          - generic [ref=e434]: 3-8
+      - generic [ref=e435]:
+        - generic [ref=e436]:
+          - generic [ref=e437]: Spread
+          - generic [ref=e438]:
+            - generic [ref=e439]: BOS -1.5
+            - generic [ref=e440]: "|"
+            - generic [ref=e441]: MIL +1.5
+        - generic [ref=e442]:
+          - generic [ref=e443]: Total (7)
+          - generic [ref=e444]:
+            - generic [ref=e445]: Over 7
+            - generic [ref=e446]: "|"
+            - generic [ref=e447]: Under 7
+      - generic [ref=e448]:
+        - generic [ref=e449]: Public Betting
+        - generic [ref=e450]:
+          - generic [ref=e451]:
+            - strong [ref=e452]: 31%
+            - text: bets
+          - generic [ref=e453]: "|"
+          - generic [ref=e454]:
+            - strong [ref=e455]: 32%
+            - text: handle
+      - generic [ref=e456]:
+        - button "Props" [ref=e457] [cursor=pointer]
+        - combobox [ref=e458]:
+          - option "BOS Spread -1.5" [selected]
+          - option "MIL Spread +1.5"
+          - option "Over 7"
+          - option "Under 7"
+        - button "EdgeCheck" [ref=e459] [cursor=pointer]
+    - generic [ref=e460]:
+      - generic [ref=e461]:
+        - generic [ref=e462]: Wed, Apr 8 2:10 PM
+        - generic [ref=e463]: MLB.TV
+      - generic [ref=e464]:
+        - generic [ref=e467]:
+          - generic [ref=e468]: BAL
+          - generic [ref=e469]: 5-6
+        - generic [ref=e470]: VS
+        - generic [ref=e473]:
+          - generic [ref=e474]: CHW
+          - generic [ref=e475]: 4-7
+      - generic [ref=e476]:
+        - generic [ref=e477]:
+          - generic [ref=e478]: Spread
+          - generic [ref=e479]:
+            - generic [ref=e480]: CHW +1.5
+            - generic [ref=e481]: "|"
+            - generic [ref=e482]: BAL -1.5
+        - generic [ref=e483]:
+          - generic [ref=e484]: Total (7.5)
+          - generic [ref=e485]:
+            - generic [ref=e486]: Over 7.5
+            - generic [ref=e487]: "|"
+            - generic [ref=e488]: Under 7.5
+      - generic [ref=e489]:
+        - button "Props" [ref=e490] [cursor=pointer]
+        - combobox [ref=e491]:
+          - option "CHW Spread +1.5" [selected]
+          - option "BAL Spread -1.5"
+          - option "Over 7.5"
+          - option "Under 7.5"
+        - button "EdgeCheck" [ref=e492] [cursor=pointer]
+    - generic [ref=e493]:
+      - generic [ref=e494]:
+        - generic [ref=e495]: Wed, Apr 8 2:35 PM
+        - generic [ref=e496]: MLB.TV
+      - generic [ref=e497]:
+        - generic [ref=e500]:
+          - generic [ref=e501]: SEA
+          - generic [ref=e502]: 4-8
+        - generic [ref=e503]: VS
+        - generic [ref=e506]:
+          - generic [ref=e507]: TEX
+          - generic [ref=e508]: 6-5
+      - generic [ref=e509]:
+        - generic [ref=e510]:
+          - generic [ref=e511]: Spread
+          - generic [ref=e512]:
+            - generic [ref=e513]: TEX +1.5
+            - generic [ref=e514]: "|"
+            - generic [ref=e515]: SEA -1.5
+        - generic [ref=e516]:
+          - generic [ref=e517]: Total (7.5)
+          - generic [ref=e518]:
+            - generic [ref=e519]: Over 7.5
+            - generic [ref=e520]: "|"
+            - generic [ref=e521]: Under 7.5
+      - generic [ref=e522]:
+        - generic [ref=e523]: Public Betting
+        - generic [ref=e524]:
+          - generic [ref=e525]:
+            - strong [ref=e526]: 50%
+            - text: bets
+          - generic [ref=e527]: "|"
+          - generic [ref=e528]:
+            - strong [ref=e529]: 56%
+            - text: handle
+      - generic [ref=e530]:
+        - button "Props" [ref=e531] [cursor=pointer]
+        - combobox [ref=e532]:
+          - option "TEX Spread +1.5" [selected]
+          - option "SEA Spread -1.5"
+          - option "Over 7.5"
+          - option "Under 7.5"
+        - button "EdgeCheck" [ref=e533] [cursor=pointer]
+    - generic [ref=e534]:
+      - generic [ref=e535]:
+        - generic [ref=e536]: Wed, Apr 8 3:07 PM
+        - generic [ref=e537]: MLB.TV
+      - generic [ref=e538]:
+        - generic [ref=e541]:
+          - generic [ref=e542]: LAD
+          - generic [ref=e543]: 9-2
+        - generic [ref=e544]: VS
+        - generic [ref=e547]:
+          - generic [ref=e548]: TOR
+          - generic [ref=e549]: 4-7
+      - generic [ref=e550]:
+        - generic [ref=e551]:
+          - generic [ref=e552]: Spread
+          - generic [ref=e553]:
+            - generic [ref=e554]: TOR +1.5
+            - generic [ref=e555]: "|"
+            - generic [ref=e556]: LAD -1.5
+        - generic [ref=e557]:
+          - generic [ref=e558]: Total (7.5)
+          - generic [ref=e559]:
+            - generic [ref=e560]: Over 7.5
+            - generic [ref=e561]: "|"
+            - generic [ref=e562]: Under 7.5
+      - generic [ref=e563]:
+        - generic [ref=e564]: Public Betting
+        - generic [ref=e565]:
+          - generic [ref=e566]:
+            - strong [ref=e567]: 35%
+            - text: bets
+          - generic [ref=e568]: "|"
+          - generic [ref=e569]:
+            - strong [ref=e570]: 27%
+            - text: handle
+      - generic [ref=e571]:
+        - button "Props" [ref=e572] [cursor=pointer]
+        - combobox [ref=e573]:
+          - option "TOR Spread +1.5" [selected]
+          - option "LAD Spread -1.5"
+          - option "Over 7.5"
+          - option "Under 7.5"
+        - button "EdgeCheck" [ref=e574] [cursor=pointer]
+    - generic [ref=e575]:
+      - generic [ref=e576]:
+        - generic [ref=e577]: Wed, Apr 8 3:10 PM
+        - generic [ref=e578]: ESPN Unlmtd
+      - generic [ref=e579]:
+        - generic [ref=e582]:
+          - generic [ref=e583]: HOU
+          - generic [ref=e584]: 6-6
+        - generic [ref=e585]: VS
+        - generic [ref=e588]:
+          - generic [ref=e589]: COL
+          - generic [ref=e590]: 5-6
+      - generic [ref=e591]:
+        - generic [ref=e592]:
+          - generic [ref=e593]: Spread
+          - generic [ref=e594]:
+            - generic [ref=e595]: COL +1.5
+            - generic [ref=e596]: "|"
+            - generic [ref=e597]: HOU -1.5
+        - generic [ref=e598]:
+          - generic [ref=e599]: Total (11.5)
+          - generic [ref=e600]:
+            - generic [ref=e601]: Over 11.5
+            - generic [ref=e602]: "|"
+            - generic [ref=e603]: Under 11.5
+      - generic [ref=e604]:
+        - button "Props" [ref=e605] [cursor=pointer]
+        - combobox [ref=e606]:
+          - option "COL Spread +1.5" [selected]
+          - option "HOU Spread -1.5"
+          - option "Over 11.5"
+          - option "Under 11.5"
+        - button "EdgeCheck" [ref=e607] [cursor=pointer]
+    - generic [ref=e608]:
+      - generic [ref=e609]:
+        - generic [ref=e610]: Wed, Apr 8 3:45 PM
+        - generic [ref=e611]: MLB.TV
+      - generic [ref=e612]:
+        - generic [ref=e615]:
+          - generic [ref=e616]: PHI
+          - generic [ref=e617]: 6-5
+        - generic [ref=e618]: VS
+        - generic [ref=e621]:
+          - generic [ref=e622]: SF
+          - generic [ref=e623]: 4-8
+      - generic [ref=e624]:
+        - generic [ref=e625]:
+          - generic [ref=e626]: Spread
+          - generic [ref=e627]:
+            - generic [ref=e628]: SF +1.5
+            - generic [ref=e629]: "|"
+            - generic [ref=e630]: PHI -1.5
+        - generic [ref=e631]:
+          - generic [ref=e632]: Total (8.5)
+          - generic [ref=e633]:
+            - generic [ref=e634]: Over 8.5
+            - generic [ref=e635]: "|"
+            - generic [ref=e636]: Under 8.5
+      - generic [ref=e637]:
+        - button "Props" [ref=e638] [cursor=pointer]
+        - combobox [ref=e639]:
+          - option "SF Spread +1.5" [selected]
+          - option "PHI Spread -1.5"
+          - option "Over 8.5"
+          - option "Under 8.5"
+        - button "EdgeCheck" [ref=e640] [cursor=pointer]
+    - generic [ref=e641]:
+      - generic [ref=e642]:
+        - generic [ref=e643]: Wed, Apr 8 4:05 PM
+        - generic [ref=e644]: MLB.TV
+      - generic [ref=e645]:
+        - generic [ref=e648]:
+          - generic [ref=e649]: STL
+          - generic [ref=e650]: 6-5
+        - generic [ref=e651]: VS
+        - generic [ref=e654]:
+          - generic [ref=e655]: WSH
+          - generic [ref=e656]: 4-7
+      - generic [ref=e657]:
+        - generic [ref=e658]:
+          - generic [ref=e659]: Spread
+          - generic [ref=e660]:
+            - generic [ref=e661]: WSH +1.5
+            - generic [ref=e662]: "|"
+            - generic [ref=e663]: STL -1.5
+        - generic [ref=e664]:
+          - generic [ref=e665]: Total (8.5)
+          - generic [ref=e666]:
+            - generic [ref=e667]: Over 8.5
+            - generic [ref=e668]: "|"
+            - generic [ref=e669]: Under 8.5
+      - generic [ref=e670]:
+        - generic [ref=e671]: Public Betting
+        - generic [ref=e672]:
+          - generic [ref=e673]:
+            - strong [ref=e674]: 55%
+            - text: bets
+          - generic [ref=e675]: "|"
+          - generic [ref=e676]:
+            - strong [ref=e677]: 51%
+            - text: handle
+      - generic [ref=e678]:
+        - button "Props" [ref=e679] [cursor=pointer]
+        - combobox [ref=e680]:
+          - option "WSH Spread +1.5" [selected]
+          - option "STL Spread -1.5"
+          - option "Over 8.5"
+          - option "Under 8.5"
+        - button "EdgeCheck" [ref=e681] [cursor=pointer]
+    - generic [ref=e682]:
+      - generic [ref=e683]:
+        - generic [ref=e684]: Wed, Apr 8 4:07 PM
+        - generic [ref=e685]: MLB.TV
+      - generic [ref=e686]:
+        - generic [ref=e689]:
+          - generic [ref=e690]: ATL
+          - generic [ref=e691]: 7-5
+        - generic [ref=e692]: VS
+        - generic [ref=e695]:
+          - generic [ref=e696]: LAA
+          - generic [ref=e697]: 6-6
+      - generic [ref=e698]:
+        - generic [ref=e699]:
+          - generic [ref=e700]: Spread
+          - generic [ref=e701]:
+            - generic [ref=e702]: LAA +1.5
+            - generic [ref=e703]: "|"
+            - generic [ref=e704]: ATL -1.5
+        - generic [ref=e705]:
+          - generic [ref=e706]: Total (8.5)
+          - generic [ref=e707]:
+            - generic [ref=e708]: Over 8.5
+            - generic [ref=e709]: "|"
+            - generic [ref=e710]: Under 8.5
+      - generic [ref=e711]:
+        - button "Props" [ref=e712] [cursor=pointer]
+        - combobox [ref=e713]:
+          - option "LAA Spread +1.5" [selected]
+          - option "ATL Spread -1.5"
+          - option "Over 8.5"
+          - option "Under 8.5"
+        - button "EdgeCheck" [ref=e714] [cursor=pointer]
+    - generic [ref=e715]:
+      - generic [ref=e716]:
+        - generic [ref=e717]: Wed, Apr 8 4:10 PM
+        - generic [ref=e718]: MLB.TV
+      - generic [ref=e719]:
+        - generic [ref=e722]:
+          - generic [ref=e723]: ARI
+          - generic [ref=e724]: 5-6
+        - generic [ref=e725]: VS
+        - generic [ref=e728]:
+          - generic [ref=e729]: NYM
+          - generic [ref=e730]: 7-4
+      - generic [ref=e731]:
+        - generic [ref=e732]:
+          - generic [ref=e733]: Spread
+          - generic [ref=e734]:
+            - generic [ref=e735]: NYM -1.5
+            - generic [ref=e736]: "|"
+            - generic [ref=e737]: ARI +1.5
+        - generic [ref=e738]:
+          - generic [ref=e739]: Total (7.5)
+          - generic [ref=e740]:
+            - generic [ref=e741]: Over 7.5
+            - generic [ref=e742]: "|"
+            - generic [ref=e743]: Under 7.5
+      - generic [ref=e744]:
+        - button "Props" [ref=e745] [cursor=pointer]
+        - combobox [ref=e746]:
+          - option "NYM Spread -1.5" [selected]
+          - option "ARI Spread +1.5"
+          - option "Over 7.5"
+          - option "Under 7.5"
+        - button "EdgeCheck" [ref=e747] [cursor=pointer]
+    - generic [ref=e748]:
+      - generic [ref=e749]:
+        - generic [ref=e750]: Wed, Apr 8 6:40 PM
+        - generic [ref=e751]: MLB.TV
+      - generic [ref=e752]:
+        - generic [ref=e755]:
+          - generic [ref=e756]: CHC
+          - generic [ref=e757]: 5-6
+        - generic [ref=e758]: VS
+        - generic [ref=e761]:
+          - generic [ref=e762]: TB
+          - generic [ref=e763]: 5-6
+      - generic [ref=e764]:
+        - generic [ref=e765]:
+          - generic [ref=e766]: Spread
+          - generic [ref=e767]:
+            - generic [ref=e768]: TB +1.5
+            - generic [ref=e769]: "|"
+            - generic [ref=e770]: CHC -1.5
+        - generic [ref=e771]:
+          - generic [ref=e772]: Total (8)
+          - generic [ref=e773]:
+            - generic [ref=e774]: Over 8
+            - generic [ref=e775]: "|"
+            - generic [ref=e776]: Under 8
+      - generic [ref=e777]:
+        - generic [ref=e778]: Public Betting
+        - generic [ref=e779]:
+          - generic [ref=e780]:
+            - strong [ref=e781]: 57%
+            - text: bets
+          - generic [ref=e782]: "|"
+          - generic [ref=e783]:
+            - strong [ref=e784]: 41%
+            - text: handle
+      - generic [ref=e785]:
+        - button "Props" [ref=e786] [cursor=pointer]
+        - combobox [ref=e787]:
+          - option "TB Spread +1.5" [selected]
+          - option "CHC Spread -1.5"
+          - option "Over 8"
+          - option "Under 8"
+        - button "EdgeCheck" [ref=e788] [cursor=pointer]
+    - generic [ref=e789]:
+      - generic [ref=e790]:
+        - generic [ref=e791]: Wed, Apr 8 6:40 PM
+        - generic [ref=e792]: MLB.TV
+      - generic [ref=e793]:
+        - generic [ref=e796]:
+          - generic [ref=e797]: CIN
+          - generic [ref=e798]: 8-3
+        - generic [ref=e799]: VS
+        - generic [ref=e802]:
+          - generic [ref=e803]: MIA
+          - generic [ref=e804]: 6-5
+      - generic [ref=e805]:
+        - generic [ref=e806]:
+          - generic [ref=e807]: Spread
+          - generic [ref=e808]:
+            - generic [ref=e809]: MIA -1.5
+            - generic [ref=e810]: "|"
+            - generic [ref=e811]: CIN +1.5
+        - generic [ref=e812]:
+          - generic [ref=e813]: Total (7.5)
+          - generic [ref=e814]:
+            - generic [ref=e815]: Over 7.5
+            - generic [ref=e816]: "|"
+            - generic [ref=e817]: Under 7.5
+      - generic [ref=e818]:
+        - generic [ref=e819]: Public Betting
+        - generic [ref=e820]:
+          - generic [ref=e821]:
+            - strong [ref=e822]: 55%
+            - text: bets
+          - generic [ref=e823]: "|"
+          - generic [ref=e824]:
+            - strong [ref=e825]: 60%
+            - text: handle
+      - generic [ref=e826]:
+        - button "Props" [ref=e827] [cursor=pointer]
+        - combobox [ref=e828]:
+          - option "MIA Spread -1.5" [selected]
+          - option "CIN Spread +1.5"
+          - option "Over 7.5"
+          - option "Under 7.5"
+        - button "EdgeCheck" [ref=e829] [cursor=pointer]
+    - generic [ref=e830]:
+      - generic [ref=e831]:
+        - generic [ref=e832]: Wed, Apr 8 7:05 PM
+        - generic [ref=e833]: MLB.TV
+      - generic [ref=e834]:
+        - generic [ref=e837]:
+          - generic [ref=e838]: ATH
+          - generic [ref=e839]: 3-7
+        - generic [ref=e840]: VS
+        - generic [ref=e843]:
+          - generic [ref=e844]: NYY
+          - generic [ref=e845]: 8-2
+      - generic [ref=e846]:
+        - generic [ref=e847]:
+          - generic [ref=e848]: Spread
+          - generic [ref=e849]:
+            - generic [ref=e850]: NYY -1.5
+            - generic [ref=e851]: "|"
+            - generic [ref=e852]: ATH +1.5
+        - generic [ref=e853]:
+          - generic [ref=e854]: Total (8)
+          - generic [ref=e855]:
+            - generic [ref=e856]: Over 8
+            - generic [ref=e857]: "|"
+            - generic [ref=e858]: Under 8
+      - generic [ref=e859]:
+        - button "Props" [ref=e860] [cursor=pointer]
+        - combobox [ref=e861]:
+          - option "NYY Spread -1.5" [selected]
+          - option "ATH Spread +1.5"
+          - option "Over 8"
+          - option "Under 8"
+        - button "EdgeCheck" [ref=e862] [cursor=pointer]
+    - generic [ref=e863]:
+      - generic [ref=e864]:
+        - generic [ref=e865]: Wed, Apr 8 7:40 PM
+        - generic [ref=e866]: MLB.TV
+      - generic [ref=e867]:
+        - generic [ref=e870]:
+          - generic [ref=e871]: DET
+          - generic [ref=e872]: 4-7
+        - generic [ref=e873]: VS
+        - generic [ref=e876]:
+          - generic [ref=e877]: MIN
+          - generic [ref=e878]: 5-6
+      - generic [ref=e879]:
+        - generic [ref=e880]:
+          - generic [ref=e881]: Spread
+          - generic [ref=e882]:
+            - generic [ref=e883]: MIN +1.5
+            - generic [ref=e884]: "|"
+            - generic [ref=e885]: DET -1.5
+        - generic [ref=e886]:
+          - generic [ref=e887]: Total (8)
+          - generic [ref=e888]:
+            - generic [ref=e889]: Over 8
+            - generic [ref=e890]: "|"
+            - generic [ref=e891]: Under 8
+      - generic [ref=e892]:
+        - generic [ref=e893]: Public Betting
+        - generic [ref=e894]:
+          - generic [ref=e895]:
+            - strong [ref=e896]: 34%
+            - text: bets
+          - generic [ref=e897]: "|"
+          - generic [ref=e898]:
+            - strong [ref=e899]: 39%
+            - text: handle
+      - generic [ref=e900]:
+        - button "Props" [ref=e901] [cursor=pointer]
+        - combobox [ref=e902]:
+          - option "MIN Spread +1.5" [selected]
+          - option "DET Spread -1.5"
+          - option "Over 8"
+          - option "Under 8"
+        - button "EdgeCheck" [ref=e903] [cursor=pointer]
+    - generic [ref=e53]:
+      - text: EdgeCheck — Data from ESPN. Independent matchup analysis.
+      - text: For entertainment purposes only. Please bet responsibly.
+  - alert [ref=e54]

@@ -1,0 +1,29 @@
+[     859ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[    1711ms] [LOG] [Fast Refresh] done in 858ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[    3167ms] [ERROR] Failed to fetch RSC payload for http://localhost:3000/dashboard. Falling back to browser navigation. TypeError: Failed to fetch
+    at fetchServerResponse (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:59:27)
+    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)
+    at clientReducer (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)
+    at Object.action (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/shared/lib/router/action-queue.js:150:55)
+    at runAction (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/shared/lib/router/action-queue.js:56:38)
+    at dispatchAction (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/shared/lib/router/action-queue.js:113:9)
+    at Object.dispatch (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/shared/lib/router/action-queue.js:145:40)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/app-router.js:304:25)
+    at startTransition (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)
+    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/app-router.js:303:48)
+    at processMessage (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:297:31)
+    at WebSocket.handler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17) @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[    3172ms] [WARNING] Props fetch error: Failed to fetch @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:1177
+[    3182ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/dashboard:0
+[    3966ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack-internal:///./node_modules/react-dom/cjs/react-dom.development.js:29889
+[    4070ms] TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (file://C:\Users\staleyjk\edgecheck-backend\.next\server\webpack-runtime.js:1:128)
+    at require (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at <unknown> (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726)
+    at B._fromJSON (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+[    4039ms] [LOG] [HMR] connected @ webpack-internal:///./node_modules/next/dist/client/components/react-dev-overlay/pages/websocket.js:38

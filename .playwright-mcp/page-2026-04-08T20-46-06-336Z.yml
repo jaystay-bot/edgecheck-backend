@@ -1,0 +1,37 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - heading "EdgeCheck" [level=1] [ref=e5]
+        - paragraph [ref=e6]: Sports Betting Edge Analyzer
+      - button "Open user menu" [ref=e57] [cursor=pointer]:
+        - img "Jonathan Staley's logo" [ref=e60]
+    - generic [ref=e7]:
+      - button "Games" [ref=e8] [cursor=pointer]
+      - button "Props" [ref=e9] [cursor=pointer]:
+        - img [ref=e10]
+        - text: Props
+      - button "Line Watch" [ref=e12] [cursor=pointer]:
+        - img [ref=e13]
+        - text: Line Watch
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - img [ref=e19]
+        - generic [ref=e21]: Best Play of the Day
+      - paragraph [ref=e22]: No strong edges found today
+    - generic [ref=e336]:
+      - generic [ref=e337]:
+        - img [ref=e338]
+        - heading "Smart Props" [level=2] [ref=e339]
+      - paragraph [ref=e340]: Top-ranked props by category. Cached 4 hours. One API call per sport.
+    - generic [ref=e341]:
+      - button "MLB" [ref=e342] [cursor=pointer]
+      - button "NBA" [active] [ref=e343] [cursor=pointer]
+      - button "NHL" [ref=e344] [cursor=pointer]
+    - generic [ref=e3258]:
+      - img "Loading" [ref=e3260]
+      - generic [ref=e3261]: Loading NBA props
+    - generic [ref=e53]:
+      - text: EdgeCheck — Data from ESPN. Independent matchup analysis.
+      - text: For entertainment purposes only. Please bet responsibly.
+  - alert [ref=e54]

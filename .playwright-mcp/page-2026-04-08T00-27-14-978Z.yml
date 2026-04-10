@@ -1,0 +1,444 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - heading "EdgeCheck" [level=1] [ref=e5]
+        - paragraph [ref=e6]: Sports Betting Edge Analyzer
+      - button "Open user menu" [ref=e57] [cursor=pointer]:
+        - img "Jonathan Staley's logo" [ref=e60]
+    - generic [ref=e7]:
+      - button "Games" [ref=e8] [cursor=pointer]
+      - button "Props" [ref=e9] [cursor=pointer]:
+        - img [ref=e10]
+        - text: Props
+      - button "Line Watch" [ref=e12] [cursor=pointer]:
+        - img [ref=e13]
+        - text: Line Watch
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - img [ref=e19]
+        - generic [ref=e21]: Best Play of the Day
+      - paragraph [ref=e22]: No strong edges found today
+    - generic [ref=e23]:
+      - button "NBA" [ref=e24] [cursor=pointer]
+      - button "NFL" [ref=e25] [cursor=pointer]
+      - button "MLB" [ref=e26] [cursor=pointer]
+      - button "NHL" [ref=e27] [cursor=pointer]
+      - button "NCAAF" [ref=e28] [cursor=pointer]
+      - button "NCAAB" [ref=e29] [cursor=pointer]
+      - button "MLS" [ref=e30] [cursor=pointer]
+    - generic [ref=e62]: 10 games today — National Basketball Association
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e65]: Tue, Apr 7 7:00 PM
+        - generic [ref=e66]: MNMT
+      - generic [ref=e67]:
+        - generic [ref=e70]:
+          - generic [ref=e71]: CHI
+          - generic [ref=e72]: 29-49
+        - generic [ref=e73]: VS
+        - generic [ref=e76]:
+          - generic [ref=e77]: WSH
+          - generic [ref=e78]: 17-61
+      - generic [ref=e79]:
+        - generic [ref=e80]:
+          - generic [ref=e81]: Spread
+          - generic [ref=e82]:
+            - generic [ref=e83]: WSH +6.5
+            - generic [ref=e84]: "|"
+            - generic [ref=e85]: CHI -6.5
+        - generic [ref=e86]:
+          - generic [ref=e87]: Moneyline
+          - generic [ref=e88]:
+            - generic [ref=e89]: WSH +185
+            - generic [ref=e90]: "|"
+            - generic [ref=e91]: CHI -225
+        - generic [ref=e92]:
+          - generic [ref=e93]: Total (250.5)
+          - generic [ref=e94]:
+            - generic [ref=e95]: Over 250.5
+            - generic [ref=e96]: "|"
+            - generic [ref=e97]: Under 250.5
+      - generic [ref=e98]:
+        - button "Props" [ref=e99] [cursor=pointer]
+        - combobox [ref=e100]:
+          - option "WSH Spread +6.5" [selected]
+          - option "CHI Spread -6.5"
+          - option "WSH ML +185"
+          - option "CHI ML -225"
+          - option "Over 250.5"
+          - option "Under 250.5"
+        - button "EdgeCheck" [ref=e101] [cursor=pointer]
+    - generic [ref=e102]:
+      - generic [ref=e103]:
+        - generic [ref=e104]: Tue, Apr 7 7:00 PM
+        - generic [ref=e105]: FanDuel SN IN
+      - generic [ref=e106]:
+        - generic [ref=e109]:
+          - generic [ref=e110]: MIN
+          - generic [ref=e111]: 46-32
+        - generic [ref=e112]: VS
+        - generic [ref=e115]:
+          - generic [ref=e116]: IND
+          - generic [ref=e117]: 18-60
+      - generic [ref=e118]:
+        - generic [ref=e119]:
+          - generic [ref=e120]: Spread
+          - generic [ref=e121]:
+            - generic [ref=e122]: IND +12.5
+            - generic [ref=e123]: "|"
+            - generic [ref=e124]: MIN -12.5
+        - generic [ref=e125]:
+          - generic [ref=e126]: Moneyline
+          - generic [ref=e127]:
+            - generic [ref=e128]: IND +525
+            - generic [ref=e129]: "|"
+            - generic [ref=e130]: MIN -750
+        - generic [ref=e131]:
+          - generic [ref=e132]: Total (233.5)
+          - generic [ref=e133]:
+            - generic [ref=e134]: Over 233.5
+            - generic [ref=e135]: "|"
+            - generic [ref=e136]: Under 233.5
+      - generic [ref=e137]:
+        - button "Props" [ref=e138] [cursor=pointer]
+        - combobox [ref=e139]:
+          - option "IND Spread +12.5" [selected]
+          - option "MIN Spread -12.5"
+          - option "IND ML +525"
+          - option "MIN ML -750"
+          - option "Over 233.5"
+          - option "Under 233.5"
+        - button "EdgeCheck" [ref=e140] [cursor=pointer]
+    - generic [ref=e141]:
+      - generic [ref=e142]:
+        - generic [ref=e143]: Tue, Apr 7 7:30 PM
+        - generic [ref=e144]: FanDuel SN WI
+      - generic [ref=e145]:
+        - generic [ref=e148]:
+          - generic [ref=e149]: MIL
+          - generic [ref=e150]: 31-47
+        - generic [ref=e151]: VS
+        - generic [ref=e154]:
+          - generic [ref=e155]: BKN
+          - generic [ref=e156]: 19-59
+      - generic [ref=e157]:
+        - generic [ref=e158]:
+          - generic [ref=e159]: Spread
+          - generic [ref=e160]:
+            - generic [ref=e161]: BKN +2.5
+            - generic [ref=e162]: "|"
+            - generic [ref=e163]: MIL -2.5
+        - generic [ref=e164]:
+          - generic [ref=e165]: Moneyline
+          - generic [ref=e166]:
+            - generic [ref=e167]: BKN +114
+            - generic [ref=e168]: "|"
+            - generic [ref=e169]: MIL -135
+        - generic [ref=e170]:
+          - generic [ref=e171]: Total (219.5)
+          - generic [ref=e172]:
+            - generic [ref=e173]: Over 219.5
+            - generic [ref=e174]: "|"
+            - generic [ref=e175]: Under 219.5
+      - generic [ref=e176]:
+        - button "Props" [ref=e177] [cursor=pointer]
+        - combobox [ref=e178]:
+          - option "BKN Spread +2.5" [selected]
+          - option "MIL Spread -2.5"
+          - option "BKN ML +114"
+          - option "MIL ML -135"
+          - option "Over 219.5"
+          - option "Under 219.5"
+        - button "EdgeCheck" [ref=e179] [cursor=pointer]
+    - generic [ref=e180]:
+      - generic [ref=e181]:
+        - generic [ref=e182]: Tue, Apr 7 7:30 PM
+        - generic [ref=e183]: FanDuel SN Sun
+      - generic [ref=e184]:
+        - generic [ref=e187]:
+          - generic [ref=e188]: MIA
+          - generic [ref=e189]: 41-37
+        - generic [ref=e190]: VS
+        - generic [ref=e193]:
+          - generic [ref=e194]: TOR
+          - generic [ref=e195]: 43-35
+      - generic [ref=e196]:
+        - generic [ref=e197]:
+          - generic [ref=e198]: Spread
+          - generic [ref=e199]:
+            - generic [ref=e200]: TOR -1.5
+            - generic [ref=e201]: "|"
+            - generic [ref=e202]: MIA +1.5
+        - generic [ref=e203]:
+          - generic [ref=e204]: Moneyline
+          - generic [ref=e205]:
+            - generic [ref=e206]: TOR -120
+            - generic [ref=e207]: "|"
+            - generic [ref=e208]: MIA +100
+        - generic [ref=e209]:
+          - generic [ref=e210]: Total (242.5)
+          - generic [ref=e211]:
+            - generic [ref=e212]: Over 242.5
+            - generic [ref=e213]: "|"
+            - generic [ref=e214]: Under 242.5
+      - generic [ref=e215]:
+        - button "Props" [ref=e216] [cursor=pointer]
+        - combobox [ref=e217]:
+          - option "TOR Spread -1.5" [selected]
+          - option "MIA Spread +1.5"
+          - option "TOR ML -120"
+          - option "MIA ML +100"
+          - option "Over 242.5"
+          - option "Under 242.5"
+        - button "EdgeCheck" [ref=e218] [cursor=pointer]
+    - generic [ref=e219]:
+      - generic [ref=e220]:
+        - generic [ref=e221]: Tue, Apr 7 8:00 PM
+        - generic [ref=e222]: NBC
+      - generic [ref=e223]:
+        - generic [ref=e226]:
+          - generic [ref=e227]: CHA
+          - generic [ref=e228]: 43-36
+        - generic [ref=e229]: VS
+        - generic [ref=e232]:
+          - generic [ref=e233]: BOS
+          - generic [ref=e234]: 53-25
+      - generic [ref=e235]:
+        - generic [ref=e236]:
+          - generic [ref=e237]: Spread
+          - generic [ref=e238]:
+            - generic [ref=e239]: BOS -4.5
+            - generic [ref=e240]: "|"
+            - generic [ref=e241]: CHA +4.5
+        - generic [ref=e242]:
+          - generic [ref=e243]: Moneyline
+          - generic [ref=e244]:
+            - generic [ref=e245]: BOS -192
+            - generic [ref=e246]: "|"
+            - generic [ref=e247]: CHA +160
+        - generic [ref=e248]:
+          - generic [ref=e249]: Total (220.5)
+          - generic [ref=e250]:
+            - generic [ref=e251]: Over 220.5
+            - generic [ref=e252]: "|"
+            - generic [ref=e253]: Under 220.5
+      - generic [ref=e254]:
+        - button "Props" [ref=e255] [cursor=pointer]
+        - combobox [ref=e256]:
+          - option "BOS Spread -4.5" [selected]
+          - option "CHA Spread +4.5"
+          - option "BOS ML -192"
+          - option "CHA ML +160"
+          - option "Over 220.5"
+          - option "Under 220.5"
+        - button "EdgeCheck" [ref=e257] [cursor=pointer]
+    - generic [ref=e258]:
+      - generic [ref=e259]:
+        - generic [ref=e260]: Tue, Apr 7 8:00 PM
+        - generic [ref=e261]: GCSEN
+      - generic [ref=e262]:
+        - generic [ref=e265]:
+          - generic [ref=e266]: UTAH
+          - generic [ref=e267]: 21-58
+        - generic [ref=e268]: VS
+        - generic [ref=e271]:
+          - generic [ref=e272]: "NO"
+          - generic [ref=e273]: 25-54
+      - generic [ref=e274]:
+        - generic [ref=e275]:
+          - generic [ref=e276]: Spread
+          - generic [ref=e277]:
+            - generic [ref=e278]: NO -10.5
+            - generic [ref=e279]: "|"
+            - generic [ref=e280]: UTAH +10.5
+        - generic [ref=e281]:
+          - generic [ref=e282]: Moneyline
+          - generic [ref=e283]:
+            - generic [ref=e284]: NO -550
+            - generic [ref=e285]: "|"
+            - generic [ref=e286]: UTAH +410
+        - generic [ref=e287]:
+          - generic [ref=e288]: Total (243.5)
+          - generic [ref=e289]:
+            - generic [ref=e290]: Over 243.5
+            - generic [ref=e291]: "|"
+            - generic [ref=e292]: Under 243.5
+      - generic [ref=e293]:
+        - button "Props" [ref=e294] [cursor=pointer]
+        - combobox [ref=e295]:
+          - option "NO Spread -10.5" [selected]
+          - option "UTAH Spread +10.5"
+          - option "NO ML -550"
+          - option "UTAH ML +410"
+          - option "Over 243.5"
+          - option "Under 243.5"
+        - button "EdgeCheck" [ref=e296] [cursor=pointer]
+    - generic [ref=e297]:
+      - generic [ref=e298]:
+        - generic [ref=e299]: Tue, Apr 7 10:00 PM
+        - generic [ref=e300]: NBC Sports BA
+      - generic [ref=e301]:
+        - generic [ref=e304]:
+          - generic [ref=e305]: SAC
+          - generic [ref=e306]: 21-58
+        - generic [ref=e307]: VS
+        - generic [ref=e310]:
+          - generic [ref=e311]: GS
+          - generic [ref=e312]: 36-42
+      - generic [ref=e313]:
+        - generic [ref=e314]:
+          - generic [ref=e315]: Spread
+          - generic [ref=e316]:
+            - generic [ref=e317]: GS -14.5
+            - generic [ref=e318]: "|"
+            - generic [ref=e319]: SAC +14.5
+        - generic [ref=e320]:
+          - generic [ref=e321]: Moneyline
+          - generic [ref=e322]:
+            - generic [ref=e323]: GS -1000
+            - generic [ref=e324]: "|"
+            - generic [ref=e325]: SAC +650
+        - generic [ref=e326]:
+          - generic [ref=e327]: Total (233.5)
+          - generic [ref=e328]:
+            - generic [ref=e329]: Over 233.5
+            - generic [ref=e330]: "|"
+            - generic [ref=e331]: Under 233.5
+      - generic [ref=e332]:
+        - button "Props" [ref=e333] [cursor=pointer]
+        - combobox [ref=e334]:
+          - option "GS Spread -14.5" [selected]
+          - option "SAC Spread +14.5"
+          - option "GS ML -1000"
+          - option "SAC ML +650"
+          - option "Over 233.5"
+          - option "Under 233.5"
+        - button "EdgeCheck" [ref=e335] [cursor=pointer]
+    - generic [ref=e336]:
+      - generic [ref=e337]:
+        - generic [ref=e338]: Tue, Apr 7 10:30 PM
+        - generic [ref=e339]: Spectrum Sports Net
+      - generic [ref=e340]:
+        - generic [ref=e343]:
+          - generic [ref=e344]: OKC
+          - generic [ref=e345]: 62-16
+        - generic [ref=e346]: VS
+        - generic [ref=e349]:
+          - generic [ref=e350]: LAL
+          - generic [ref=e351]: 50-28
+      - generic [ref=e352]:
+        - generic [ref=e353]:
+          - generic [ref=e354]: Spread
+          - generic [ref=e355]:
+            - generic [ref=e356]: LAL +18.5
+            - generic [ref=e357]: "|"
+            - generic [ref=e358]: OKC -18.5
+        - generic [ref=e359]:
+          - generic [ref=e360]: Moneyline
+          - generic [ref=e361]:
+            - generic [ref=e362]: LAL +1100
+            - generic [ref=e363]: "|"
+            - generic [ref=e364]: OKC -2100
+        - generic [ref=e365]:
+          - generic [ref=e366]: Total (220.5)
+          - generic [ref=e367]:
+            - generic [ref=e368]: Over 220.5
+            - generic [ref=e369]: "|"
+            - generic [ref=e370]: Under 220.5
+      - generic [ref=e371]:
+        - button "Props" [ref=e372] [cursor=pointer]
+        - combobox [ref=e373]:
+          - option "LAL Spread +18.5" [selected]
+          - option "OKC Spread -18.5"
+          - option "LAL ML +1100"
+          - option "OKC ML -2100"
+          - option "Over 220.5"
+          - option "Under 220.5"
+        - button "EdgeCheck" [ref=e374] [cursor=pointer]
+    - generic [ref=e375]:
+      - generic [ref=e376]:
+        - generic [ref=e377]: Tue, Apr 7 10:30 PM
+        - generic [ref=e378]: KFAA-TV
+      - generic [ref=e379]:
+        - generic [ref=e382]:
+          - generic [ref=e383]: DAL
+          - generic [ref=e384]: 25-53
+        - generic [ref=e385]: VS
+        - generic [ref=e388]:
+          - generic [ref=e389]: LAC
+          - generic [ref=e390]: 40-38
+      - generic [ref=e391]:
+        - generic [ref=e392]:
+          - generic [ref=e393]: Spread
+          - generic [ref=e394]:
+            - generic [ref=e395]: LAC -11.5
+            - generic [ref=e396]: "|"
+            - generic [ref=e397]: DAL +11.5
+        - generic [ref=e398]:
+          - generic [ref=e399]: Moneyline
+          - generic [ref=e400]:
+            - generic [ref=e401]: LAC -625
+            - generic [ref=e402]: "|"
+            - generic [ref=e403]: DAL +455
+        - generic [ref=e404]:
+          - generic [ref=e405]: Total (238.5)
+          - generic [ref=e406]:
+            - generic [ref=e407]: Over 238.5
+            - generic [ref=e408]: "|"
+            - generic [ref=e409]: Under 238.5
+      - generic [ref=e410]:
+        - button "Props" [ref=e411] [cursor=pointer]
+        - combobox [ref=e412]:
+          - option "LAC Spread -11.5" [selected]
+          - option "DAL Spread +11.5"
+          - option "LAC ML -625"
+          - option "DAL ML +455"
+          - option "Over 238.5"
+          - option "Under 238.5"
+        - button "EdgeCheck" [ref=e413] [cursor=pointer]
+    - generic [ref=e414]:
+      - generic [ref=e415]:
+        - generic [ref=e416]: Tue, Apr 7 11:00 PM
+        - generic [ref=e417]: NBC
+      - generic [ref=e418]:
+        - generic [ref=e421]:
+          - generic [ref=e422]: HOU
+          - generic [ref=e423]: 49-29
+        - generic [ref=e424]: VS
+        - generic [ref=e427]:
+          - generic [ref=e428]: PHX
+          - generic [ref=e429]: 43-35
+      - generic [ref=e430]:
+        - generic [ref=e431]:
+          - generic [ref=e432]: Spread
+          - generic [ref=e433]:
+            - generic [ref=e434]: PHX +1.5
+            - generic [ref=e435]: "|"
+            - generic [ref=e436]: HOU -1.5
+        - generic [ref=e437]:
+          - generic [ref=e438]: Moneyline
+          - generic [ref=e439]:
+            - generic [ref=e440]: PHX -112
+            - generic [ref=e441]: "|"
+            - generic [ref=e442]: HOU -108
+        - generic [ref=e443]:
+          - generic [ref=e444]: Total (221.5)
+          - generic [ref=e445]:
+            - generic [ref=e446]: Over 221.5
+            - generic [ref=e447]: "|"
+            - generic [ref=e448]: Under 221.5
+      - generic [ref=e449]:
+        - button "Props" [ref=e450] [cursor=pointer]
+        - combobox [ref=e451]:
+          - option "PHX Spread +1.5" [selected]
+          - option "HOU Spread -1.5"
+          - option "PHX ML -112"
+          - option "HOU ML -108"
+          - option "Over 221.5"
+          - option "Under 221.5"
+        - button "EdgeCheck" [ref=e452] [cursor=pointer]
+    - generic [ref=e53]:
+      - text: EdgeCheck — Data from ESPN. Independent matchup analysis.
+      - text: For entertainment purposes only. Please bet responsibly.
+  - alert [ref=e54]

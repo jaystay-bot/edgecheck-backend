@@ -1,0 +1,113 @@
+[     342ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[     743ms] [LOG] [Fast Refresh] done in 402ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[    1274ms] [ERROR] Failed to fetch RSC payload for http://localhost:3000/dashboard. Falling back to browser navigation. TypeError: network error @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[    1331ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/dashboard:0
+[    1667ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack-internal:///./node_modules/react-dom/cjs/react-dom.development.js:29889
+[    1837ms] Error: Cannot find module './510.js'
+Require stack:
+- C:\Users\staleyjk\edgecheck-backend\.next\server\webpack-runtime.js
+- C:\Users\staleyjk\edgecheck-backend\.next\server\app\_not-found\page.js
+- C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\require.js
+- C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\load-components.js
+- C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\build\utils.js
+- C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1456:15)
+    at <unknown> (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\require-hook.js:55:36)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1066:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1071:22)
+    at Module._load (node:internal/modules/cjs/loader:1242:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1556:12)
+    at mod.require (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (file://C:\Users\staleyjk\edgecheck-backend\.next\server\webpack-runtime.js:203:28)
+    at <unknown> (file://C:\Users\staleyjk\edgecheck-backend\.next\server\webpack-runtime.js:116:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (file://C:\Users\staleyjk\edgecheck-backend\.next\server\webpack-runtime.js:115:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (file://C:\Users\staleyjk\edgecheck-backend\.next\server\webpack-runtime.js:167:22)
+    at <unknown> (file://C:\Users\staleyjk\edgecheck-backend\.next\server\app\dashboard\page.js:12:25178)
+    at Object.<anonymous> (file://C:\Users\staleyjk\edgecheck-backend\.next\server\app\dashboard\page.js:12:25235)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object..js (node:internal/modules/cjs/loader:1943:10)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)
+    at Module._load (node:internal/modules/cjs/loader:1335:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1556:12)
+    at mod.require (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\require.js:109:84)
+    at <unknown> (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\load-components.js:103:84)
+    at async loadComponentsImpl (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\base-server.js:818:17)
+    at async (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\dev\next-dev-server.js:339:20)
+    at async Span.traceAsyncFn (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\lib\start-server.js:141:13)
+[    1789ms] [LOG] [HMR] connected @ webpack-internal:///./node_modules/next/dist/client/components/react-dev-overlay/pages/websocket.js:38
+[   11482ms] [LOG] [HMR] connected @ webpack-internal:///./node_modules/next/dist/client/components/react-dev-overlay/pages/websocket.js:38
+[   11801ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///./node_modules/next/dist/client/components/react-dev-overlay/pages/hot-reloader-client.js:221
+[   12094ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///./node_modules/next/dist/client/components/react-dev-overlay/pages/hot-reloader-client.js:221
+[   12258ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/_next/static/webpack/bc7ac2a516024b5e.webpack.hot-update.json:0
+[   12259ms] [WARNING] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree. @ webpack-internal:///./node_modules/next/dist/client/components/react-dev-overlay/pages/hot-reloader-client.js:347
+[   12692ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/dashboard:0
+[   12852ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack-internal:///./node_modules/react-dom/cjs/react-dom.development.js:29889
+[   12877ms] TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (file://C:\Users\staleyjk\edgecheck-backend\.next\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./node_modules/next/dist/server/app-render/entry-base.js:82:47)
+    at (rsc)/./node_modules/next/dist/server/app-render/entry-base.js (file://C:\Users\staleyjk\edgecheck-backend\.next\server\vendor-chunks\next.js:2784:1)
+    at __webpack_require__ (file://C:\Users\staleyjk\edgecheck-backend\.next\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fdashboard%2Fpage&page=%2Fdashboard%2Fpage&appPaths=%2Fdashboard%2Fpage&pagePath=private-next-app-dir%2Fdashboard%2Fpage.js&appDir=C%3A%5CUsers%5Cstaleyjk%5Cedgecheck-backend%5Csrc%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Cstaleyjk%5Cedgecheck-backend&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!:15:96)
+    at (rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fdashboard%2Fpage&page=%2Fdashboard%2Fpage&appPaths=%2Fdashboard%2Fpage&pagePath=private-next-app-dir%2Fdashboard%2Fpage.js&appDir=C%3A%5CUsers%5Cstaleyjk%5Cedgecheck-backend%5Csrc%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Cstaleyjk%5Cedgecheck-backend&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D! (file://C:\Users\staleyjk\edgecheck-backend\.next\server\app\dashboard\page.js:99:1)
+    at __webpack_require__ (file://C:\Users\staleyjk\edgecheck-backend\.next\server\webpack-runtime.js:33:43)
+    at __webpack_exec__ (file://C:\Users\staleyjk\edgecheck-backend\.next\server\app\dashboard\page.js:261:39)
+    at <unknown> (file://C:\Users\staleyjk\edgecheck-backend\.next\server\app\dashboard\page.js:262:439)
+    at __webpack_require__.X (file://C:\Users\staleyjk\edgecheck-backend\.next\server\webpack-runtime.js:168:21)
+    at <unknown> (file://C:\Users\staleyjk\edgecheck-backend\.next\server\app\dashboard\page.js:262:47)
+    at Object.<anonymous> (file://C:\Users\staleyjk\edgecheck-backend\.next\server\app\dashboard\page.js:265:3)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object..js (node:internal/modules/cjs/loader:1943:10)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)
+    at Module._load (node:internal/modules/cjs/loader:1335:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1556:12)
+    at mod.require (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\require.js:109:84)
+    at <unknown> (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\load-components.js:103:84)
+    at async loadComponentsImpl (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\base-server.js:818:17)
+    at async (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\dev\next-dev-server.js:339:20)
+    at async Span.traceAsyncFn (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (file://C:\Users\staleyjk\edgecheck-backend\node_modules\next\dist\server\lib\start-server.js:141:13)
+[   13180ms] [LOG] [HMR] connected @ webpack-internal:///./node_modules/next/dist/client/components/react-dev-overlay/pages/websocket.js:38

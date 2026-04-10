@@ -1,0 +1,44 @@
+[    5365ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:38559
+[    5457ms] [WARNING] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview @ https://logical-mule-24.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js:18
+[    5495ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/favicon.ico:0
+[    6790ms] [LOG] [Merge Debug] ESPN games: 7, Odds games: 0 @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:883
+[    6865ms] [LOG] [Merge Debug] ESPN games: 7, Odds games: 0 @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:883
+[   12113ms] [LOG] [Prefetch] MLB props cache warmed @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:1104
+[   12708ms] [LOG] [Prefetch] MLB props cache warmed @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:1104
+[  474593ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[  475330ms] [LOG] [Fast Refresh] done in 737ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[  476068ms] [LOG] [Merge Debug] ESPN games: 7, Odds games: 0 @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:883
+[  476148ms] [LOG] [Merge Debug] ESPN games: 7, Odds games: 0 @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:883
+[  477493ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[  477633ms] [LOG] [Fast Refresh] done in 140ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[  477949ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/heaters:0
+[  477955ms] [WARNING] Heaters fetch failed: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:1087
+[  482027ms] [LOG] [Prefetch] MLB props cache warmed @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:1107
+[  601922ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[  602657ms] [LOG] [Fast Refresh] done in 735ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[  602909ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[  603167ms] [LOG] [Fast Refresh] done in 258ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[  603600ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/api/odds?sport=nba:0
+[  603601ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/api/heaters:0
+[  603601ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/api/games?sport=nba:0
+[  603602ms] [WARNING] Heaters fetch failed: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:1089
+[  603751ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[  603837ms] [LOG] [Merge Debug] ESPN games: 7, Odds games: 0 @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:885
+[  603852ms] [LOG] [Fast Refresh] done in 101ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[  604158ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/css/app/layout.css?v=1775648444873:0
+[  604158ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/css/app/dashboard/page.css?v=1775648444873:0
+[  604227ms] Event
+[  604227ms] Event
+[  609113ms] [LOG] [Fast Refresh] rebuilding @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:186
+[  609692ms] [LOG] [Fast Refresh] done in 579ms @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:43
+[  610151ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/api/games?sport=nba:0
+[  610152ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/api/odds?sport=nba:0
+[  610152ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/api/heaters:0
+[  610153ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/api/games?sport=nba:0
+[  610154ms] [WARNING] Heaters fetch failed: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:1089
+[  610249ms] [LOG] [Merge Debug] ESPN games: 7, Odds games: 0 @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:885
+[  610297ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/api/odds?sport=nba:0
+[  610297ms] [LOG] [Merge Debug] ESPN games: 7, Odds games: 0 @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:885
+[  610331ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/api/heaters:0
+[  610348ms] [WARNING] Heaters fetch failed: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:1089
+[  619062ms] [LOG] [Prefetch] MLB props cache warmed @ webpack-internal:///(app-pages-browser)/./src/app/dashboard/DashboardClient.js:1108
