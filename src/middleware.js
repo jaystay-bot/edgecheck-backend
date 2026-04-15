@@ -15,6 +15,7 @@ export default async function middleware(req) {
     "/sign-in(.*)",
     "/sign-up(.*)",
     "/verify-email",
+    "/education",
     "/api/webhooks(.*)",
     "/api/batch-analyze(.*)",
     "/api/games(.*)",

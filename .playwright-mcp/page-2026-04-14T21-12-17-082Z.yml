@@ -1,0 +1,6 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Log in to Sim2Round" [level=1] [ref=e4]
+      - paragraph [ref=e5]: Track your simulator practice and real rounds in one place.
+  - alert [ref=e6]

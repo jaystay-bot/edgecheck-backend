@@ -1165,7 +1165,8 @@ export default function DashboardClient({ userEmail }) {
             Sports Betting Edge Analyzer
           </p>
         </div>
-        <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
+        <div style={{ flex: 1, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 16 }}>
+          <a href="/education" style={{ fontSize: 14, color: "var(--text-dim)", textDecoration: "none" }}>Guide</a>
           <UserButton afterSignOutUrl="/" />
         </div>
       </div>
