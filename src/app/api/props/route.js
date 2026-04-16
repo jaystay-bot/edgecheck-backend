@@ -23,6 +23,7 @@ const SPORT_CONFIG = {
         name: "Home Run Props",
         markets: ["batter_home_runs"],
         maxProps: 20,
+        reliability: "low",
         filterFn: () => true,
       },
       {
@@ -30,6 +31,23 @@ const SPORT_CONFIG = {
         name: "Hit Props",
         markets: ["batter_hits"],
         maxProps: 50,
+        reliability: "high",
+        filterFn: (prop) => prop.overUnder === "Over",
+      },
+      {
+        id: "walks",
+        name: "Walk Props",
+        markets: ["batter_walks"],
+        maxProps: 30,
+        reliability: "medium",
+        filterFn: (prop) => prop.overUnder === "Over",
+      },
+      {
+        id: "pitcher_strikeouts",
+        name: "Pitcher Strikeout Props",
+        markets: ["pitcher_strikeouts"],
+        maxProps: 30,
+        reliability: "medium",
         filterFn: (prop) => prop.overUnder === "Over",
       },
     ],
@@ -48,6 +66,7 @@ const SPORT_CONFIG = {
         name: "Goals",
         markets: ["player_goals"],
         maxProps: 10,
+        reliability: "low",
         filterFn: () => true,
       },
       {
@@ -55,6 +74,7 @@ const SPORT_CONFIG = {
         name: "Assists",
         markets: ["player_assists"],
         maxProps: 10,
+        reliability: "high",
         filterFn: () => true,
       },
       {
@@ -62,6 +82,7 @@ const SPORT_CONFIG = {
         name: "Shots on Goal",
         markets: ["player_shots_on_goal"],
         maxProps: 10,
+        reliability: "high",
         filterFn: () => true,
       },
       {
@@ -69,6 +90,7 @@ const SPORT_CONFIG = {
         name: "Points",
         markets: ["player_points"],
         maxProps: 10,
+        reliability: "medium",
         filterFn: () => true,
       },
     ],
@@ -82,6 +104,7 @@ const SPORT_CONFIG = {
         name: "Points",
         markets: ["player_points"],
         maxProps: 10,
+        reliability: "medium",
         filterFn: () => true,
       },
       {
@@ -89,6 +112,7 @@ const SPORT_CONFIG = {
         name: "Rebounds",
         markets: ["player_rebounds"],
         maxProps: 10,
+        reliability: "high",
         filterFn: () => true,
       },
       {
@@ -96,6 +120,7 @@ const SPORT_CONFIG = {
         name: "Assists",
         markets: ["player_assists"],
         maxProps: 10,
+        reliability: "high",
         filterFn: () => true,
       },
       {
@@ -103,6 +128,7 @@ const SPORT_CONFIG = {
         name: "3-Pointers",
         markets: ["player_threes"],
         maxProps: 10,
+        reliability: "low",
         filterFn: () => true,
       },
       {
@@ -110,6 +136,7 @@ const SPORT_CONFIG = {
         name: "Blocks",
         markets: ["player_blocks"],
         maxProps: 8,
+        reliability: "low",
         filterFn: () => true,
       },
       {
@@ -117,6 +144,7 @@ const SPORT_CONFIG = {
         name: "Steals",
         markets: ["player_steals"],
         maxProps: 8,
+        reliability: "low",
         filterFn: () => true,
       },
     ],
@@ -195,10 +223,16 @@ function scoreMLBProp(prop, bestOdds, edge) {
   if (last10Games.length > 0) {
     const isHits = propType.includes("Hits") || propType === "batter_hits";
     const isHR = propType.includes("Home Run") || propType === "batter_home_runs";
+    const isWalks = propType.includes("Walks") || propType === "batter_walks";
+    const isK = propType.includes("Strikeout") || propType === "pitcher_strikeouts";
 
     const results = last10Games.map((g) => {
-      const statValue = isHR ? g.homeRuns : g.hits;
-      return statValue >= line ? "H" : "M"; // Hit or Miss
+      let statValue;
+      if (isHR) statValue = g.homeRuns;
+      else if (isWalks) statValue = g.walks;
+      else if (isK) statValue = g.strikeouts;
+      else statValue = g.hits;
+      return (statValue || 0) >= line ? "H" : "M"; // Hit or Miss
     });
 
     const hitCount = results.filter((r) => r === "H").length;
@@ -227,6 +261,8 @@ function scoreMLBProp(prop, bestOdds, edge) {
   // Lower lines are statistically easier to hit
   const isHits = propType.includes("Hits") || propType === "batter_hits";
   const isHR = propType.includes("Home Run") || propType === "batter_home_runs";
+  const isWalks = propType.includes("Walks") || propType === "batter_walks";
+  const isK = propType.includes("Strikeout") || propType === "pitcher_strikeouts";
 
   if (isHits) {
     if (line === 0.5) {
@@ -245,6 +281,35 @@ function scoreMLBProp(prop, bestOdds, edge) {
     factors.push("Home run prop");
     risks.push("HRs are low-frequency (~3% per AB)");
     riskPenalty = 1.0; // Inherent volatility
+  } else if (isWalks) {
+    if (line === 0.5) {
+      lineValueScore = 2.0;
+      factors.push("0.5 line - any walk counts");
+    } else if (line === 1.5) {
+      lineValueScore = 1.0;
+      factors.push("1.5 line - needs 2+ walks");
+      risks.push("Multiple walks less common");
+    } else if (line >= 2.5) {
+      lineValueScore = 0.5;
+      risks.push("High walk line - difficult to cover");
+    }
+  } else if (isK) {
+    if (line <= 4.5) {
+      lineValueScore = 2.5;
+      factors.push(`${line} Ks - low threshold for starters`);
+    } else if (line <= 5.5) {
+      lineValueScore = 2.0;
+      factors.push(`${line} Ks - moderate threshold`);
+    } else if (line <= 6.5) {
+      lineValueScore = 1.5;
+      factors.push(`${line} Ks - standard starter line`);
+    } else if (line <= 7.5) {
+      lineValueScore = 1.0;
+      factors.push(`${line} Ks - above average required`);
+    } else {
+      lineValueScore = 0.5;
+      risks.push("High K line - requires dominant outing");
+    }
   }
 
   // === ODDS VALUE SCORE ===
@@ -375,7 +440,7 @@ function scoreMLBProp(prop, bestOdds, edge) {
   )));
 
   // === GENERATE OUTPUT ===
-  const propLabel = isHits ? "hits" : "home runs";
+  const propLabel = isK ? "Ks" : isWalks ? "BB" : isHits ? "hits" : "home runs";
   const lineLabel = line === 0.5 ? "0.5+" : `${line}+`;
 
   // Build writeup with real context
@@ -809,12 +874,62 @@ async function fetchMLBPropsFromUnderdog() {
           });
         }
       }
+
+      // Filter for MLB Batter Walks (not combos, not "Walks Allowed", must be MLB game)
+      if (game?.sport_id === "MLB" && subheader.includes("Walks") && !subheader.includes("Allowed") && !subheader.includes("+")) {
+        const walkLine = parseFloat(line.stat_value) || 0.5;
+        const overOdds = options[0]?.american_price;
+
+        mlbProps.push({
+          id: `underdog_bb_${line.id || playerName}`,
+          sport: "MLB",
+          eventId: line.id,
+          homeTeam: game?.abbreviated_title?.split(" @ ")[1] || "MLB",
+          awayTeam: game?.abbreviated_title?.split(" @ ")[0] || "Away",
+          commenceTime: game?.scheduled_at || new Date().toISOString(),
+          playerName,
+          propType: "Walks",
+          marketKey: "batter_walks",
+          line: walkLine,
+          overUnder: "Over",
+          odds: [{ bookmaker: "Underdog", price: parseInt(overOdds) || -110 }],
+          matchup,
+          fullMatchup,
+          gameTime,
+        });
+      }
+
+      // Filter for MLB Pitcher Strikeouts (not combos, not 1st inning, not batter Ks, must be MLB game)
+      if (game?.sport_id === "MLB" && (subheader.includes("Pitcher Strikeouts") || subheader.includes("Pitching Strikeouts") || (subheader.includes("Strikeouts") && !subheader.includes("Batter") && !subheader.includes("1st Inn"))) && !subheader.includes("+")) {
+        const kLine = parseFloat(line.stat_value) || 4.5;
+        const overOdds = options[0]?.american_price;
+
+        mlbProps.push({
+          id: `underdog_k_${line.id || playerName}`,
+          sport: "MLB",
+          eventId: line.id,
+          homeTeam: game?.abbreviated_title?.split(" @ ")[1] || "MLB",
+          awayTeam: game?.abbreviated_title?.split(" @ ")[0] || "Away",
+          commenceTime: game?.scheduled_at || new Date().toISOString(),
+          playerName,
+          propType: "Pitcher Strikeouts",
+          marketKey: "pitcher_strikeouts",
+          line: kLine,
+          overUnder: "Over",
+          odds: [{ bookmaker: "Underdog", price: parseInt(overOdds) || -110 }],
+          matchup,
+          fullMatchup,
+          gameTime,
+        });
+      }
     }
 
     const hrCount = mlbProps.filter((p) => p.marketKey === "batter_home_runs").length;
     const hitCount = mlbProps.filter((p) => p.marketKey === "batter_hits").length;
+    const bbCount = mlbProps.filter((p) => p.marketKey === "batter_walks").length;
+    const kCount = mlbProps.filter((p) => p.marketKey === "pitcher_strikeouts").length;
     const withContext = mlbProps.filter((p) => p.matchup).length;
-    console.log(`[Props] Parsed ${hrCount} HR, ${hitCount} Hit props (${withContext} with matchup context)`);
+    console.log(`[Props] Parsed ${hrCount} HR, ${hitCount} Hit, ${bbCount} Walk, ${kCount} K props (${withContext} with matchup context)`);
 
     // Enrich with MLB Stats API data (pitcher, lineup, handedness)
     const enrichedProps = await enrichMLBProps(mlbProps);
@@ -1106,8 +1221,8 @@ async function fetchMLBPropsFromPrizePicks() {
       const statType = attrs.stat_type || "";
       const line = parseFloat(attrs.line_score) || 0;
 
-      // Only process hits and home runs
-      if (!statType.includes("Hits") && !statType.includes("Home Run")) continue;
+      // Only process hits, home runs, walks, and pitcher strikeouts
+      if (!statType.includes("Hits") && !statType.includes("Home Run") && !statType.includes("Walks") && !statType.includes("Strikeouts")) continue;
 
       const playerId = proj.relationships?.new_player?.data?.id;
       const player = playersById[playerId];
@@ -1125,6 +1240,15 @@ async function fetchMLBPropsFromPrizePicks() {
         : game?.attributes?.away_team || "";
 
       const isHR = statType.includes("Home Run");
+      const isWalks = statType.includes("Walks");
+      const isK = statType.includes("Strikeouts");
+
+      let propType, marketKey;
+      if (isHR) { propType = "Home Runs"; marketKey = "batter_home_runs"; }
+      else if (isWalks) { propType = "Walks"; marketKey = "batter_walks"; }
+      else if (isK) { propType = "Pitcher Strikeouts"; marketKey = "pitcher_strikeouts"; }
+      else { propType = "Hits"; marketKey = "batter_hits"; }
+
       mlbProps.push({
         id: `prizepicks_${proj.id}`,
         sport: "MLB",
@@ -1133,8 +1257,8 @@ async function fetchMLBPropsFromPrizePicks() {
         awayTeam: game?.attributes?.away_team || "Away",
         commenceTime: game?.attributes?.start_time || new Date().toISOString(),
         playerName,
-        propType: isHR ? "Home Runs" : "Hits",
-        marketKey: isHR ? "batter_home_runs" : "batter_hits",
+        propType,
+        marketKey,
         line,
         overUnder: "Over",
         odds: [{ bookmaker: "PrizePicks", price: -110 }], // PrizePicks doesn't show odds
@@ -1410,7 +1534,8 @@ function formatPropType(marketKey) {
     batter_total_bases: "Total Bases",
     batter_rbis: "RBIs",
     batter_home_runs: "Home Runs",
-    pitcher_strikeouts: "Strikeouts",
+    batter_walks: "BB",
+    pitcher_strikeouts: "Ks",
     player_shots_on_goal: "Shots on Goal",
     player_goals: "Goals",
   };
@@ -1446,8 +1571,8 @@ function organizeIntoCategories(allProps, sportKey) {
       }
     }
 
-    // MLB HIT props: require L10 enrichment data before scoring
-    if (sportKey === "mlb" && category.id === "hits") {
+    // MLB props: require L10 enrichment data before scoring (hits, walks, pitcher Ks)
+    if (sportKey === "mlb" && (category.id === "hits" || category.id === "walks" || category.id === "pitcher_strikeouts")) {
       const beforeL10 = categoryProps.length;
       categoryProps = categoryProps.filter((p) => p.last10Games && p.last10Games.length > 0);
       if (beforeL10 > categoryProps.length) {
@@ -1482,6 +1607,7 @@ function organizeIntoCategories(allProps, sportKey) {
       id: category.id,
       name: category.name,
       sport: sportKey.toUpperCase(),
+      reliability: category.reliability || null,
       props: categoryProps,
       error: categoryProps.length === 0 ? `No ${category.name.toLowerCase()} available today` : null,
     });
@@ -1489,6 +1615,15 @@ function organizeIntoCategories(allProps, sportKey) {
 
   return categories;
 }
+
+// NHL market -> reliability mapping (see docs/prop-type-reference.md)
+const NHL_MARKET_RELIABILITY = {
+  player_shots_on_goal: "high",
+  player_assists: "high",
+  player_points: "medium",
+  player_goals: "low",
+};
+const RELIABILITY_RANK = { high: 3, medium: 2, low: 1 };
 
 // Organize NHL props by game with top 10-20 per game, ranked by hit rate then score
 function organizeNHLByGame(allProps) {
@@ -1554,11 +1689,18 @@ function organizeNHLByGame(allProps) {
     // Take top N props for this game
     const topProps = sorted.slice(0, maxPerGame);
 
+    // Compute game-group reliability as lowest tier among its props (conservative)
+    const gameReliability = topProps.reduce((lowest, p) => {
+      const r = NHL_MARKET_RELIABILITY[p.marketKey] || "low";
+      return (RELIABILITY_RANK[r] || 1) < (RELIABILITY_RANK[lowest] || 1) ? r : lowest;
+    }, "high");
+
     gameCategories.push({
       id: `game_${gameKey.replace(/[^a-zA-Z0-9]/g, "_")}`,
       name: gameKey,
       sport: "NHL",
       isGameGroup: true, // Flag for UI to know this is game-level grouping
+      reliability: gameReliability,
       props: topProps,
       totalAvailable: props.length,
       error: topProps.length === 0 ? `No props available for ${gameKey}` : null,

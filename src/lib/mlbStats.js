@@ -247,6 +247,7 @@ async function fetchBatterStats(playerId) {
       const hits = stat.hits || 0;
       const atBats = stat.atBats || 0;
       const homeRuns = stat.homeRuns || 0;
+      const walks = stat.baseOnBalls || 0;
 
       // Store raw game data for hit/miss calculation
       last10Games.push({
@@ -254,6 +255,7 @@ async function fetchBatterStats(playerId) {
         hits,
         homeRuns,
         atBats,
+        walks,
       });
 
       if (i < 5) {
@@ -348,6 +350,59 @@ async function fetchPitcherStats(pitcherId) {
     return result;
   } catch (err) {
     console.warn(`[MLBStats] Failed to fetch pitcher stats for ${pitcherId}:`, err.message);
+    return null;
+  }
+}
+
+// Fetch pitcher game log (STARTS ONLY) for strikeout props
+async function fetchPitcherGameLog(pitcherId) {
+  const cacheKey = `pitcher_gamelog_${pitcherId}`;
+  const cached = mlbStatsCache.playerStats[cacheKey];
+  if (cached && Date.now() - cached.timestamp < PLAYER_STATS_TTL) {
+    return cached.data;
+  }
+
+  try {
+    const season = new Date().getFullYear();
+    const gameLogUrl = `${MLB_STATS_BASE}/people/${pitcherId}/stats?stats=gameLog&group=pitching&season=${season}&limit=20`;
+
+    const res = await fetch(gameLogUrl, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const splits = data.stats?.[0]?.splits || [];
+
+    if (splits.length === 0) return null;
+
+    // Filter to STARTS ONLY — exclude all relief appearances
+    const starts = splits.filter((game) => {
+      const stat = game.stat || {};
+      return stat.gamesStarted > 0;
+    });
+
+    if (starts.length === 0) return null;
+
+    const last10Games = [];
+    starts.slice(0, 10).forEach((game) => {
+      const stat = game.stat || {};
+      last10Games.push({
+        date: game.date,
+        strikeouts: stat.strikeOuts || 0,
+        inningsPitched: parseFloat(stat.inningsPitched) || 0,
+        earnedRuns: stat.earnedRuns || 0,
+        gamesStarted: stat.gamesStarted || 0,
+      });
+    });
+
+    const result = {
+      last10Games,
+      gamesPlayed: last10Games.length,
+    };
+
+    mlbStatsCache.playerStats[cacheKey] = { data: result, timestamp: Date.now() };
+    return result;
+  } catch (err) {
+    console.warn(`[MLBStats] Failed to fetch pitcher game log for ${pitcherId}:`, err.message);
     return null;
   }
 }
@@ -715,17 +770,30 @@ export async function enrichMLBProps(props) {
     if (stats) pitcherStatsMap[id] = stats;
   }));
 
-  // Collect unique batter IDs from all props for batch fetching
+  // Collect unique batter and pitcher IDs from all props for batch fetching
   const batterIds = new Set();
+  const pitcherPropIds = new Set(); // Pitcher IDs for pitcher_strikeouts props
   const propBatterIdMap = {}; // playerName -> batterId (for lookup during enrichment)
+  const propPitcherIdMap = {}; // playerName -> pitcherId (for pitcher props)
   for (const prop of props) {
     const matchup = prop.matchup;
     const group = matchupGroups[matchup];
-    const lineupContext = group?.lineup ? findPlayerInLineup(prop.playerName, group.lineup) : null;
-    const batterId = lineupContext?.playerId || findPlayerId(prop.playerName, allPlayersMap, playerIdMap);
-    if (batterId) {
-      batterIds.add(batterId);
-      propBatterIdMap[normalizeName(prop.playerName)] = batterId;
+    const isPitcherProp = prop.marketKey === "pitcher_strikeouts";
+
+    if (isPitcherProp) {
+      // For pitcher props, find pitcher ID from allPlayersMap
+      const pitcherId = findPlayerId(prop.playerName, allPlayersMap, playerIdMap);
+      if (pitcherId) {
+        pitcherPropIds.add(pitcherId);
+        propPitcherIdMap[normalizeName(prop.playerName)] = pitcherId;
+      }
+    } else {
+      const lineupContext = group?.lineup ? findPlayerInLineup(prop.playerName, group.lineup) : null;
+      const batterId = lineupContext?.playerId || findPlayerId(prop.playerName, allPlayersMap, playerIdMap);
+      if (batterId) {
+        batterIds.add(batterId);
+        propBatterIdMap[normalizeName(prop.playerName)] = batterId;
+      }
     }
   }
 
@@ -737,6 +805,16 @@ export async function enrichMLBProps(props) {
   await Promise.all(batterIdArray.map(async (id) => {
     const stats = await fetchBatterStats(id);
     if (stats) batterStatsMap[id] = stats;
+  }));
+
+  // Batch fetch pitcher game logs for strikeout props (starts only)
+  console.log(`[MLBStats] Fetching game logs for ${pitcherPropIds.size} pitchers (strikeout props)...`);
+  const pitcherGameLogMap = {};
+  const pitcherPropIdArray = Array.from(pitcherPropIds).slice(0, 20);
+
+  await Promise.all(pitcherPropIdArray.map(async (id) => {
+    const gameLog = await fetchPitcherGameLog(id);
+    if (gameLog) pitcherGameLogMap[id] = gameLog;
   }));
 
   // Enrich each prop with context and stats
@@ -809,21 +887,35 @@ export async function enrichMLBProps(props) {
       }
     }
 
-    // Use pre-fetched batter stats from batterStatsMap
-    const batterId = propBatterIdMap[playerNameNorm];
-    if (batterId) {
-      const batterStats = batterStatsMap[batterId];
-      if (batterStats) {
-        enrichment.hitsLast5 = batterStats.hitsLast5;
-        enrichment.hitsLast10 = batterStats.hitsLast10;
-        enrichment.avgLast5 = batterStats.avgLast5;
-        enrichment.avgLast10 = batterStats.avgLast10;
-        enrichment.seasonAvg = batterStats.seasonAvg; // Season batting average
-        enrichment.batterTrend = batterStats.trend;
-        enrichment.isBatterHot = batterStats.isHot;
-        enrichment.isBatterCold = batterStats.isCold;
-        enrichment.last10Games = batterStats.last10Games; // Raw game data
-        statsCount++;
+    // Pitcher props: attach pitcher game log (starts only)
+    const isPitcherProp = prop.marketKey === "pitcher_strikeouts";
+    if (isPitcherProp) {
+      const pitcherId = propPitcherIdMap[playerNameNorm];
+      if (pitcherId) {
+        const pitcherGameLog = pitcherGameLogMap[pitcherId];
+        if (pitcherGameLog) {
+          enrichment.last10Games = pitcherGameLog.last10Games; // Raw start data with strikeouts
+          enrichment.gamesPlayed = pitcherGameLog.gamesPlayed;
+          statsCount++;
+        }
+      }
+    } else {
+      // Batter props: attach batter stats from batterStatsMap
+      const batterId = propBatterIdMap[playerNameNorm];
+      if (batterId) {
+        const batterStats = batterStatsMap[batterId];
+        if (batterStats) {
+          enrichment.hitsLast5 = batterStats.hitsLast5;
+          enrichment.hitsLast10 = batterStats.hitsLast10;
+          enrichment.avgLast5 = batterStats.avgLast5;
+          enrichment.avgLast10 = batterStats.avgLast10;
+          enrichment.seasonAvg = batterStats.seasonAvg; // Season batting average
+          enrichment.batterTrend = batterStats.trend;
+          enrichment.isBatterHot = batterStats.isHot;
+          enrichment.isBatterCold = batterStats.isCold;
+          enrichment.last10Games = batterStats.last10Games; // Raw game data
+          statsCount++;
+        }
       }
     }
 

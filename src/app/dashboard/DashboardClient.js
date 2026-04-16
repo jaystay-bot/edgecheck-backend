@@ -594,6 +594,9 @@ export default function DashboardClient({ userEmail }) {
   // Expanded prop card state
   const [expandedPropId, setExpandedPropId] = useState(null);
 
+  // Reliability filter state (null = show all, "high" | "medium" | "low")
+  const [reliabilityFilter, setReliabilityFilter] = useState(null);
+
   // Expanded game card state (EdgeCheck breakdown)
   const [expandedGameId, setExpandedGameId] = useState(null);
 
@@ -1455,15 +1458,9 @@ export default function DashboardClient({ userEmail }) {
                     </div>
                   )}
                   <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>Edge</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: bestPlay.play.edge > 0 ? "var(--green)" : "var(--red)" }}>
-                      {bestPlay.play.edge > 0 ? "+" : ""}{bestPlay.play.edge}%
-                    </div>
-                  </div>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>EV</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: bestPlay.play.ev > 0 ? "var(--green)" : "var(--red)" }}>
-                      {bestPlay.play.ev > 0 ? "+" : ""}{bestPlay.play.ev}%
+                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>EV Edge</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: parseFloat(bestPlay.play.edge) > 0 ? "var(--green)" : "var(--red)" }}>
+                      {parseFloat(bestPlay.play.edge) > 0 ? "+" : ""}{bestPlay.play.edge}%
                     </div>
                   </div>
                 </div>
@@ -2326,11 +2323,11 @@ export default function DashboardClient({ userEmail }) {
           </div>
 
           {/* Sport Filter */}
-          <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+          <div style={{ display: "flex", gap: 4, marginBottom: 8 }}>
             {["mlb", "nba", "nhl"].map((s) => (
               <button
                 key={s}
-                onClick={() => setPropsSport(s)}
+                onClick={() => { setPropsSport(s); setReliabilityFilter(null); }}
                 style={{
                   padding: "8px 16px",
                   borderRadius: 8,
@@ -2346,6 +2343,37 @@ export default function DashboardClient({ userEmail }) {
                 {s.toUpperCase()}
               </button>
             ))}
+          </div>
+
+          {/* Reliability Filter */}
+          <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+            {[
+              { key: null, label: "All" },
+              { key: "high", label: "High" },
+              { key: "medium", label: "Med" },
+              { key: "low", label: "Low" },
+            ].map((r) => (
+              <button
+                key={r.label}
+                onClick={() => setReliabilityFilter(r.key)}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 6,
+                  border: "1px solid",
+                  borderColor: reliabilityFilter === r.key ? "var(--accent)" : "var(--border)",
+                  background: reliabilityFilter === r.key ? "var(--accent)" : "var(--surface)",
+                  color: reliabilityFilter === r.key ? "#fff" : "var(--text-dim)",
+                  cursor: "pointer",
+                  fontWeight: 500,
+                  fontSize: 11,
+                }}
+              >
+                {r.label}
+              </button>
+            ))}
+            <span style={{ fontSize: 11, color: "var(--text-dim)", alignSelf: "center", marginLeft: 4 }}>
+              Reliability
+            </span>
           </div>
 
           {/* Props Loading - Branded Loader */}
@@ -2423,7 +2451,9 @@ export default function DashboardClient({ userEmail }) {
           {/* Props Categories */}
           {!propsLoading && propsCategories.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-              {propsCategories.map((category) => (
+              {propsCategories
+                .filter((c) => !reliabilityFilter || c.reliability === reliabilityFilter)
+                .map((category) => (
                 <div key={category.id}>
                   {/* Category Header */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -2432,6 +2462,23 @@ export default function DashboardClient({ userEmail }) {
                     <span style={{ fontSize: 12, color: "var(--text-dim)" }}>
                       ({category.props.length} props)
                     </span>
+                    {category.reliability && (
+                      <span style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: "2px 6px",
+                        borderRadius: 4,
+                        textTransform: "uppercase",
+                        background: category.reliability === "high" ? "rgba(34,197,94,0.15)"
+                          : category.reliability === "medium" ? "rgba(234,179,8,0.15)"
+                          : "rgba(239,68,68,0.15)",
+                        color: category.reliability === "high" ? "var(--green)"
+                          : category.reliability === "medium" ? "var(--yellow)"
+                          : "var(--red, #ef4444)",
+                      }}>
+                        {category.reliability === "high" ? "A" : category.reliability === "medium" ? "B" : "C"}
+                      </span>
+                    )}
                   </div>
 
                   {/* Category Props */}
@@ -2584,7 +2631,7 @@ export default function DashboardClient({ userEmail }) {
                                         {prop.edge && (
                                           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                                             <TrendingUpIcon size={12} color={parseFloat(prop.edge) >= 3 ? "var(--green)" : "var(--text-dim)"} />
-                                            <span style={{ color: "var(--text-dim)" }}>Edge:</span>
+                                            <span style={{ color: "var(--text-dim)" }}>EV Edge:</span>
                                             <span style={{ fontWeight: 700, color: parseFloat(prop.edge) >= 5 ? "var(--green)" : parseFloat(prop.edge) >= 2 ? "var(--yellow)" : "var(--text-dim)" }}>
                                               {prop.edge}%
                                             </span>
@@ -2705,6 +2752,16 @@ export default function DashboardClient({ userEmail }) {
                                 <span style={{ fontWeight: 700, fontSize: 16 }}>{prop.playerName}</span>
                               </div>
 
+                              {/* Lineup Position & Handedness Matchup (MLB batters only) */}
+                              {(prop.lineupSpot || prop.handednessMatchup) && (
+                                <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>
+                                  {prop.lineupSpot && <span style={{ fontWeight: 600 }}>#{prop.lineupSpot}</span>}
+                                  {prop.lineupSpot && prop.handednessMatchup && <span> &bull; </span>}
+                                  {prop.handednessMatchup && <span>{prop.handednessMatchup}</span>}
+                                  {prop.lineupSpot && !prop.handednessMatchup && <span> in lineup</span>}
+                                </div>
+                              )}
+
                               {/* Prop Line + Best Odds with explanation */}
                               <div style={{ fontSize: 14, fontWeight: 600 }}>
                                 {prop.overUnder} {prop.line} {prop.propType}
@@ -2788,7 +2845,7 @@ export default function DashboardClient({ userEmail }) {
                                 {prop.edge && (
                                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                                     <TrendingUpIcon size={12} color={parseFloat(prop.edge) >= 3 ? "var(--green)" : "var(--text-dim)"} />
-                                    <span style={{ color: "var(--text-dim)" }}>Edge:</span>
+                                    <span style={{ color: "var(--text-dim)" }}>EV Edge:</span>
                                     <span style={{ fontWeight: 700, color: parseFloat(prop.edge) >= 5 ? "var(--green)" : parseFloat(prop.edge) >= 2 ? "var(--yellow)" : "var(--text-dim)" }}>
                                       {prop.edge}%
                                     </span>
@@ -2796,13 +2853,13 @@ export default function DashboardClient({ userEmail }) {
                                 )}
                                 {prop.impliedProbability && (
                                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                    <span style={{ color: "var(--text-dim)" }}>Book:</span>
+                                    <span style={{ color: "var(--text-dim)" }}>Book %:</span>
                                     <span style={{ fontWeight: 600 }}>{prop.impliedProbability}%</span>
                                   </div>
                                 )}
                                 {prop.modelProbability && (
                                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                    <span style={{ color: "var(--text-dim)" }}>True:</span>
+                                    <span style={{ color: "var(--text-dim)" }}>True %:</span>
                                     <span style={{ fontWeight: 600, color: parseFloat(prop.modelProbability) > parseFloat(prop.impliedProbability || 0) ? "var(--green)" : "var(--text-dim)" }}>
                                       {prop.modelProbability}%
                                     </span>
@@ -2858,7 +2915,7 @@ export default function DashboardClient({ userEmail }) {
                                   <div style={{ display: "flex", gap: 16, marginTop: 8, fontSize: 11, flexWrap: "wrap" }}>
                                     {prop.edge && prop.bestOdds && (
                                       <div>
-                                        <span style={{ color: "var(--text-dim)" }}>EV: </span>
+                                        <span style={{ color: "var(--text-dim)" }}>EV Edge: </span>
                                         <span style={{
                                           fontWeight: 700,
                                           color: parseFloat(prop.edge) >= 3 ? "var(--green)" : parseFloat(prop.edge) >= 0 ? "var(--yellow)" : "var(--red)"
