@@ -578,6 +578,7 @@ export default function DashboardClient({ userEmail }) {
   // Props state
   const [activeView, setActiveView] = useState("games"); // games | props | linewatch
   const [propsCategories, setPropsCategories] = useState([]);
+  const [watchlistCategories, setWatchlistCategories] = useState([]);
   const [propsLoading, setPropsLoading] = useState(false);
   const [propsSport, setPropsSport] = useState("mlb"); // mlb | nba | nhl
   const propsSportRef = useRef(propsSport);
@@ -596,6 +597,9 @@ export default function DashboardClient({ userEmail }) {
 
   // Reliability filter state (null = show all, "high" | "medium" | "low")
   const [reliabilityFilter, setReliabilityFilter] = useState(null);
+
+  // Props sort mode ("default" = API order, "l10" = L10 hit rate high → low)
+  const [propsSortMode, setPropsSortMode] = useState("default");
 
   // Expanded game card state (EdgeCheck breakdown)
   const [expandedGameId, setExpandedGameId] = useState(null);
@@ -753,11 +757,13 @@ export default function DashboardClient({ userEmail }) {
 
       if (res.ok) {
         setPropsCategories(data.categories || []);
+        setWatchlistCategories(data.watchlistCategories || []);
         setIsPaidUser(data.isPaidUser || false);
         setPropsScored(data.scored || false);
       } else {
         console.warn("Props fetch failed:", data.error);
         setPropsCategories([]);
+        setWatchlistCategories([]);
       }
     } catch (err) {
       // Guard: ignore stale errors if user switched sports
@@ -766,6 +772,7 @@ export default function DashboardClient({ userEmail }) {
       }
       console.warn("Props fetch error:", err.message);
       setPropsCategories([]);
+      setWatchlistCategories([]);
     } finally {
       if (propsSportRef.current === requestedSport) {
         setPropsLoading(false);
@@ -1458,9 +1465,9 @@ export default function DashboardClient({ userEmail }) {
                     </div>
                   )}
                   <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>EV Edge</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: parseFloat(bestPlay.play.edge) > 0 ? "var(--green)" : "var(--red)" }}>
-                      {parseFloat(bestPlay.play.edge) > 0 ? "+" : ""}{bestPlay.play.edge}%
+                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>EV</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: parseFloat(bestPlay.play.ev) > 0 ? "var(--green)" : "var(--red)" }}>
+                      {parseFloat(bestPlay.play.ev) > 0 ? "+" : ""}{bestPlay.play.ev}%
                     </div>
                   </div>
                 </div>
@@ -2376,6 +2383,35 @@ export default function DashboardClient({ userEmail }) {
             </span>
           </div>
 
+          {/* Sort Mode */}
+          <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+            {[
+              { key: "default", label: "Default" },
+              { key: "l10", label: "L10 High \u2192 Low" },
+            ].map((s) => (
+              <button
+                key={s.key}
+                onClick={() => setPropsSortMode(s.key)}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 6,
+                  border: "1px solid",
+                  borderColor: propsSortMode === s.key ? "var(--accent)" : "var(--border)",
+                  background: propsSortMode === s.key ? "var(--accent)" : "var(--surface)",
+                  color: propsSortMode === s.key ? "#fff" : "var(--text-dim)",
+                  cursor: "pointer",
+                  fontWeight: 500,
+                  fontSize: 11,
+                }}
+              >
+                {s.label}
+              </button>
+            ))}
+            <span style={{ fontSize: 11, color: "var(--text-dim)", alignSelf: "center", marginLeft: 4 }}>
+              Sort
+            </span>
+          </div>
+
           {/* Props Loading - Branded Loader */}
           {propsLoading && (
             <div style={{
@@ -2449,11 +2485,31 @@ export default function DashboardClient({ userEmail }) {
           )}
 
           {/* Props Categories */}
-          {!propsLoading && propsCategories.length > 0 && (
+          {!propsLoading && (propsCategories.length > 0 || watchlistCategories.length > 0) && (
             <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-              {propsCategories
-                .filter((c) => !reliabilityFilter || c.reliability === reliabilityFilter)
-                .map((category) => (
+              {(() => {
+                const mainFiltered = propsCategories.filter((c) => !reliabilityFilter || c.reliability === reliabilityFilter);
+                const watchFiltered = watchlistCategories.filter((c) => !reliabilityFilter || c.reliability === reliabilityFilter);
+                const combined = [
+                  ...mainFiltered,
+                  ...(watchFiltered.length > 0 ? [{ id: "__watchlist_divider__", _isDivider: true }] : []),
+                  ...watchFiltered,
+                ];
+                return combined.map((category) => {
+                  if (category._isDivider) {
+                    return (
+                      <div key="__watchlist_divider__" style={{ borderTop: "1px solid var(--border)", paddingTop: 24, marginTop: 8 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                          <EyeIcon size={18} color="var(--text-dim)" />
+                          <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: "var(--text-dim)" }}>Near EV Watchlist</h3>
+                        </div>
+                        <p style={{ fontSize: 12, color: "var(--text-dim)", margin: 0 }}>
+                          Borderline props approaching positive EV
+                        </p>
+                      </div>
+                    );
+                  }
+                  return (
                 <div key={category.id}>
                   {/* Category Header */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -2490,8 +2546,11 @@ export default function DashboardClient({ userEmail }) {
                     /* NHL game groups: render props grouped by propType (Points, Assists, Goals, Shots on Goal) */
                     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                       {["Points", "Assists", "Goals", "Shots on Goal"].map((propTypeName) => {
-                        const propsInType = category.props.filter(p => p.propType === propTypeName);
-                        if (propsInType.length === 0) return null;
+                        const propsInTypeRaw = category.props.filter(p => p.propType === propTypeName);
+                        if (propsInTypeRaw.length === 0) return null;
+                        const propsInType = propsSortMode === "l10"
+                          ? [...propsInTypeRaw].sort((a, b) => (b.hitRateLast10 || 0) - (a.hitRateLast10 || 0))
+                          : propsInTypeRaw;
                         return (
                           <div key={propTypeName}>
                             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, paddingLeft: 4 }}>
@@ -2628,12 +2687,12 @@ export default function DashboardClient({ userEmail }) {
                                           fontSize: 12,
                                         }}
                                       >
-                                        {prop.edge && (
+                                        {prop.ev && (
                                           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <TrendingUpIcon size={12} color={parseFloat(prop.edge) >= 3 ? "var(--green)" : "var(--text-dim)"} />
-                                            <span style={{ color: "var(--text-dim)" }}>EV Edge:</span>
-                                            <span style={{ fontWeight: 700, color: parseFloat(prop.edge) >= 5 ? "var(--green)" : parseFloat(prop.edge) >= 2 ? "var(--yellow)" : "var(--text-dim)" }}>
-                                              {prop.edge}%
+                                            <TrendingUpIcon size={12} color={parseFloat(prop.ev) >= 3 ? "var(--green)" : "var(--text-dim)"} />
+                                            <span style={{ color: "var(--text-dim)" }}>EV:</span>
+                                            <span style={{ fontWeight: 700, color: parseFloat(prop.ev) >= 5 ? "var(--green)" : parseFloat(prop.ev) >= 2 ? "var(--yellow)" : "var(--text-dim)" }}>
+                                              {parseFloat(prop.ev) >= 0 ? "+" : ""}{prop.ev}%
                                             </span>
                                           </div>
                                         )}
@@ -2695,7 +2754,10 @@ export default function DashboardClient({ userEmail }) {
                     </div>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      {category.props.map((prop) => {
+                      {(propsSortMode === "l10"
+                        ? [...category.props].sort((a, b) => (b.hitRateLast10 || 0) - (a.hitRateLast10 || 0))
+                        : category.props
+                      ).map((prop) => {
                         const isExpanded = expandedPropId === prop.id;
                         const tierColors = getTierColor(prop.tier);
                         const gameTimeStr = formatGameTime(prop.gameTime, prop.commenceTime);
@@ -2842,12 +2904,12 @@ export default function DashboardClient({ userEmail }) {
                                   fontSize: 12,
                                 }}
                               >
-                                {prop.edge && (
+                                {prop.ev && (
                                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                    <TrendingUpIcon size={12} color={parseFloat(prop.edge) >= 3 ? "var(--green)" : "var(--text-dim)"} />
-                                    <span style={{ color: "var(--text-dim)" }}>EV Edge:</span>
-                                    <span style={{ fontWeight: 700, color: parseFloat(prop.edge) >= 5 ? "var(--green)" : parseFloat(prop.edge) >= 2 ? "var(--yellow)" : "var(--text-dim)" }}>
-                                      {prop.edge}%
+                                    <TrendingUpIcon size={12} color={parseFloat(prop.ev) >= 3 ? "var(--green)" : "var(--text-dim)"} />
+                                    <span style={{ color: "var(--text-dim)" }}>EV:</span>
+                                    <span style={{ fontWeight: 700, color: parseFloat(prop.ev) >= 5 ? "var(--green)" : parseFloat(prop.ev) >= 2 ? "var(--yellow)" : "var(--text-dim)" }}>
+                                      {parseFloat(prop.ev) >= 0 ? "+" : ""}{prop.ev}%
                                     </span>
                                   </div>
                                 )}
@@ -2913,14 +2975,14 @@ export default function DashboardClient({ userEmail }) {
 
                                   {/* EV & Risk Summary */}
                                   <div style={{ display: "flex", gap: 16, marginTop: 8, fontSize: 11, flexWrap: "wrap" }}>
-                                    {prop.edge && prop.bestOdds && (
+                                    {prop.ev && prop.bestOdds && (
                                       <div>
-                                        <span style={{ color: "var(--text-dim)" }}>EV Edge: </span>
+                                        <span style={{ color: "var(--text-dim)" }}>EV: </span>
                                         <span style={{
                                           fontWeight: 700,
-                                          color: parseFloat(prop.edge) >= 3 ? "var(--green)" : parseFloat(prop.edge) >= 0 ? "var(--yellow)" : "var(--red)"
+                                          color: parseFloat(prop.ev) >= 3 ? "var(--green)" : parseFloat(prop.ev) >= 0 ? "var(--yellow)" : "var(--red)"
                                         }}>
-                                          {parseFloat(prop.edge) >= 0 ? "+" : ""}{prop.edge}%
+                                          {parseFloat(prop.ev) >= 0 ? "+" : ""}{prop.ev}%
                                         </span>
                                       </div>
                                     )}
@@ -3039,7 +3101,9 @@ export default function DashboardClient({ userEmail }) {
                     </div>
                   )}
                 </div>
-              ))}
+                  );
+                });
+              })()}
             </div>
           )}
         </>

@@ -148,39 +148,50 @@ async function fetchNHLPlayerStats(playerId) {
 }
 
 // Main enrichment function - adds Last 10 data to NHL props
+// Uses batched parallel fetching (same pattern as NBA enrichment)
+const NHL_BATCH_SIZE = 8;
+
 export async function enrichNHLProps(props) {
   if (!props || props.length === 0) return props;
 
   console.log(`[NHLStats] Enriching ${props.length} NHL props with Last 10 data...`);
 
+  // Dedupe players — many props share the same player (goals, assists, points, shots)
+  const uniquePlayers = [...new Set(props.map((p) => p.playerName).filter(Boolean))];
+  console.log(`[NHLStats] ${uniquePlayers.length} unique players to look up`);
+
+  // Batch-fetch player IDs in parallel
+  const playerIdMap = {}; // playerName -> playerId
+  for (let i = 0; i < uniquePlayers.length; i += NHL_BATCH_SIZE) {
+    const batch = uniquePlayers.slice(i, i + NHL_BATCH_SIZE);
+    const results = await Promise.all(batch.map((name) => findNHLPlayerId(name)));
+    batch.forEach((name, idx) => {
+      if (results[idx]) playerIdMap[name] = results[idx];
+    });
+  }
+
+  // Batch-fetch player stats in parallel (only for players with IDs)
+  const uniqueIds = [...new Set(Object.values(playerIdMap))];
+  const statsMap = {}; // playerId -> stats
+  for (let i = 0; i < uniqueIds.length; i += NHL_BATCH_SIZE) {
+    const batch = uniqueIds.slice(i, i + NHL_BATCH_SIZE);
+    const results = await Promise.all(batch.map((id) => fetchNHLPlayerStats(id)));
+    batch.forEach((id, idx) => {
+      if (results[idx]) statsMap[id] = results[idx];
+    });
+  }
+
+  // Apply enrichment to all props using the lookup maps
   let enrichedCount = 0;
-  const enrichedProps = [];
+  const enrichedProps = props.map((prop) => {
+    const playerId = playerIdMap[prop.playerName];
+    if (!playerId) return prop;
 
-  // Process in batches to avoid overwhelming the API
-  for (const prop of props) {
-    const playerName = prop.playerName;
-    if (!playerName) {
-      enrichedProps.push(prop);
-      continue;
-    }
+    const stats = statsMap[playerId];
+    if (!stats || !stats.last10Games || stats.last10Games.length === 0) return prop;
 
-    // Find player ID
-    const playerId = await findNHLPlayerId(playerName);
-    if (!playerId) {
-      enrichedProps.push(prop);
-      continue;
-    }
-
-    // Fetch stats
-    const stats = await fetchNHLPlayerStats(playerId);
-    if (!stats || !stats.last10Games || stats.last10Games.length === 0) {
-      enrichedProps.push(prop);
-      continue;
-    }
-
-    // Enrich the prop
     enrichedCount++;
-    enrichedProps.push({
+    return {
       ...prop,
       last10Games: stats.last10Games,
       goalsLast10: stats.goalsLast10,
@@ -188,10 +199,10 @@ export async function enrichNHLProps(props) {
       nhlTrend: stats.trend,
       isHot: stats.isHot,
       isCold: stats.isCold,
-    });
-  }
+    };
+  });
 
-  console.log(`[NHLStats] Enriched ${enrichedCount}/${props.length} NHL props with Last 10 data`);
+  console.log(`[NHLStats] Enriched ${enrichedCount}/${props.length} NHL props with Last 10 data (${uniquePlayers.length} players, ${uniqueIds.length} fetched)`);
   return enrichedProps;
 }
 

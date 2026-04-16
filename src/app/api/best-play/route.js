@@ -767,16 +767,18 @@ function scoreBetFromOdds(bet) {
   };
 }
 
-// Calculate implied probability and EV from American odds
-function calculateEV(odds, estimatedWinProb) {
+// Calculate real single-prop EV from American odds using vig-adjusted model probability
+function calculateEV(odds) {
   const impliedProb = odds > 0 ? 100 / (odds + 100) : Math.abs(odds) / (Math.abs(odds) + 100);
-  const edge = estimatedWinProb - impliedProb;
-  const ev = edge * 100; // EV as percentage
+  const modelProb = impliedProb / 1.04; // same vig adjustment as props route
+  const edge = ((modelProb - impliedProb) * 100);
+  const decimalOdds = odds > 0 ? 1 + odds / 100 : 1 + 100 / Math.abs(odds);
+  const ev = (modelProb * decimalOdds - 1) * 100;
   return {
     impliedProb: Math.round(impliedProb * 100),
-    estimatedWinProb: Math.round(estimatedWinProb * 100),
-    edge: Math.round(edge * 1000) / 10, // e.g., 5.2%
-    ev: Math.round(ev * 10) / 10, // e.g., +5.2%
+    modelProb: Math.round(modelProb * 100),
+    edge: Math.round(edge * 10) / 10,
+    ev: Math.round(ev * 10) / 10,
   };
 }
 
@@ -826,9 +828,7 @@ async function findBestPlays(apiKey) {
     .map((candidate) => {
       const score = scoreBetFromOdds(candidate);
       if (score) {
-        // Calculate EV based on confidence
-        const estimatedWinProb = Math.min(0.75, Math.max(0.45, score.confidence / 10 + 0.1));
-        const evData = calculateEV(candidate.odds, estimatedWinProb);
+        const evData = calculateEV(candidate.odds);
         return { ...candidate, ...score, ...evData };
       }
       return null;
