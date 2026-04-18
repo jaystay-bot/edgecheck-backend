@@ -218,9 +218,7 @@ function scoreBetFromOdds(bet) {
     score += 0.2;
   }
 
-  // Add small variance for diversity (±0.4)
-  const variance = (Math.random() - 0.5) * 0.8;
-  score = Math.round((score + variance) * 10) / 10;
+  score = Math.round(score * 10) / 10;
 
   // Clamp score to 1-10 range
   score = Math.min(10, Math.max(1, score));
