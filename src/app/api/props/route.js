@@ -1437,8 +1437,8 @@ async function fetchAllPropsForSport(sportKey, apiKey) {
       }
     }
     console.log(`[Props] Merged ${underdogProps.length} Underdog + ${prizePicksProps.length} PrizePicks = ${merged.length} total NBA props`);
-    // Return raw merged - enrichment happens after final selection
-    return merged;
+    // Enrich full merged set so L10/performance data is available before EV + scoring run
+    return await enrichNBAProps(merged);
   }
   if (sportKey === "nhl") {
     // Use Underdog for NHL props (goals)
@@ -1804,18 +1804,30 @@ async function getPropsForSport(sportKey, apiKey) {
     watchlistCategories = result.watchlistCategories;
   }
 
-  // Enrich NBA props AFTER final selection so all displayed cards get L10
+  // NBA L10 is enriched at fetch time so EV + scoring use performance data.
+  // Post-selection pass: re-run enrichment on the final displayed set to guarantee
+  // last10HitRate / last10Results are attached on every returned card (covers cases
+  // where the fetch-time enrichment's cap didn't reach a final-selected prop).
   if (sportKey === "nba") {
     const allNBACats = [...categories, ...watchlistCategories];
-    const allDisplayedProps = allNBACats.flatMap(c => c.props);
-    const enrichedProps = await enrichNBAProps(allDisplayedProps);
-    // Include matchup in key to prevent cross-game context bleeding
-    const enrichedMap = new Map(enrichedProps.map(p => [`${p.playerName}_${p.line}_${p.marketKey}_${p.matchup || ''}`, p]));
+    const allDisplayedNBAProps = allNBACats.flatMap(c => c.props);
+    const enrichedNBAProps = await enrichNBAProps(allDisplayedNBAProps);
+    const enrichedNBAMap = new Map(enrichedNBAProps.map(p => [`${p.playerName}_${p.line}_${p.marketKey}_${p.matchup || ''}`, p]));
     for (const cat of allNBACats) {
       cat.props = cat.props.map(p => {
-        const enriched = enrichedMap.get(`${p.playerName}_${p.line}_${p.marketKey}_${p.matchup || ''}`);
-        if (!enriched || !enriched.last10Games?.length) return p;
-        // Compute L10 hit rate from enriched data
+        if (p.last10Games && p.last10Games.length > 0 && p.last10HitRate && p.last10Results) {
+          return p;
+        }
+        const enriched = enrichedNBAMap.get(`${p.playerName}_${p.line}_${p.marketKey}_${p.matchup || ''}`);
+        if (!enriched || !enriched.last10Games?.length) {
+          // Guarantee L10 keys exist on every returned NBA card even when enrichment misses
+          return {
+            ...p,
+            last10HitRate: p.last10HitRate ?? null,
+            last10Results: p.last10Results ?? null,
+            hitRateLast10: p.hitRateLast10 ?? null,
+          };
+        }
         const last10Games = enriched.last10Games;
         const line = p.line || 0;
         const propType = p.propType || "";
