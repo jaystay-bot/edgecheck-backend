@@ -1672,7 +1672,10 @@ function addEdgeDataToProps(props) {
       const impliedProb = calculateImpliedProbability(bestOdds);
       const modelProb = calculateModelProbability(prop.odds, prop.propType);
       const edge = parseFloat(calculateEdge(modelProb, impliedProb));
-      const ev = parseFloat(calculateSinglePropEV(modelProb, bestOdds));
+      // EV is intentionally NOT derived here from modelProb * decimalOdds - 1.
+      // modelProb is market-derived (avgImplied/1.04), which collapses EV to a
+      // near-constant negative value (~-3.8%) across all props. Any stat-based
+      // EV must come from the sport scoring functions below via ...scoring.
 
       // Single-source props (Underdog) can't have meaningful edge calculation
       const isSingleSource = prop.odds.length === 1;
@@ -1693,11 +1696,13 @@ function addEdgeDataToProps(props) {
         ...prop,
         bestOdds,
         impliedProbability: (impliedProb * 100).toFixed(1),
-        modelProbability: (modelProb * 100).toFixed(1),
         edge: edge.toFixed(1),
-        ev: ev.toFixed(1),
+        // Guarantee ev is always defined before downstream filter (ev > 0) and sort run.
+        // Default to the already-computed edge (no new model logic); any stat-based
+        // ev emitted by sport scoring below overrides via the ...scoring spread.
+        ev: edge.toFixed(1),
         hasEdge: isSingleSource || edge >= MIN_EDGE_PERCENT,
-        ...scoring, // heaterScore, confidence, hitRateLast10, writeup, keyFactor, etc.
+        ...scoring, // heaterScore, confidence, hitRateLast10, writeup, keyFactor, and any stat-based ev
       };
     })
     .filter((prop) => prop.hasEdge);

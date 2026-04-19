@@ -2919,14 +2919,7 @@ export default function DashboardClient({ userEmail }) {
                                     <span style={{ fontWeight: 600 }}>{prop.impliedProbability}%</span>
                                   </div>
                                 )}
-                                {prop.modelProbability && (
-                                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                    <span style={{ color: "var(--text-dim)" }}>True %:</span>
-                                    <span style={{ fontWeight: 600, color: parseFloat(prop.modelProbability) > parseFloat(prop.impliedProbability || 0) ? "var(--green)" : "var(--text-dim)" }}>
-                                      {prop.modelProbability}%
-                                    </span>
-                                  </div>
-                                )}
+                                {/* True % row removed: backend value was market-derived (avgImplied/1.04), not a stat-driven true probability. */}
                                 {/* L10 for MLB/NBA/NHL when available, CONF as fallback */}
                                 {prop.sport === "MLB" && prop.seasonAvg && (
                                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
