@@ -2824,6 +2824,44 @@ export default function DashboardClient({ userEmail }) {
                                 </div>
                               )}
 
+                              {/* Display-only matchup badge (MLB batter_hits) — always on card face, neutral */}
+                              {prop.marketKey === "batter_hits" && prop.matchupBadge && (
+                                <div style={{ marginBottom: 6 }}>
+                                  <span style={{
+                                    display: "inline-block",
+                                    background: "var(--surface-2, rgba(255,255,255,0.06))",
+                                    color: "var(--text, #e5e7eb)",
+                                    border: "1px solid var(--border)",
+                                    padding: "2px 8px",
+                                    borderRadius: 999,
+                                    fontSize: 11,
+                                    fontWeight: 600,
+                                    letterSpacing: 0.2,
+                                  }}>
+                                    {prop.matchupBadge}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Display-only pitcher last-3-starts form (MLB batter_hits) */}
+                              {prop.marketKey === "batter_hits" && prop.pitcherLast3Form && (
+                                <div style={{ marginBottom: 6 }}>
+                                  <span style={{
+                                    display: "inline-block",
+                                    background: "var(--surface-2, rgba(255,255,255,0.06))",
+                                    color: "var(--text, #e5e7eb)",
+                                    border: "1px solid var(--border)",
+                                    padding: "2px 8px",
+                                    borderRadius: 999,
+                                    fontSize: 11,
+                                    fontWeight: 600,
+                                    letterSpacing: 0.2,
+                                  }}>
+                                    {prop.pitcherLast3Form}
+                                  </span>
+                                </div>
+                              )}
+
                               {/* Prop Line + Best Odds with explanation */}
                               <div style={{ fontSize: 14, fontWeight: 600 }}>
                                 {prop.overUnder} {prop.line} {prop.propType}
@@ -2904,22 +2942,7 @@ export default function DashboardClient({ userEmail }) {
                                   fontSize: 12,
                                 }}
                               >
-                                {prop.ev && (
-                                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                    <TrendingUpIcon size={12} color={parseFloat(prop.ev) >= 3 ? "var(--green)" : "var(--text-dim)"} />
-                                    <span style={{ color: "var(--text-dim)" }}>EV:</span>
-                                    <span style={{ fontWeight: 700, color: parseFloat(prop.ev) >= 5 ? "var(--green)" : parseFloat(prop.ev) >= 2 ? "var(--yellow)" : "var(--text-dim)" }}>
-                                      {parseFloat(prop.ev) >= 0 ? "+" : ""}{prop.ev}%
-                                    </span>
-                                  </div>
-                                )}
-                                {prop.impliedProbability && (
-                                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                    <span style={{ color: "var(--text-dim)" }}>Book %:</span>
-                                    <span style={{ fontWeight: 600 }}>{prop.impliedProbability}%</span>
-                                  </div>
-                                )}
-                                {/* True % row removed: backend value was market-derived (avgImplied/1.04), not a stat-driven true probability. */}
+                                {/* EV and Book % hidden from visible card face. Values remain on the prop object for scoring/ranking/filters and the expanded details view. */}
                                 {/* L10 for MLB/NBA/NHL when available, CONF as fallback */}
                                 {prop.sport === "MLB" && prop.seasonAvg && (
                                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>

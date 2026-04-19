@@ -869,6 +869,27 @@ export async function enrichMLBProps(props) {
           enrichment.isPitcherElite = pitcherStats.isElite;
           enrichment.isPitcherStruggling = pitcherStats.isStruggling;
         }
+
+        // Display-only pitcher last-3-starts form (MLB batter_hits only; uses existing game log map, no new fetch).
+        if (prop.marketKey === "batter_hits") {
+          const opposingPitcherGameLog = pitcherGameLogMap[opposingPitcher.id];
+          const starts = opposingPitcherGameLog?.last10Games;
+          if (Array.isArray(starts) && starts.length >= 3) {
+            const last3 = starts.slice(0, 3);
+            let totalIP = 0;
+            let totalER = 0;
+            let totalK = 0;
+            for (const g of last3) {
+              totalIP += Number(g.inningsPitched) || 0;
+              totalER += Number(g.earnedRuns) || 0;
+              totalK += Number(g.strikeouts) || 0;
+            }
+            if (totalIP > 0) {
+              const era = ((totalER / totalIP) * 9).toFixed(2);
+              enrichment.pitcherLast3Form = `L3: ${era} ERA \u2022 ${totalK}K`;
+            }
+          }
+        }
       }
 
       // Lineup context (only if lineup posted)
@@ -916,6 +937,18 @@ export async function enrichMLBProps(props) {
           enrichment.last10Games = batterStats.last10Games; // Raw game data
           statsCount++;
         }
+      }
+    }
+
+    // Display-only neutral handedness badge for MLB hit props.
+    // Omitted when batter side is unknown (pre-lineup); no fallback.
+    if (prop.marketKey === "batter_hits" && enrichment.batSide && enrichment.pitcherHand) {
+      const bat = enrichment.batSide;
+      const pit = enrichment.pitcherHand;
+      const batLabel = bat === "L" ? "LHB" : bat === "R" ? "RHB" : bat === "S" ? "SHB" : null;
+      const pitLabel = pit === "L" ? "LHP" : pit === "R" ? "RHP" : null;
+      if (batLabel && pitLabel) {
+        enrichment.matchupBadge = `${batLabel} vs ${pitLabel}`;
       }
     }
 
