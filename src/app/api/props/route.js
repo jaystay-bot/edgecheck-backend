@@ -389,10 +389,22 @@ function scoreMLBProp(prop, bestOdds, edge) {
     if (hasAdvantage) {
       contextScore += 0.8; // Increased from 0.5
       factors.push(handednessMatchup || `${batSide === "S" ? "Switch-hitter" : "Platoon"} advantage`);
+
+      // Compounding bonus: platoon advantage + hot bat is a stronger signal than either alone
+      if (isBatterHot) {
+        contextScore += 0.4;
+        factors.push("Hot bat facing favorable-handed pitcher");
+      }
     } else {
       // Same-side matchup (disadvantage)
       riskPenalty += 0.5; // Increased from 0.3
       risks.push(handednessMatchup || "Same-side pitcher matchup");
+
+      // Compounding penalty: same-hand disadvantage + cold bat is a stronger risk signal than either alone
+      if (isBatterCold) {
+        riskPenalty += 0.3;
+        risks.push("Cold bat facing same-side pitcher");
+      }
     }
   }
 

@@ -470,6 +470,7 @@ async function fetchAllPlayers() {
     const firstLastMap = new Map(); // "jose ramirez" (first + last only) → id
     const lastNameCounts = new Map(); // Track duplicates for last name
     const lastNameMap = new Map(); // Last name → id (only if unique)
+    const batSideMap = new Map(); // playerId → batSide code ("L"/"R"/"S"), from bio data
 
     for (const player of players) {
       const name = normalizeName(player.fullName);
@@ -477,6 +478,11 @@ async function fetchAllPlayers() {
 
       // Full name lookup
       playerMap.set(name, player.id);
+
+      // Bio batSide fallback (used pre-lineup, when lineup-derived batSide isn't available yet)
+      if (player.batSide?.code) {
+        batSideMap.set(player.id, player.batSide.code);
+      }
 
       // First initial + last name lookup
       const initialLast = getInitialLastName(name);
@@ -515,6 +521,7 @@ async function fetchAllPlayers() {
     mlbStatsCache.playersByFirstLast = firstLastMap;
     mlbStatsCache.playersByInitialLast = initialLastMap;
     mlbStatsCache.playersByLastName = lastNameMap;
+    mlbStatsCache.batSideByPlayerId = batSideMap;
     mlbStatsCache.allPlayersTimestamp = now;
 
     return playerMap;
@@ -923,6 +930,13 @@ export async function enrichMLBProps(props) {
     } else {
       // Batter props: attach batter stats from batterStatsMap
       const batterId = propBatterIdMap[playerNameNorm];
+
+      // Bio-based batSide fallback for when today's lineup hasn't posted yet.
+      // Lineup-derived batSide (set above) always wins when present, since it's live-confirmed.
+      if (!enrichment.batSide && batterId && mlbStatsCache.batSideByPlayerId?.has(batterId)) {
+        enrichment.batSide = mlbStatsCache.batSideByPlayerId.get(batterId);
+      }
+
       if (batterId) {
         const batterStats = batterStatsMap[batterId];
         if (batterStats) {

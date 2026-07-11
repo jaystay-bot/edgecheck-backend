@@ -97,6 +97,30 @@ const InfoIcon = ({ size = 16, color = "currentColor" }) => (
   </svg>
 );
 
+// Pitcher handedness glyph
+const BaseballIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M6 5c3 2 3 5 0 7s-3 5 0 7" />
+    <path d="M18 5c-3 2-3 5 0 7s3 5 0 7" />
+  </svg>
+);
+
+// Batter handedness glyph
+const BatIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 20 15 9" />
+    <path d="M15 9a3 3 0 1 0 4-4 3 3 0 0 0-4 4Z" />
+  </svg>
+);
+
+function handLabel(code) {
+  if (code === "L") return "Left";
+  if (code === "R") return "Right";
+  if (code === "S") return "Switch";
+  return null;
+}
+
 function getHeaterScoreColor(score) {
   if (score >= 8) return "var(--green)";
   if (score >= 6) return "var(--yellow)";
@@ -2824,22 +2848,21 @@ export default function DashboardClient({ userEmail }) {
                                 </div>
                               )}
 
-                              {/* Display-only matchup badge (MLB batter_hits) — always on card face, neutral */}
-                              {prop.marketKey === "batter_hits" && prop.matchupBadge && (
-                                <div style={{ marginBottom: 6 }}>
-                                  <span style={{
-                                    display: "inline-block",
-                                    background: "var(--surface-2, rgba(255,255,255,0.06))",
-                                    color: "var(--text, #e5e7eb)",
-                                    border: "1px solid var(--border)",
-                                    padding: "2px 8px",
-                                    borderRadius: 999,
-                                    fontSize: 11,
-                                    fontWeight: 600,
-                                    letterSpacing: 0.2,
-                                  }}>
-                                    {prop.matchupBadge}
-                                  </span>
+                              {/* Handedness matchup icons (MLB batter_hits) — batter stance + opposing pitcher hand */}
+                              {prop.marketKey === "batter_hits" && (handLabel(prop.batSide) || handLabel(prop.pitcherHand)) && (
+                                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                                  {handLabel(prop.batSide) && (
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: "var(--text-dim)" }}>
+                                      <BatIcon size={14} color="var(--accent)" />
+                                      {handLabel(prop.batSide)}
+                                    </span>
+                                  )}
+                                  {handLabel(prop.pitcherHand) && (
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: "var(--text-dim)" }}>
+                                      <BaseballIcon size={14} color="var(--accent)" />
+                                      {handLabel(prop.pitcherHand)}
+                                    </span>
+                                  )}
                                 </div>
                               )}
 
