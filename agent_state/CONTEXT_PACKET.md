@@ -27,15 +27,18 @@
 - Known instability: NBA and NHL props pipelines flagged "still unstable locally" in PROJECT_FLOW.md
 
 ## Current N
-N_000: awaiting Commander instruction. Prior sequence (N_001-N_003) complete, all PASS.
+N_000: awaiting Commander instruction. All prior sequences complete, all PASS.
 
-## Completed Feature: MLB Handedness Matchup (Commander-approved, 3-task sequence — DONE)
-Commander asked to: (1) show opposing pitcher hand (baseball icon + word) and batter hand (bat icon + word) on MLB batter prop cards, (2) make sure the platoon-advantage matchup (opposite-hand favors batter, especially when combined with a hot bat) is properly reflected in scoring/EV so Top Picks stay correctly ranked.
-- N_001 (PASS): `src/lib/mlbStats.js` — added bio-based `batSide` fallback via `fetchAllPlayers()` (playerId -> batSide map from the already-fetched `/sports/1/players` response, no new network call), so batter handedness is available pre-lineup, not just after lineups post. Lineup value still takes priority when present.
-- N_002 (PASS): `src/app/dashboard/DashboardClient.js` — added `BaseballIcon`/`BatIcon` SVG components (matching the existing `XIcon({size,color})` convention) and a `handLabel()` helper ("L"→"Left" etc.). Replaced the old redundant `matchupBadge` text pill with icon+word for pitcher hand and batter hand on `batter_hits` cards. Left the separate `handednessMatchup`/`lineupSpot` block untouched (different info: lineup position + "(advantage)" callout).
-- N_003 (PASS): `src/app/api/props/route.js`, `scoreMLBProp()` — added a compounding `+0.4 contextScore` when platoon advantage AND `isBatterHot` both true (on top of the existing independent `+0.8` platoon / `+1.5` hot-bat bonuses), and a mirrored `+0.3 riskPenalty` when same-hand disadvantage AND `isBatterCold` both true. This was the one task authorized to touch the scoring engine (CLAUDE.md default "Do NOT Touch" explicitly overridden by Commander for this named change only).
-- Backlog idea surfaced but NOT started: true batter-vs-pitcher-hand split stats via MLB Stats API `sitCodes=vr`/`vl` (currently unused) to replace the binary platoon heuristic with real per-split averages — see `agent_state/QUEUE.md`.
-- Important sandbox constraint for all future MLB/NBA/NHL work here: this environment's outbound network policy blocks `statsapi.mlb.com` (confirmed via `$HTTPS_PROXY/__agentproxy/status`). Live end-to-end verification against real sports-data APIs is not possible from this sandbox — use build + offline fixture checks mirroring the shipped logic, and disclose the gap honestly rather than imply live verification occurred.
+## Completed Feature: MLB Handedness Matchup + Edge Play (Commander-approved, 5-task sequence — DONE)
+Commander asked to: (1) show opposing pitcher hand (baseball icon + word) and batter hand (bat icon + word) on MLB batter prop cards, (2) reflect the platoon-advantage matchup (opposite-hand favors batter, especially combined with a hot bat) in scoring/EV, (3) surface a dedicated "Edge Play" flag for props hitting that exact compound signal + good odds.
+- N_001 (PASS): `src/lib/mlbStats.js` — bio-based `batSide` fallback via `fetchAllPlayers()` (reuses the already-fetched `/sports/1/players` response, no new network call), so batter handedness is available pre-lineup. Lineup value still wins when present.
+- N_002 (PASS): `src/app/dashboard/DashboardClient.js` — `BaseballIcon`/`BatIcon` SVG components + `handLabel()` helper ("L"→"Left" etc.), replacing the old `matchupBadge` text pill on `batter_hits` cards.
+- N_003 (PASS): `src/app/api/props/route.js`, `scoreMLBProp()` — compounding `+0.4 contextScore` when platoon advantage AND `isBatterHot`; mirrored `+0.3 riskPenalty` when same-hand AND `isBatterCold`. The one task authorized to touch the scoring engine (CLAUDE.md's default "Do NOT Touch" explicitly overridden by Commander for this named change only).
+- N_004 (PASS): `src/app/api/props/route.js`, `scoreMLBProp()` — added `isEdgePlay` boolean, true when `hasAdvantage && isBatterHot && oddsValueScore >= 1.5 && edgeNum > 0`.
+- N_005 (PASS): `src/app/dashboard/DashboardClient.js` — outlined "Edge Play" badge (reuses existing `TargetIcon`) rendered next to the tier badge when `prop.isEdgePlay` is true.
+- Confirmed architectural fact (relevant if extending this further): the pipeline already pulls ALL of today's MLB games (`fetchTodaysGames`) and ALL active players league-wide (`fetchAllPlayers`), but enrichment/scoring only ever runs on players who already have a prop from Underdog/PrizePicks — Edge Play badges only existing props, does not independently scan the full slate for matchups without an offered line (Commander explicitly chose this smaller scope over a full-slate-scan alternative).
+- Backlog idea surfaced but NOT started: true batter-vs-pitcher-hand split stats via MLB Stats API `sitCodes=vr`/`vl` (currently unused) — see `agent_state/QUEUE.md`.
+- Important sandbox constraint for all future MLB/NBA/NHL work here: this environment's outbound network policy blocks `statsapi.mlb.com` (confirmed via `$HTTPS_PROXY/__agentproxy/status`). Live end-to-end verification isn't possible from this sandbox. Strongest verification pattern used across N_001-N_005: extract the exact shipped function (byte-identical copy, add `export` only) and run it against realistic mocked API responses / hand-constructed prop objects — this is meaningfully stronger than reimplementing the logic separately, and was specifically requested and validated by the Commander mid-sequence (see SESSION_LOG "POST-PASS VERIFICATION" entry: 19/19 assertions, including a real before/after A/B proving an actual tier flip).
 
 ## Active Constraints
 - Do not modify Auth (Clerk) or Payments (Stripe) flow, scoring engine logic, or API key handling unless explicitly asked (CLAUDE.md)
@@ -74,9 +77,11 @@ Commander asked to: (1) show opposing pitcher hand (baseball icon + word) and ba
 | N_001 | unavailable | unavailable | ~17s (build) | PASS |
 | N_002 | unavailable | unavailable | ~16s (build) | PASS |
 | N_003 | unavailable | unavailable | ~15s (build) | PASS |
+| N_004 | unavailable | unavailable | ~15s (build) | PASS |
+| N_005 | unavailable | unavailable | ~16s (build) | PASS |
 
 ## Last Completed Work
-N_001-N_003: full MLB handedness-matchup feature (data fallback, UI icons, compounding scoring) — see "Completed Feature" section above. All three `npm run build` exit 0; each verified additionally with an offline fixture script mirroring the exact shipped logic (sandbox cannot reach live MLB API). All three files' diffs are currently uncommitted in the working tree pending Commander review/push decision.
+N_001-N_005: full MLB handedness-matchup + Edge Play feature — see "Completed Feature" section above. All five `npm run build` exit 0; each verified additionally with a real-code test (byte-identical function extraction) or visual screenshot check (sandbox cannot reach live MLB API). All committed and pushed to `claude/jay-8-hat-init-cx0mbj`.
 
 ## Immediate Next Action
 Awaiting Commander's next task. QUEUE.md has one unstarted proposed idea (true batter-vs-pitcher-hand split stats).

@@ -2817,6 +2817,24 @@ export default function DashboardClient({ userEmail }) {
                                     {prop.tier}
                                   </span>
                                 )}
+                                {prop.isEdgePlay && (
+                                  <span style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 3,
+                                    background: "transparent",
+                                    color: "var(--accent)",
+                                    border: "1px solid var(--accent)",
+                                    padding: "1px 7px",
+                                    borderRadius: 4,
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    textTransform: "uppercase",
+                                  }}>
+                                    <TargetIcon size={10} color="var(--accent)" />
+                                    Edge Play
+                                  </span>
+                                )}
                                 {gameTimeStr && (
                                   <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
                                     <ClockIcon size={12} color={gameTimeStr === "Live" ? "var(--red)" : "var(--accent)"} />

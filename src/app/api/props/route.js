@@ -260,6 +260,7 @@ function scoreMLBProp(prop, bestOdds, edge) {
   let edgeScore = 0;
   let contextScore = 0;
   let riskPenalty = 0;
+  let isEdgePlay = false;
 
   const factors = [];
   const risks = [];
@@ -394,6 +395,11 @@ function scoreMLBProp(prop, bestOdds, edge) {
       if (isBatterHot) {
         contextScore += 0.4;
         factors.push("Hot bat facing favorable-handed pitcher");
+
+        // Edge Play: favorable matchup + hot bat + strong odds + positive edge
+        if (oddsValueScore >= 1.5 && edgeNum > 0) {
+          isEdgePlay = true;
+        }
       }
     } else {
       // Same-side matchup (disadvantage)
@@ -510,6 +516,7 @@ function scoreMLBProp(prop, bestOdds, edge) {
     heaterScore,
     confidence,
     tier, // Easy label for quick identification (blocked for negative edge)
+    isEdgePlay, // Favorable handedness matchup + hot bat + strong odds + positive edge
     writeup,
     keyFactor,
     keyFactors: factors,
